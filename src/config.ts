@@ -32,7 +32,7 @@ export interface Config {
 
 export const config = {
   site: {
-    name: 'Bank Nizwa Digital Services Portal',
+    name: 'Smart Ven Digital Services Portal',
     description: '',
     language: 'en',
     themeColor: '#090a0b',

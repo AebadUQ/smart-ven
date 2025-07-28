@@ -780,7 +780,7 @@ export function PersonalFinanceFormPDFProps({ data }: InvoicePDFDocumentProps): 
 
                       <Text style={{ color: '#6E2585', fontSize: 8 }}>
                         Continue to transfer my salary on a monthly basis directly from my employer to my account number
-                        (the “Bank Account”) held with Bank Nizwa (“The Bank”) until all moneys owed by me to the Bank
+                        (the “Bank Account”) held with Smart Ven (“The Bank”) until all moneys owed by me to the Bank
                         are fully paid; and
                       </Text>
                     </View>
@@ -801,7 +801,7 @@ export function PersonalFinanceFormPDFProps({ data }: InvoicePDFDocumentProps): 
                       <Text style={{ color: '#6E2585', fontSize: 8 }}>iii)</Text>
 
                       <Text style={{ color: '#6E2585', fontSize: 8 }}>
-                        Transfer all my end of service benefits to my account with Bank Nizwa
+                        Transfer all my end of service benefits to my account with Smart Ven
                       </Text>
                     </View>
 

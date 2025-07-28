@@ -498,18 +498,18 @@ export function AtmDisputeFormPDFProps({ data }: InvoicePDFDocumentProps): React
           >
             {formdetails?.atdWithdrawlIssue?.value === 'No Funds disbursed by the ATM' ? (
               <CheckBoxComp
-                label="I have attempted to withdraw cash using my Bank Nizwa Card. However, no fund was disbursed by the ATM at the time of performing the transaction(s)."
+                label="I have attempted to withdraw cash using my Smart Ven Card. However, no fund was disbursed by the ATM at the time of performing the transaction(s)."
                 val={formdetails?.atdWithdrawlIssue?.value}
               />
             ) : (
-              <CheckBoxComp label="I have attempted to withdraw cash using my Bank Nizwa Card. However, no fund was disbursed by the ATM at the time of performing the transaction(s)." />
+              <CheckBoxComp label="I have attempted to withdraw cash using my Smart Ven Card. However, no fund was disbursed by the ATM at the time of performing the transaction(s)." />
             )}
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               {formdetails?.atdWithdrawlIssue?.value === 'Partial Funds disbursed by the ATM' ? (
                 <View style={{ flexDirection: 'column' }}>
                   <View style={{ flexDirection: 'column' }}>
                     <CheckBoxComp
-                      label="I have attempted to withdraw cash using my Bank Nizwa Card from the ATM. However, I only received OMR"
+                      label="I have attempted to withdraw cash using my Smart Ven Card from the ATM. However, I only received OMR"
                       val={formdetails?.atdWithdrawlIssue?.value}
                     />
                     {formdetails?.atdWithdrawlIssue?.value ? (
@@ -523,7 +523,7 @@ export function AtmDisputeFormPDFProps({ data }: InvoicePDFDocumentProps): React
               ) : (
                 <View style={{ flexDirection: 'column' }}>
                   <View style={{ flexDirection: 'column' }}>
-                    <CheckBoxComp label="I have attempted to withdraw cash using my Bank Nizwa Card from the ATM. However, I only received OMR" />
+                    <CheckBoxComp label="I have attempted to withdraw cash using my Smart Ven Card from the ATM. However, I only received OMR" />
                     {/* <Text style={styles.inputLine}>{'N/A'}</Text> */}
                   </View>
                   <Text style={styles.label}>
@@ -566,7 +566,7 @@ export function AtmDisputeFormPDFProps({ data }: InvoicePDFDocumentProps): React
             </Text>
             <Text style={{ color: '#6E2585' }}>
               I here by affirm that the information furnished above along with enclosures are true and accurate and also
-              re-confirm that in case the dispute charges from third parties do pertain to my Bank Nizwa card account I
+              re-confirm that in case the dispute charges from third parties do pertain to my Smart Ven card account I
               would be liable to pay the dispute amount along with retrieval charges as applicable.
             </Text>
             <Text style={{ color: '#6E2585' }}>

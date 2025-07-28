@@ -212,7 +212,7 @@ export function StandingOrderFormPDFProps({ data }: InvoicePDFDocumentProps): Re
                   <Text style={styles.textFont}>Branch:</Text>
                   <Text style={styles.input}>{formdetails?.sofBranch?.value}</Text>
                 </View>
-                <Text style={styles.textFont}>Bank Nizwa</Text>
+                <Text style={styles.textFont}>Smart Ven</Text>
                 <Text style={{ ...styles.textFont }}>Sultanate of Oman</Text>
               </View>
               <Text style={{ ...styles.textFont, marginVertical: 5 }}>Dear Sir/Madam,</Text>

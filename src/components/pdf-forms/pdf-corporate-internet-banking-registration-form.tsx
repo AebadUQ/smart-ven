@@ -837,7 +837,7 @@ export function CorporateInternetBankingRgistrationPdfForm({ data }: InvoicePDFD
           <Text style={{ fontSize: 8, color: '#6E2585' }}>
             We confirm that the information given above is true and complete. We hereby confirm and undertake that we
             have read and understood the Terms and Conditions for usage of Corporate Internet Banking Services provided
-            by Bank Nizwa. We agree that we will adhere to all the terms and conditions for opening/ applying/ availing/
+            by Smart Ven. We agree that we will adhere to all the terms and conditions for opening/ applying/ availing/
             maintaining/ operating (as applicable) and usage of Internet Banking, as may be in force From time to time.
             We agree and understand that the bank may, in its absolute discretion, discontinue any of the services
             completely or partially without providing any reasons.

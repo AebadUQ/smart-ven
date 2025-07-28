@@ -90,7 +90,7 @@ export function InvoicePDFDocument(_: InvoicePDFDocumentProps): React.JSX.Elemen
         </View>
         <View style={styles.flexRow}>
           <View style={styles.w50}>
-            <Text style={[styles.fontMedium, styles.gutterBottom]}>Bank Nizwa</Text>
+            <Text style={[styles.fontMedium, styles.gutterBottom]}>Smart Ven</Text>
             <Text>ABC </Text>
             <Text>Mucat, Oman</Text>
             <Text>11206</Text>

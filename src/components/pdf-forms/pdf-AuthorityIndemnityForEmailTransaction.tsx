@@ -165,7 +165,7 @@ export function AuthorityImdemnityForEmailTransactionPdfForm({ data }: InvoicePD
           {/* <View style={styles.row}> */}
           <View style={styles.column}>
             <View style={{ flexDirection: 'column', gap: '2px' }}>
-              <Text style={styles.secondLabel}>Bank Nizwa</Text>
+              <Text style={styles.secondLabel}>Smart Ven</Text>
               <Text style={styles.secondLabel}>P.O. Box: 1423, PC 133</Text>
               <Text style={styles.secondLabel}>Muscat, Oman</Text>
             </View>
@@ -294,14 +294,14 @@ export function AuthorityImdemnityForEmailTransactionPdfForm({ data }: InvoicePD
                     <Text style={{ color: '#6E2B8C', fontSize: 8 }}>6.</Text>
                     <Text style={styles.secondLabel}>
                       This email Indemnity covers all the existing accounts (Current Account, Mudaraba Investment
-                      Account etc.), with Bank Nizwa of
+                      Account etc.), with Smart Ven of
                     </Text>
                   </View>
                   <View style={styles.column}>
                     <Text style={styles.inputLine}>{formdetails?.indemnityWithBankNizwa}</Text>
                     <Text style={{ fontSize: 8, fontWeight: 'bold', color: '#6E2B8C' }}>
                       (Name of Person/Company) that are held in his/its name. It also covers any future accounts that
-                      may be opened by my/our name with Bank Nizwa
+                      may be opened by my/our name with Smart Ven
                     </Text>
                   </View>
                 </View>

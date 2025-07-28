@@ -64,7 +64,7 @@ const termsConditionData = {
               text: 'In the absence of any specific instructions all charges/commission outside Oman are on the beneficiary’s account.',
             },
             {
-              text: 'A Correspondent Bank may charge commission, fees or other charges in making the payments to the beneficiary account. The correspondent Bank will either deduct those commission, fees or charges from the fund paid to the beneficiary account or pass them on to the sender bank (Bank Nizwa).',
+              text: 'A Correspondent Bank may charge commission, fees or other charges in making the payments to the beneficiary account. The correspondent Bank will either deduct those commission, fees or charges from the fund paid to the beneficiary account or pass them on to the sender bank (Smart Ven).',
             },
           ],
         },
@@ -306,7 +306,7 @@ export function BusinessDebitCardFormPDFProps({ data }: InvoicePDFDocumentProps)
                     </Text>
                   </View>
                   <InputComp
-                    inputOne="CIF or Account No. with Bank Nizwa:"
+                    inputOne="CIF or Account No. with Smart Ven:"
                     outputOne={formdetails?.busDebCardCIFAccountNoWithBankNizwa || 'N/A'}
                   />
                   <Text style={styles.textFont}>Business Category:</Text>
@@ -889,7 +889,7 @@ export function BusinessDebitCardFormPDFProps({ data }: InvoicePDFDocumentProps)
                             alignItems: 'center',
                           }}
                         >
-                          <Text style={{ fontSize: 8, textAlign: 'center' }}>Bank Nizwa / OmanNet / GCC Net</Text>
+                          <Text style={{ fontSize: 8, textAlign: 'center' }}>Smart Ven / OmanNet / GCC Net</Text>
                         </View>
                         <View
                           style={{
@@ -1070,7 +1070,7 @@ export function BusinessDebitCardFormPDFProps({ data }: InvoicePDFDocumentProps)
                             alignItems: 'center',
                           }}
                         >
-                          <Text style={{ fontSize: 8, textAlign: 'center' }}>Bank Nizwa</Text>
+                          <Text style={{ fontSize: 8, textAlign: 'center' }}>Smart Ven</Text>
                         </View>
                       </View>
                     </View>
@@ -1181,7 +1181,7 @@ export function BusinessDebitCardFormPDFProps({ data }: InvoicePDFDocumentProps)
           body={
             <View style={{ padding: 4 }}>
               <Text style={styles.textFont}>
-                I/We hereby indemnify Bank Nizwa and hold the Bank harmless against any claim, cost, loss, liability,
+                I/We hereby indemnify Smart Ven and hold the Bank harmless against any claim, cost, loss, liability,
                 damage, expenses otherwise of whatever nature as a result arising from increasing the limit of the Bank
                 Nizwa Card or from usage over the Internet or from the misuse, theft, fraud, negligence, bad faith or
                 any illegal use of the card, and the Bank shall not in any circumstance whatsoever be held liable for
@@ -1314,7 +1314,7 @@ export function BusinessDebitCardFormPDFProps({ data }: InvoicePDFDocumentProps)
                   <Text style={{ fontFamily: 'Times-Bold', color: '#6E2585' }}>
                     List of Documents required for existing bank customers
                   </Text>
-                  <Text style={styles.textFont}>1. Board Resolution in Bank Nizwa format</Text>
+                  <Text style={styles.textFont}>1. Board Resolution in Smart Ven format</Text>
                   <Text style={styles.textFont}>2. ID / Passport copy of the card holder</Text>
                   <Text style={styles.textFont}>3. Company Registration Form (CR)</Text>
                 </View>

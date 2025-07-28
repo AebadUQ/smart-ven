@@ -1504,7 +1504,7 @@ Salary Related Financing to the employees"
                           disabled
                         />
                       }
-                      label="Salary Disbursement through Bank Nizwa"
+                      label="Salary Disbursement through Smart Ven"
                     />
                   </Grid>
                   <Grid size={{ xs: 12, md: 3 }}>

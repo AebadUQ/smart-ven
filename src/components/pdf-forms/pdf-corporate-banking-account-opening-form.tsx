@@ -49,7 +49,7 @@ const termsConditionData = {
       description: [
         {
           isClosure: true,
-          text: 'These conditions in addition to the General Terms & Conditions shall govern the relationship between Bank Nizwa (the “Bank”) and the Customer or Customers whose particulars are set out on the appropriate account opening form (the “Customer”) regarding all and any accounts opened by the Customer with the Bank (together the “Accounts”) subject only to any special condition applicable to any of the Accounts.',
+          text: 'These conditions in addition to the General Terms & Conditions shall govern the relationship between Smart Ven (the “Bank”) and the Customer or Customers whose particulars are set out on the appropriate account opening form (the “Customer”) regarding all and any accounts opened by the Customer with the Bank (together the “Accounts”) subject only to any special condition applicable to any of the Accounts.',
         },
         {
           isClosure: true,
@@ -412,7 +412,7 @@ export function CorporateAccountOpningFormPDFProps({ data }: InvoicePDFDocumentP
         </View>
         <View style={{ marginTop: 5 }}>
           <Text style={styles.textFont}>The Manager</Text>
-          <Text style={styles.textFont}>Bank Nizwa</Text>
+          <Text style={styles.textFont}>Smart Ven</Text>
         </View>
         <View style={{ flexDirection: 'row', width: '100%', gap: '4%' }}>
           <View
@@ -1389,7 +1389,7 @@ export function CorporateAccountOpningFormPDFProps({ data }: InvoicePDFDocumentP
                 val={formdetails?.bankProIntbankingProducts?.bankProIntbankingProductsRemittances}
               />
               <CheckBoxComp
-                label={'Salary Disbursement through\n Bank Nizwa'}
+                label={'Salary Disbursement through\n Smart Ven'}
                 val={
                   formdetails?.bankProIntbankingProducts?.bankProIntbankingProductsSalaryDisbursementthroughBankNizwa
                 }
@@ -3705,7 +3705,7 @@ export function CorporateAccountOpningFormPDFProps({ data }: InvoicePDFDocumentP
  <View style={{ flexDirection: 'column', marginTop: 5 }}>
       <Text style={styles.title}>Corporate Current Account Terms & Conditions:</Text>
       <View style={{ flexDirection: 'column', marginTop: 16 }}>
-        <Text style={styles.paragraph}>1. These conditions in addition to the General Terms & Conditions shall govern the relationship between Bank Nizwa (the “Bank”) and the Customer or Customers whose particulars are set out on the appropriate account opening form (the “Customer”) regarding all and any accounts opened by the Customer with the Bank (together the “Accounts”) subject only to any special condition applicable to any of the Accounts.</Text>
+        <Text style={styles.paragraph}>1. These conditions in addition to the General Terms & Conditions shall govern the relationship between Smart Ven (the “Bank”) and the Customer or Customers whose particulars are set out on the appropriate account opening form (the “Customer”) regarding all and any accounts opened by the Customer with the Bank (together the “Accounts”) subject only to any special condition applicable to any of the Accounts.</Text>
         <Text style={styles.paragraph}>2. The credit balance in the Current Account is deposited by the Customer as a “Qard” to the Bank, on which no profit or other form of return is payable. The Bank undertakes to pay any credit balance in its favour in the Current Account in full at the request of the Customer, subject to the Customer’s compliance with these Conditions, and the General terms and Conditions of the Bank. The Bank may invest the credit balance in the Current Account in such manner as the Bank, in its absolute discretion, deems fit, not contradicting Shari’a Principles. No returns of whatsoever nature (including profit) shall be paid out to the Customer on the Current Account.</Text>
         <Text style={styles.paragraph}>3. The Customer shall draw cheques in Arabic or English languages. The Bank shall not accept cheques written in any other languages.</Text>
         <Text style={styles.paragraph}>4. The Customer will periodically receive statements in respect of each of the Accounts. The Customer agrees to examine each statement of Account and to raise any objection in writing within thirty (30) days from the date of issue of such statement notice or other communication. If there is any delay in making any subject objection they shall be deemed to be accurate and if as a consequence of such delay the Bank incurs any loss whatsoever, such loss shall be borne by the Customer.</Text>

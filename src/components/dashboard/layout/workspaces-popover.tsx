@@ -7,7 +7,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 
 export const workspaces = [
-  { name: 'Bank Nizwa', avatar: '/assets/bn-icon.png' },
+  { name: 'Smart Ven', avatar: '/assets/bn-icon.png' },
   { name: 'Campaigns', avatar: '/assets/workspace-avatar-2.png' },
   { name: 'Video Chat', avatar: '/assets/workspace-avatar-2.png' },
 

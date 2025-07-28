@@ -75,7 +75,7 @@ export default function SpecialNeedCustomerForm({ data }: AccountOpeningFormProp
                 with the Bank, and as I am aware of the consequences of issuing such a card, I hereby acknowledge and
                 accept assume full responsibility for all my transactions carried out on my account through any ATM/ POS
                 Machine, inside or outside the Sultanate and I shall be liable for the safe custody of the ATM card and
-                its PIN number, which were issued to me by Bank Nizwa upon my own request.{' '}
+                its PIN number, which were issued to me by Smart Ven upon my own request.{' '}
               </Typography>
               <Typography sx={{ mb: '20px' }}>
                 I admit that the employee of the Bank, in the presence of two witnesses mentioned below, has read and

@@ -7,10 +7,10 @@ import { SignInForm } from '@/components/auth/custom/sign-in-form';
 export default function Page(): React.JSX.Element {
   
   return (
-      <GuestGuard>
+      // <GuestGuard>
           <SplitLayout>
             <SignInForm />
           </SplitLayout>
-        </GuestGuard>
+        // </GuestGuard>
   );
 }

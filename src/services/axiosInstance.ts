@@ -114,9 +114,9 @@ axiosInstance.interceptors.response.use(
       originalRequest._retry = true; // Prevent infinite retry
       localStorage.removeItem("custom-auth-token");
       
-      setTimeout(() => {
-        window.location.href = "/auth/custom/sign-in"; 
-      }, 500); // Small delay to prevent immediate re-call
+      // setTimeout(() => {
+      //   window.location.href = "/auth/custom/sign-in"; 
+      // }, 500);
     }
 
     return Promise.reject(error);

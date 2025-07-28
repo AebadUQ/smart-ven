@@ -468,11 +468,11 @@ export function IrrevocableDocumentaryMurabahaForm({ data }: InvoicePDFDocumentP
             >
               <View style={styles.column}>
                 <View style={styles.row}>
-                  {/* <Text style={styles.secondLabel}>Applicant Name/In the name of Bank Nizwa </Text>
+                  {/* <Text style={styles.secondLabel}>Applicant Name/In the name of Smart Ven </Text>
                         <Text style={styles.inputField}>
                           {formdetails?.tradeFinIrrDocCreAppMurabahaApplicantNameonBehal || 'N/A'}
                         </Text> */}
-                  {/* \n/In the name of Bank Nizwa */}
+                  {/* \n/In the name of Smart Ven */}
                   <InputComp
                     inputNine={`Applicant Name`}
                     outputNine={formdetails?.tradeFinIrrDocCreAppMurabahaApplicantNameonBehal}
@@ -1145,7 +1145,7 @@ export function IrrevocableDocumentaryMurabahaForm({ data }: InvoicePDFDocumentP
 
                 <CheckBoxComp
                   label={
-                    'Full set of clean on board Bill(s) of Lading in long form issued or endorsed to the order of Bank Nizwa, marked'
+                    'Full set of clean on board Bill(s) of Lading in long form issued or endorsed to the order of Smart Ven, marked'
                   }
                   val={formdetails?.tradeFinIrrDocCreAppMurabahaDocReqOnBoardBills}
                 />
@@ -1178,7 +1178,7 @@ export function IrrevocableDocumentaryMurabahaForm({ data }: InvoicePDFDocumentP
               </View>
 
               <Text style={styles.label}>
-                and notify Bank Nizwa and Ourselves, and showing full name and address of the carrying vessel's agent{' '}
+                and notify Smart Ven and Ourselves, and showing full name and address of the carrying vessel's agent{' '}
               </Text>
               <Text style={styles.label}> address of the carrying vessel's agent</Text>
               <Text style={styles.label}>at port of destination.</Text>
@@ -1194,11 +1194,11 @@ export function IrrevocableDocumentaryMurabahaForm({ data }: InvoicePDFDocumentP
                         ></View>
                       </View>
                       <Text style={styles.label}>
-                        Air Waybill(s) consigned to Bank Nizwa, evidencing dispatch of the goods marked freight{' '}
+                        Air Waybill(s) consigned to Smart Ven, evidencing dispatch of the goods marked freight{' '}
                       </Text> */}
 
               <CheckBoxComp
-                label="Air Waybill(s) consigned to Bank Nizwa, evidencing dispatch of the goods marked freight"
+                label="Air Waybill(s) consigned to Smart Ven, evidencing dispatch of the goods marked freight"
                 val={formdetails?.tradeFinIrrDocCreAppMurabahaDocReqAirWaybills}
               />
 
@@ -1252,10 +1252,10 @@ export function IrrevocableDocumentaryMurabahaForm({ data }: InvoicePDFDocumentP
                         ></View>
                       </View>
                       <Text style={styles.label}>
-                        Truck Consignment Note(s) consigned to Bank Nizwa, evidencing dispatch of the goods marked freight{' '}
+                        Truck Consignment Note(s) consigned to Smart Ven, evidencing dispatch of the goods marked freight{' '}
                       </Text> */}
               <CheckBoxComp
-                label="Truck Consignment Note(s) consigned to Bank Nizwa, evidencing dispatch of the goods marked freight"
+                label="Truck Consignment Note(s) consigned to Smart Ven, evidencing dispatch of the goods marked freight"
                 val={formdetails?.tradeFinIrrDocCreAppMurabahaDocReqTruckConsignment}
               />
               <View style={{ flexDirection: 'row', gap: 70, paddingHorizontal: 30 }}>
@@ -1454,7 +1454,7 @@ export function IrrevocableDocumentaryMurabahaForm({ data }: InvoicePDFDocumentP
               </Text>
 
               <Text style={styles.label}>
-                copies issued to the order of Bank Nizwa in the currency of this L/C for at least 110% of the invoice
+                copies issued to the order of Smart Ven in the currency of this L/C for at least 110% of the invoice
                 value covering all risks
               </Text>
               <Text style={styles.label}>
@@ -1699,9 +1699,9 @@ export function IrrevocableDocumentaryMurabahaForm({ data }: InvoicePDFDocumentP
           </View>
           {/* )} */}
           <View style={styles.secondRow}>
-            {/* <CheckBoxComp label="All commissions & charges outside Bank Nizwa including reimbursement charges are for" val={}/> */}
+            {/* <CheckBoxComp label="All commissions & charges outside Smart Ven including reimbursement charges are for" val={}/> */}
             <Text style={styles.label}>
-              All commissions & charges outside Bank Nizwa including reimbursement charges are for
+              All commissions & charges outside Smart Ven including reimbursement charges are for
             </Text>
 
             {/* <View style={styles.checkboxRow}>

@@ -168,7 +168,7 @@ export function MandateIndividualForm({ data }: InvoicePDFDocumentProps): React.
             <View style={styles.column}>
               <View style={{ flexDirection: 'column', gap: '2px' }}>
                 <Text style={{ color: '#6E2B8C' }}>The Manager</Text>
-                <Text style={{ color: '#6E2B8C' }}>Bank Nizwa</Text>
+                <Text style={{ color: '#6E2B8C' }}>Smart Ven</Text>
               </View>
               <View style={styles.secondRow}>
                 <Text style={styles.secondLabel}>Branch:</Text>

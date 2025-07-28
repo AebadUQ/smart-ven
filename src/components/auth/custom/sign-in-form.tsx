@@ -163,7 +163,10 @@ export function SignInForm(): React.JSX.Element {
                 )}
               />
               {errors.root ? <Alert color="error">{errors.root.message}</Alert> : null}
-              <Button disabled={isPending} type="submit" variant="contained">
+              {/* <Button disabled={isPending} type="submit" variant="contained">
+                Sign in
+              </Button> */}
+              <Button disabled={isPending}  variant="contained" onClick={()=>router.push('/dashboard')}>
                 Sign in
               </Button>
             </Stack>

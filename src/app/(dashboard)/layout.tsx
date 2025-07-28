@@ -123,7 +123,9 @@ export default function Layout({ children }: LayoutProps): React.JSX.Element {
   }, [selectedCall]);
 
   return (
-    <AuthGuard>
+    // <AuthGuard>
+      <>
+      
       {/* Hidden audio element */}
       <audio
         ref={ringtoneRef}
@@ -139,7 +141,7 @@ export default function Layout({ children }: LayoutProps): React.JSX.Element {
             Enable Sound
           </button> */}
 
-      <DynamicLayout>{children}</DynamicLayout>
-    </AuthGuard>
+      <DynamicLayout>{children}</DynamicLayout></>
+    // </AuthGuard>
   );
 }

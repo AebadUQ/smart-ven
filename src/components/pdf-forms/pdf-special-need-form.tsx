@@ -279,7 +279,7 @@ export function SpecialNeedPDFProps({ data }: InvoicePDFDocumentProps): React.JS
                         with the Bank, and as I am aware of the consequences of issuing such a card, I hereby
                         acknowledge and accept assume full responsibility for all my transactions carried out on my
                         account through any ATM/ POS Machine, inside or outside the Sultanate and I shall be liable for
-                        the safe custody of the ATM card and its PIN number, which were issued to me by Bank Nizwa upon
+                        the safe custody of the ATM card and its PIN number, which were issued to me by Smart Ven upon
                         my own request.
                       </Text>
                       <Text style={{ color: '#6E2B8C', fontSize: 8}}>

@@ -393,7 +393,7 @@ export default function CorporateInternetBankingServicesMaintenanceRequest({
                   Note
                 </Typography>
                 <Typography sx={{ mb: '0px' }}>
-                  1. All transaction limits will be set as per the approved board resolution in Bank Nizwa format.
+                  1. All transaction limits will be set as per the approved board resolution in Smart Ven format.
                 </Typography>
                 <Typography sx={{ mb: '0px' }}>
                   2. New board resolution is required for adding new master user/s or enhancing limits.

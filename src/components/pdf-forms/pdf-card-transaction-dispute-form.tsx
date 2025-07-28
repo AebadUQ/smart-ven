@@ -628,7 +628,7 @@ export function CardTransactionDisputeFormPDFProps({ data }: InvoicePDFDocumentP
             </Text>
             <Text style={{ fontSize: 8 }}>
               I hereby affirm that the information furnished above along with enclosures are true and accurate and also
-              re-confirm that in case the disputed charges from third parties do pertain to my Bank Nizwa card account I
+              re-confirm that in case the disputed charges from third parties do pertain to my Smart Ven card account I
               would be liable to pay the dispute amount along with retrieval charges where applicable. I/We confirm that
               the PIN/Security Code was not recorded on any material kept with the card, and that the PIN/Security Code
               has not been disclosed to any other person by written, verbal or other means.

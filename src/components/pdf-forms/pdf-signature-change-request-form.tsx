@@ -176,7 +176,7 @@ export function SignatureRequestFormPDFProps({ data }: InvoicePDFDocumentProps):
 
                 <View style={{ flexDirection: 'column', gap: '1px' }}>
                   <Text style={styles.label}>The Manager</Text>
-                  <Text style={styles.label}>Bank Nizwa</Text>
+                  <Text style={styles.label}>Smart Ven</Text>
                   <View style={styles.secondRow}>
                     <Text style={styles.label}>Branch:</Text>
                     <Text style={styles.inputLine}> {formdetails?.scrBranch?.value} </Text>

@@ -912,7 +912,7 @@ export default function AccountOpeningFormAdditionalAccount({ data }: AccountOpe
                   <TextField
                     variant="standard"
                     fullWidth
-                    label="Debit my Bank Nizwa Account No"
+                    label="Debit my Smart Ven Account No"
                     value={formDetails?.ccaFundingDebitAccTo}
                     InputProps={{
                       readOnly: true,

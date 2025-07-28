@@ -713,7 +713,7 @@ export default function PrimarySupplementaryCardServiceRequestForm({
         <Grid item md={3} xs={12}>
           <FormControlLabel
             control={<Checkbox checked={!!formDetails?.csrOnUsBankNizwa} disabled />}
-            label="ON-US / Bank Nizwa"
+            label="ON-US / Smart Ven"
           />
         </Grid>
         <Grid item md={3} xs={12}>
@@ -730,8 +730,8 @@ export default function PrimarySupplementaryCardServiceRequestForm({
         </Grid>
       </Grid>
 
-      {/* --- ON-US / Bank Nizwa --- */}
-      <Typography variant="h6">ON-US / Bank Nizwa</Typography>
+      {/* --- ON-US / Smart Ven --- */}
+      <Typography variant="h6">ON-US / Smart Ven</Typography>
 
       <Grid container spacing={4}>
         <Grid item md={3}>
@@ -1134,7 +1134,7 @@ export default function PrimarySupplementaryCardServiceRequestForm({
                   <Grid item md={3} xs={12}>
                     <FormControlLabel
                       control={<Checkbox checked={Boolean(formDetails?.csrDeclarationTermsandCond)} disabled />}
-                      label="I hereby indemnify Bank Nizwa and hold the Bank harmless against any claim, cost, loss, liability, damage"
+                      label="I hereby indemnify Smart Ven and hold the Bank harmless against any claim, cost, loss, liability, damage"
                     />
                   </Grid>
                 </Grid>

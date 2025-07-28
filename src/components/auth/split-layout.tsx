@@ -22,9 +22,9 @@ export function SplitLayout({ children }: SplitLayoutProps): React.JSX.Element {
       >
         <Stack spacing={4} sx={{ maxWidth: '700px' }}>
           <Stack spacing={1}>
-            <Typography variant="h4">Welcome to Bank Nizwa Digital Services Portal</Typography>
+            <Typography variant="h4">Welcome to Smart Ven Service Portal</Typography>
             <Typography color="text.secondary">
-            Bank Nizwa Digital Services Portal
+            Smart Ven Digital Services Portal
             </Typography>
           </Stack>
           {/* <Stack

@@ -83,7 +83,7 @@ export default function BusinessDebitCardForm({ data }: ProductEditFormProps): R
                     ></OutlinedInput>
                   </Grid>
                   <Grid size={{ md: 3, xs: 12, sm: 6 }}>
-                    <InputLabel>CIF or Account No. with Bank Nizwa</InputLabel>
+                    <InputLabel>CIF or Account No. with Smart Ven</InputLabel>
                     <OutlinedInput
                       sx={{
                         borderTop: 'none',
@@ -721,7 +721,7 @@ export default function BusinessDebitCardForm({ data }: ProductEditFormProps): R
                   <Grid size={{ sm: 12 }}>
                     <FormControlLabel
                       control={<Checkbox checked={formdetails?.busDebCardCWLBDCCDDeclaration || false} disabled />}
-                      label="I hereby indemnify Bank Nizwa and hold the Bank harmless against any claim, cost, loss, liability, damage"
+                      label="I hereby indemnify Smart Ven and hold the Bank harmless against any claim, cost, loss, liability, damage"
                     />
                   </Grid>
                 </Grid>
@@ -736,7 +736,7 @@ export default function BusinessDebitCardForm({ data }: ProductEditFormProps): R
                       control={
                         <Checkbox checked={formdetails?.busDebCardCWLBDCCDTermsandConditions || false} disabled />
                       }
-                      label="I/we hereby indemnify Bank Nizwa and hold the Bank  harmless against any claim, cost, loss, liability, damage"
+                      label="I/we hereby indemnify Smart Ven and hold the Bank  harmless against any claim, cost, loss, liability, damage"
                     />
                   </Grid>
                 </Grid>

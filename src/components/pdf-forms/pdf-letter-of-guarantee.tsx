@@ -71,7 +71,7 @@ const termsConditionData = {
               text: 'In the absence of any specific instructions all charges/commission outside Oman are on the beneficiary’s account.',
             },
             {
-              text: 'A Correspondent Bank may charge commission, fees or other charges in making the payments to the beneficiary account. The correspondent Bank will either deduct those commission, fees or charges from the fund paid to the beneficiary account or pass them on to the sender bank (Bank Nizwa).',
+              text: 'A Correspondent Bank may charge commission, fees or other charges in making the payments to the beneficiary account. The correspondent Bank will either deduct those commission, fees or charges from the fund paid to the beneficiary account or pass them on to the sender bank (Smart Ven).',
             },
           ],
         },

@@ -669,7 +669,7 @@ export function PrimarySupplementaryCardReqFormPDFProps({ data }: InvoicePDFDocu
                   }}
                 >
                   <View style={{ color: '#6E2B8C', padding: 4, textAlign: 'center' }}>
-                    <Text style={{ fontSize: 8 }}>ON-US / Bank Nizwa</Text>
+                    <Text style={{ fontSize: 8 }}>ON-US / Smart Ven</Text>
                   </View>
                 </View>
 
@@ -1224,8 +1224,8 @@ export function PrimarySupplementaryCardReqFormPDFProps({ data }: InvoicePDFDocu
           body={
             <View style={{ padding: 4 }}>
               <Text style={{ fontSize: 7, color: '#6E2B8C' }}>
-                I hereby indemnify Bank Nizwa and hold the Bank harmless against any claim, cost, loss, liability,
-                damage, expenses or otherwise of whatever nature arising fromincreasing the limit of the Bank Nizwa Card
+                I hereby indemnify Smart Ven and hold the Bank harmless against any claim, cost, loss, liability,
+                damage, expenses or otherwise of whatever nature arising fromincreasing the limit of the Smart Ven Card
                 or from usage over the Internet or from the misuse, theft, fraud, negligence, bad faith or any illegal
                 use of the card, and the Bank shall not in any circumstance whatsoever be held liable for any of the
                 aforementioned. I also confirm that I am fully aware and shall be held liable for any

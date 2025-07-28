@@ -196,14 +196,14 @@ export interface InvoicePDFDocumentProps {
   data: any;
 }
 const termsConditionData = {
-  title: 'Terms and Conditions for Bank Nizwa Credit Card',
+  title: 'Terms and Conditions for Smart Ven Credit Card',
   list: [
     {
       title: 'Definitions',
       description: [
         {
           isClosure: false,
-          text: 'The Bank: Refers to Bank Nizwa.',
+          text: 'The Bank: Refers to Smart Ven.',
         },
         {
           isClosure: false,
@@ -416,7 +416,7 @@ const termsConditionData = {
 };
 
 // const termsConditionData = {
-//   title: 'Terms and Conditions for Bank Nizwa Credit Card ',
+//   title: 'Terms and Conditions for Smart Ven Credit Card ',
 //   list: [
 //     {
 //       title: 'Definitions',
@@ -439,7 +439,7 @@ const termsConditionData = {
 //         },
 //         {
 //           isClosure: false,
-//           text: 'Branch: All Bank Nizwa branches',
+//           text: 'Branch: All Smart Ven branches',
 //         },
 //         {
 //           isClosure: false,
@@ -1253,7 +1253,7 @@ export function CreditCardApplicationFormPDFProps({ data }: InvoicePDFDocumentPr
                 </View>
                 <View style={styles.thirdRow}>
                   <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 3 }}>
-                    <Text style={styles.textFont}>Please debit my Bank Nizwa Account No.:</Text>
+                    <Text style={styles.textFont}>Please debit my Smart Ven Account No.:</Text>
                     <AccountBoxes length={14} data={formdetails?.ccaFundingDebitAccTo.split('')} />
                     <Text style={styles.textFont}>to settle my Credit Card bills</Text>
                     <Text style={styles.textFont}>as per percentage marked above</Text>
@@ -2372,17 +2372,17 @@ export function CreditCardApplicationFormPDFProps({ data }: InvoicePDFDocumentPr
       </Page>
       <Page size="A4" style={styles.page}>
         <View style={{ flexDirection: 'column', marginTop: 5 }}>
-          {/* <Text style={styles.label}>Terms and Conditions for Bank Nizwa Credit Card </Text> */}
+          {/* <Text style={styles.label}>Terms and Conditions for Smart Ven Credit Card </Text> */}
           <View>
-            <Text style={styles.clause}>Terms and Conditions for Bank Nizwa Credit Card</Text>
+            <Text style={styles.clause}>Terms and Conditions for Smart Ven Credit Card</Text>
 
             <Text style={styles.clause}>
-              The issuance and usage of the Bank Nizwa Credit Card shall be subject to the following terms and
+              The issuance and usage of the Smart Ven Credit Card shall be subject to the following terms and
               conditions:
             </Text>
 
             <Text style={styles.clause}>1. Definitions</Text>
-            <Text style={styles.subClause}>The Bank: Bank Nizwa</Text>
+            <Text style={styles.subClause}>The Bank: Smart Ven</Text>
             <Text style={styles.subClause}>
               Debit Card: The bank debit card is a card used for payment of cash purchases between the customer, the
               Bank and the merchant; it is used to pay for goods and services and for cash withdrawals from ATM’s
@@ -2404,7 +2404,7 @@ export function CreditCardApplicationFormPDFProps({ data }: InvoicePDFDocumentPr
               and Conditions to ‘Cardholder’ shall mean Primary Cardholder and/or Supplementary Cardholder as shall be
               appropriate in the context.
             </Text>
-            <Text style={styles.subClause}>Branch: All Bank Nizwa branches.</Text>
+            <Text style={styles.subClause}>Branch: All Smart Ven branches.</Text>
             <Text style={styles.subClause}>
               Supplementary Card: Secondary Card under the primary Credit Card account.
             </Text>

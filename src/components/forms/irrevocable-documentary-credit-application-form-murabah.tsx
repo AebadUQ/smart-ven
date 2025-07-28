@@ -844,7 +844,7 @@ export default function IrrevocableDocumntaryCreditApplicationForm({ data }: Pro
                                  disabled
                                />
                              }
-                             label="Full set of clean on board Bill(s) of Lading in long form issued or endorsed to the order of Bank Nizwa, marked freight"
+                             label="Full set of clean on board Bill(s) of Lading in long form issued or endorsed to the order of Smart Ven, marked freight"
                            />
                          </Grid>
                          <Grid size={{ xs: 12 }} spacing={2.14} container>
@@ -875,7 +875,7 @@ export default function IrrevocableDocumntaryCreditApplicationForm({ data }: Pro
                            </Grid>
                          </Grid>
                          <Typography sx={{ paddingLeft: '30px' }} variant="body2">
-                           and notify Bank Nizwa and Ourselves, and showing full name and address of the carrying vessel’s
+                           and notify Smart Ven and Ourselves, and showing full name and address of the carrying vessel’s
                            agent at port of destination.
                          </Typography>
                        </Grid>
@@ -890,7 +890,7 @@ export default function IrrevocableDocumntaryCreditApplicationForm({ data }: Pro
                                  disabled
                                />
                              }
-                             label="Air Waybill(s) consigned to Bank Nizwa, evidencing dispatch of the goods marked freight"
+                             label="Air Waybill(s) consigned to Smart Ven, evidencing dispatch of the goods marked freight"
                            />
                          </Grid>
                          <Grid container size={{ xs: 12 }}>
@@ -931,7 +931,7 @@ export default function IrrevocableDocumntaryCreditApplicationForm({ data }: Pro
                                  disabled
                                />
                              }
-                             label="Truck Consignment Note(s) consigned to Bank Nizwa, evidencing dispatch of the goods marked freight"
+                             label="Truck Consignment Note(s) consigned to Smart Ven, evidencing dispatch of the goods marked freight"
                            />
                          </Grid>
                          <Grid container spacing={2.14} size={{ xs: 12 }}>
@@ -1220,7 +1220,7 @@ export default function IrrevocableDocumntaryCreditApplicationForm({ data }: Pro
                          </Grid>
                        </Grid>
                        <Typography variant="body2" sx={{ textAlign: 'start', paddingLeft: '30px' }}>
-                         copies issued to the order of Bank Nizwa in the currency of this L/C for at least 110% of the
+                         copies issued to the order of Smart Ven in the currency of this L/C for at least 110% of the
                          invoice value covering all risks and expressly stating claims if any are payable in the Sulatanate
                          of Oman. Takaful policy must contain name, address and telephone number of the issuer agent in the
                          Sultanate of Oman.
@@ -1470,11 +1470,11 @@ export default function IrrevocableDocumntaryCreditApplicationForm({ data }: Pro
                                disabled
                              />
                            }
-                           label="All commissions & charges outside Bank Nizwa including reimbursement charges are for"
+                           label="All commissions & charges outside Smart Ven including reimbursement charges are for"
                          />
                        </Grid> */}
                        <Grid container spacing={5}>
-                                             <Typography variant='body2'>All commissions & charges outside Bank Nizwa including reimbursement charges are for</Typography>
+                                             <Typography variant='body2'>All commissions & charges outside Smart Ven including reimbursement charges are for</Typography>
 
                          <Grid size={{ xs: 12, md: 4 }}>
                            <FormControlLabel

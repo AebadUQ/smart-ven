@@ -265,7 +265,7 @@ const termsConditionData = {
               text: 'In the absence of any specific instructions all charges/commission outside Oman are on the beneficiary’s account.',
             },
             {
-              text: 'A Correspondent Bank may charge commission, fees or other charges in making the payments to the beneficiary account. The correspondent Bank will either deduct those commission, fees or charges from the fund paid to the beneficiary account or pass them on to the sender bank (Bank Nizwa).',
+              text: 'A Correspondent Bank may charge commission, fees or other charges in making the payments to the beneficiary account. The correspondent Bank will either deduct those commission, fees or charges from the fund paid to the beneficiary account or pass them on to the sender bank (Smart Ven).',
             },
           ],
         },
@@ -780,7 +780,7 @@ export function TransferPaymentFundTransferForm({ data }: InvoicePDFDocumentProp
               </Text>
 
               <Text style={[styles.thirdLabel, { width: '100%', textAlign: 'center' }]}>
-                TRANSACTIONS ARE GOVERNED BY BANK NIZWA’S GENERAL TERMS AND CONDITIONS, AND THOSE STATED ON THE BACK OF
+                TRANSACTIONS ARE GOVERNED BY Smart Ven’S GENERAL TERMS AND CONDITIONS, AND THOSE STATED ON THE BACK OF
                 THIS APPLICATION WHICH I HAVE READ AND AGREED TO.
               </Text>
               <DualLabelField labelEN="Authorised Signature" labelAR="التوقيع المعتمد" value="" />
@@ -1626,7 +1626,7 @@ export function TransferPaymentFundTransferForm({ data }: InvoicePDFDocumentProp
                     <Text style={{ fontSize: 8, color: '#6E2585' }}>
                       A Correspondent Bank may charge commission, fees or other charges in making the payments to the
                       benefciary account. The correspondent Bank will either deduct those commission, fees or charges from the
-                      fund paid to the benefciary account or pass them on to the sender bank (Bank Nizwa).
+                      fund paid to the benefciary account or pass them on to the sender bank (Smart Ven).
                     </Text>
                   </View>
                   <View style={{ flexDirection: 'row', gap: 5,  marginLeft: 5 }}>
@@ -1635,7 +1635,7 @@ export function TransferPaymentFundTransferForm({ data }: InvoicePDFDocumentProp
                       {' '}
                       Unless I/We issue diferent instruction, the transfer will be efective in the currency of the
                       jurisdiction of the destination and subject to related cutof times or any other regulations applicable
-                      in that jurisdiction bank (Bank Nizwa).
+                      in that jurisdiction bank (Smart Ven).
                     </Text>
                   </View>
                   <View style={{ flexDirection: 'row', gap: 5, marginLeft: 5 }}>
@@ -1651,7 +1651,7 @@ export function TransferPaymentFundTransferForm({ data }: InvoicePDFDocumentProp
                     <Text style={{ fontSize: 8, color: '#6E2585' }}>
                       The Demand Draft should be handled safely and in case of loss of the draft, the purchaser should
                       immediately inform the Bank. Refund will be considered only after confrmation of the stop payment
-                      instruction received from the Drawee Bank. bank (Bank Nizwa).
+                      instruction received from the Drawee Bank. bank (Smart Ven).
                     </Text>
                   </View>
                   <View style={{ flexDirection: 'row', gap: 5,  marginLeft: 5 }}>
@@ -1662,7 +1662,7 @@ export function TransferPaymentFundTransferForm({ data }: InvoicePDFDocumentProp
                       understood that the Bank chooses its Correspondent at my/our risk and responsibility. I/We also declare
                       that the issuing Bank shall not be liable for any compensation in respect of delay in encashment of the
                       Draft by Drawee Bank including those caused by the variations of signature or missing drawing advices.
-                      from the Drawee Bank. bank (Bank Nizwa).
+                      from the Drawee Bank. bank (Smart Ven).
                     </Text>
                   </View>
 

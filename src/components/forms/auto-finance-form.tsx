@@ -222,7 +222,7 @@ export default function AutoFinanceForm({ data }: ProductEditFormProps): React.J
                   </Grid>
 
                   <Grid size={{ xs: 12, md: 3, sm: 6 }}>
-                    <InputLabel>Salary Transfer to Bank Nizwa</InputLabel>
+                    <InputLabel>Salary Transfer to Smart Ven</InputLabel>
                     <OutlinedInput
                       sx={{
                         borderTop: 'none',

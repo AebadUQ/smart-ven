@@ -243,7 +243,7 @@ export function IrrevocableDocumentaryWakalahForm({ data }: InvoicePDFDocumentPr
         description: [
           {
             isClosure: true,
-            text: 'The SWIFT messages or courier mail advising details of this Letter of Credit shall be dispatched at our risk and cost, with no liability being attributed to Bank Nizwa (the "Bank"). The Bank shall not be held liable for any delay, mutilation, agent or correspondent errors or omissions that may arise during its transmission or delivery, or by reason of the Bank acting upon such defective SWIFT messages.',
+            text: 'The SWIFT messages or courier mail advising details of this Letter of Credit shall be dispatched at our risk and cost, with no liability being attributed to Smart Ven (the "Bank"). The Bank shall not be held liable for any delay, mutilation, agent or correspondent errors or omissions that may arise during its transmission or delivery, or by reason of the Bank acting upon such defective SWIFT messages.',
           },
           {
             isClosure: true,
@@ -503,11 +503,11 @@ export function IrrevocableDocumentaryWakalahForm({ data }: InvoicePDFDocumentPr
             >
               <View style={styles.column}>
                 <View style={styles.row}>
-                  {/* <Text style={styles.secondLabel}>Applicant Name/In the name of Bank Nizwa </Text>
+                  {/* <Text style={styles.secondLabel}>Applicant Name/In the name of Smart Ven </Text>
                   <Text style={styles.inputField}>
                     {formdetails?.tradeFinIrrDocCreAppWakalahApplicantNameonBehal || 'N/A'}
                   </Text> */}
-                  {/* \n/In the name of Bank Nizwa */}
+                  {/* \n/In the name of Smart Ven */}
                   <InputComp
                     inputNine={`Applicant Name`}
                     outputNine={formdetails?.tradeFinIrrDocCreAppWakalahApplicantNameonBehal}
@@ -1176,7 +1176,7 @@ export function IrrevocableDocumentaryWakalahForm({ data }: InvoicePDFDocumentPr
 
                 <CheckBoxComp
                   label={
-                    'Full set of clean on board Bill(s) of Lading in long form issued or endorsed to the order of Bank Nizwa, marked'
+                    'Full set of clean on board Bill(s) of Lading in long form issued or endorsed to the order of Smart Ven, marked'
                   }
                   val={formdetails?.tradeFinIrrDocCreAppWakalaDocReqOnBoardBills}
                 />
@@ -1206,7 +1206,7 @@ export function IrrevocableDocumentaryWakalahForm({ data }: InvoicePDFDocumentPr
               </View>
 
               <Text style={styles.label}>
-                and notify Bank Nizwa and Ourselves, and showing full name and address of the carrying vessel's agent{' '}
+                and notify Smart Ven and Ourselves, and showing full name and address of the carrying vessel's agent{' '}
               </Text>
               <Text style={styles.label}> address of the carrying vessel's agent</Text>
               <Text style={styles.label}>at port of destination.</Text>
@@ -1222,11 +1222,11 @@ export function IrrevocableDocumentaryWakalahForm({ data }: InvoicePDFDocumentPr
                   ></View>
                 </View>
                 <Text style={styles.label}>
-                  Air Waybill(s) consigned to Bank Nizwa, evidencing dispatch of the goods marked freight{' '}
+                  Air Waybill(s) consigned to Smart Ven, evidencing dispatch of the goods marked freight{' '}
                 </Text> */}
 
               <CheckBoxComp
-                label="Air Waybill(s) consigned to Bank Nizwa, evidencing dispatch of the goods marked freight"
+                label="Air Waybill(s) consigned to Smart Ven, evidencing dispatch of the goods marked freight"
                 val={formdetails?.tradeFinIrrDocCreAppWakalaDocReqAirWaybills}
               />
 
@@ -1274,10 +1274,10 @@ export function IrrevocableDocumentaryWakalahForm({ data }: InvoicePDFDocumentPr
                   ></View>
                 </View>
                 <Text style={styles.label}>
-                  Truck Consignment Note(s) consigned to Bank Nizwa, evidencing dispatch of the goods marked freight{' '}
+                  Truck Consignment Note(s) consigned to Smart Ven, evidencing dispatch of the goods marked freight{' '}
                 </Text> */}
               <CheckBoxComp
-                label="Truck Consignment Note(s) consigned to Bank Nizwa, evidencing dispatch of the goods marked freight"
+                label="Truck Consignment Note(s) consigned to Smart Ven, evidencing dispatch of the goods marked freight"
                 val={formdetails?.tradeFinIrrDocCreAppWakalaDocReqTruckConsignment}
               />
               <View style={{ flexDirection: 'row', gap: 70, paddingHorizontal: 30 }}>
@@ -1475,7 +1475,7 @@ export function IrrevocableDocumentaryWakalahForm({ data }: InvoicePDFDocumentPr
               </Text>
 
               <Text style={styles.label}>
-                copies issued to the order of Bank Nizwa in the currency of this L/C for at least 110% of the invoice
+                copies issued to the order of Smart Ven in the currency of this L/C for at least 110% of the invoice
                 value covering all risks
               </Text>
               <Text style={styles.label}>
@@ -1720,9 +1720,9 @@ Inspection Certificate`}
           </View>
           {/* )} */}
           <View style={styles.secondRow}>
-            {/* <CheckBoxComp label="All commissions & charges outside Bank Nizwa including reimbursement charges are for" val={}/> */}
+            {/* <CheckBoxComp label="All commissions & charges outside Smart Ven including reimbursement charges are for" val={}/> */}
             <Text style={styles.label}>
-              All commissions & charges outside Bank Nizwa including reimbursement charges are for
+              All commissions & charges outside Smart Ven including reimbursement charges are for
             </Text>
 
             {/* <View style={styles.checkboxRow}>
@@ -1881,7 +1881,7 @@ Inspection Certificate`}
               <Text style={styles.textFont}>1.</Text>
               <Text style={styles.textFont}>
                 The SWIFT messages or courier mail advising details of this Letter of Credit shall be dispatched at our
-                risk and cost, with no liability being attributed to Bank Nizwa (the "Bank"). The Bank shall not be held
+                risk and cost, with no liability being attributed to Smart Ven (the "Bank"). The Bank shall not be held
                 liable for any delay, mutilation, agent or correspondent errors or omissions that may arise during its
                 transmission or delivery, or by reason of the Bank acting upon such defective SWIFT messages.
               </Text>

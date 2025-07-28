@@ -140,7 +140,7 @@ export default function AuthorityIndemnityEmailTransactions({ data }: AccountOpe
                   <Stack direction="row" spacing={2} sx={{ alignItems: 'flex-end', flexWrap: 'wrap', mb: '20px' }}>
                     <Typography>
                       6. This email Indemnity covers all the existing accounts (Current Account, Mudaraba Investment
-                      Account etc.), with Bank Nizwa of
+                      Account etc.), with Smart Ven of
                     </Typography>
                   </Stack>
 
@@ -159,7 +159,7 @@ export default function AuthorityIndemnityEmailTransactions({ data }: AccountOpe
                     </Stack>
                     <Typography>
                       that are held in his/its name. It also covers any future accounts that may be opened by my/our
-                      name with Bank Nizwa
+                      name with Smart Ven
                     </Typography>
                   </Stack>
 

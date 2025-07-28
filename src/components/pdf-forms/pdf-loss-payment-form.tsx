@@ -175,7 +175,7 @@ export function LossStopPaymentFormPdfProps({ data }: InvoicePDFDocumentProps): 
               <View style={{ flexDirection: 'column', gap: '1px' }}>
                 <Text style={styles.smallText}>To,</Text>
                 <Text style={styles.smallText}>The Manager</Text>
-                <Text style={styles.smallText}>Bank Nizwa</Text>
+                <Text style={styles.smallText}>Smart Ven</Text>
                 <View style={styles.secondRow}>
                   <Text style={styles.secondLabel}>Branch:</Text>
                   <Text style={styles.inputLine}> {formdetails?.lsprBranch?.value} </Text>
