@@ -44,7 +44,7 @@ export function SideNav({ color = 'evident', items = [] }: SideNavProps): React.
     <Box
       sx={{
         ...styles,
-        bgcolor: 'white',
+        bgcolor: '#F6F7F9',
         borderRight: 'var(--SideNav-border)',
         color: 'var(--SideNav-color)',
         display: { xs: 'none', lg: 'flex' },
@@ -57,10 +57,10 @@ export function SideNav({ color = 'evident', items = [] }: SideNavProps): React.
         zIndex: 'var(--SideNav-zIndex)',
       }}
     >
-      <Stack spacing={2} sx={{ p: 2 }}>
+      <Stack spacing={2} sx={{ p: 2,pb:0 }}>
         <div>
           <Box component={RouterLink} href={paths.home} sx={{ display: 'inline-flex' }}>
-            <Logo color={logoColor} height={32} width={122} />
+            <Logo color={logoColor} height={100} width={100} />
           </Box>
         </div>
         {/* <WorkspacesSwitch /> */}

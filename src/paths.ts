@@ -55,6 +55,7 @@ export const paths = {
   dashboard: {
     overview: '/dashboard',
         sudashboard: '/su-dashboard',
+    tracking: '/tracking',
 
     student: '/student',
     reports: '/reports',
@@ -86,7 +87,7 @@ export const paths = {
       editUserRole: '/settings/user-roles/edit',
       account: '/settingsAccount/account',
     },
-    tracking: { tracking: '/tracking', stats: '/tracking/stats', driver: '/drivers', vehicles: '/vehicles' },
+    // tracking: { tracking: '/tracking', stats: '/tracking/stats', driver: '/drivers', vehicles: '/vehicles' },
 
     academy: { browse: '/academy', details: (courseId: string) => `/academy/courses/${courseId}` },
     analytics: '/analytics',

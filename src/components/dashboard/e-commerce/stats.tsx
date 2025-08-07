@@ -16,8 +16,10 @@ import { CurrencyDollar as CurrencyDollarIcon } from '@phosphor-icons/react/dist
 import { Receipt as ReceiptIcon } from '@phosphor-icons/react/dist/ssr/Receipt';
 import { ReceiptX as ReceiptXIcon } from '@phosphor-icons/react/dist/ssr/ReceiptX';
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import Grid from '@mui/material/Grid2';
 
 import { NoSsr } from '@/components/core/no-ssr';
+import { Summary } from '../analytics/summary';
 
 const lines = [
   { name: 'New customers', dataKey: 'v1', color: 'var(--mui-palette-primary-main)' },
@@ -33,20 +35,34 @@ export function Stats({ data }: StatsProps): React.JSX.Element {
 
   return (
     <Card>
-      <CardHeader title="Stats at a glance" />
       <CardContent>
         <Stack divider={<Divider />} spacing={3}>
-          <Stack
-            direction={{ xs: 'column', md: 'row' }}
-            divider={<Divider flexItem orientation="vertical" sx={{ borderBottomWidth: { xs: '1px', md: 0 } }} />}
-            spacing={3}
-            sx={{ justifyContent: 'space-between' }}
+        <Grid container spacing={4}>
+          <Grid
+            size={{
+              md: 4,
+              xs: 12,
+            }}
           >
-            <Summary icon={ChartPieIcon} title="Payout balance" value={16400} />
-            <Summary icon={CurrencyDollarIcon} title="Today's revenue" value={2600} />
-            <Summary icon={ReceiptIcon} title="Expenses" value={5800} />
-            <Summary icon={ReceiptXIcon} title="Refunds" value={1250} />
-          </Stack>
+            <Summary amount={320} diff={15} icon={ChartPieIcon} title="Total Vans" trend="up" />
+          </Grid>
+          <Grid
+            size={{
+              md: 4,
+              xs: 12,
+            }}
+          >
+            <Summary amount={52} diff={5} icon={ChartPieIcon} title="Total Drivers" trend="down" />
+          </Grid>
+          <Grid
+            size={{
+              md: 4,
+              xs: 12,
+            }}
+          >
+            <Summary amount={1552} diff={12} icon={ChartPieIcon} title="Total Students" trend="up" />
+          </Grid>
+          </Grid>
           <NoSsr fallback={<Box sx={{ height: `${chartHeight}px` }} />}>
             <ResponsiveContainer height={chartHeight} width="100%">
               <LineChart data={data} margin={{ top: 0, right: 20, bottom: 0, left: 20 }}>
@@ -81,39 +97,39 @@ export function Stats({ data }: StatsProps): React.JSX.Element {
   );
 }
 
-interface SummaryProps {
-  icon: Icon;
-  title: string;
-  value: number;
-}
+// interface SummaryProps {
+//   icon: Icon;
+//   title: string;
+//   value: number;
+// }
 
-function Summary({ icon: Icon, title, value }: SummaryProps): React.JSX.Element {
-  return (
-    <Stack direction="row" spacing={3} sx={{ alignItems: 'center' }}>
-      <Avatar
-        sx={{
-          '--Avatar-size': '54px',
-          '--Icon-fontSize': 'var(--icon-fontSize-lg)',
-          bgcolor: 'var(--mui-palette-background-paper)',
-          boxShadow: 'var(--mui-shadows-8)',
-          color: 'var(--mui-palette-text-primary)',
-        }}
-      >
-        <Icon fontSize="var(--Icon-fontSize)" />
-      </Avatar>
-      <div>
-        <Typography color="text.secondary" variant="overline">
-          {title}
-        </Typography>
-        <Typography variant="h5">
-          {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(
-            value
-          )}
-        </Typography>
-      </div>
-    </Stack>
-  );
-}
+// function Summary({ icon: Icon, title, value }: SummaryProps): React.JSX.Element {
+//   return (
+//     <Stack direction="row" spacing={3} sx={{ alignItems: 'center' }}>
+//       <Avatar
+//         sx={{
+//           '--Avatar-size': '54px',
+//           '--Icon-fontSize': 'var(--icon-fontSize-lg)',
+//           bgcolor: 'var(--mui-palette-background-paper)',
+//           boxShadow: 'var(--mui-shadows-8)',
+//           color: 'var(--mui-palette-text-primary)',
+//         }}
+//       >
+//         <Icon fontSize="var(--Icon-fontSize)" />
+//       </Avatar>
+//       <div>
+//         <Typography color="text.secondary" variant="overline">
+//           {title}
+//         </Typography>
+//         <Typography variant="h5">
+//           {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(
+//             value
+//           )}
+//         </Typography>
+//       </div>
+//     </Stack>
+//   );
+// }
 
 interface DotProps {
   hover?: boolean;

@@ -1,70 +1,47 @@
-import * as React from 'react'; 
+import * as React from 'react';
+import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Divider from '@mui/material/Divider';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import type { Icon } from '@phosphor-icons/react/dist/lib/types';
 import { TrendDown as TrendDownIcon } from '@phosphor-icons/react/dist/ssr/TrendDown';
 import { TrendUp as TrendUpIcon } from '@phosphor-icons/react/dist/ssr/TrendUp';
 
-export function Summary(): React.JSX.Element {
+export interface SummaryProps {
+  amount: number;
+  diff: number;
+  icon: Icon;
+  title: string;
+  trend: 'up' | 'down';
+}
+
+export function Summary({ amount, diff, icon: Icon, title, trend }: SummaryProps): React.JSX.Element {
   return (
     <Card>
-      <Box
-        sx={{
-          display: 'grid',
-          gap: 2,
-          gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' },
-          p: 3,
-        }}
-      >
-        {/* Active/Inactive Vans */}
-        <Stack spacing={1} sx={{ borderRight: { xs: 'none', md: '1px solid var(--mui-palette-divider)' }, borderBottom: { xs: '1px solid var(--mui-palette-divider)', md: 'none' }, pb: { xs: 2, md: 0 } }}>
-          <Typography color="text.secondary">Active Vans</Typography>
-          <Typography variant="h3">42</Typography>
-          <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-            <TrendUpIcon color="var(--mui-palette-success-main)" fontSize="var(--icon-fontSize-md)" />
-            <Typography color="text.secondary" variant="body2">
-              <Typography color="success.main" component="span" variant="subtitle2">+12%</Typography> vs last week
+      <CardContent>
+        <Stack direction="row" spacing={3} sx={{ alignItems: 'center' }}>
+          <Avatar
+            sx={{
+              '--Avatar-size': '48px',
+              bgcolor: 'var(--mui-palette-background-paper)',
+              boxShadow: 'var(--mui-shadows-8)',
+              color: 'var(--mui-palette-text-primary)',
+            }}
+          >
+            <Icon fontSize="var(--icon-fontSize-lg)" />
+          </Avatar>
+          <div>
+            <Typography color="text.secondary" variant="body1">
+              {title}
             </Typography>
-          </Stack>
+            <Typography variant="h3">{new Intl.NumberFormat('en-US').format(amount)}</Typography>
+          </div>
         </Stack>
-
-        {/* Driver Availability */}
-        <Stack spacing={1} sx={{ borderRight: { xs: 'none', lg: '1px solid var(--mui-palette-divider)' }, borderBottom: { xs: '1px solid var(--mui-palette-divider)', md: 'none' }, pb: { xs: 2, md: 0 } }}>
-          <Typography color="text.secondary">Drivers Available</Typography>
-          <Typography variant="h3">18</Typography>
-          <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-            <TrendUpIcon color="var(--mui-palette-success-main)" fontSize="var(--icon-fontSize-md)" />
-            <Typography color="text.secondary" variant="body2">
-              <Typography color="success.main" component="span" variant="subtitle2">+6%</Typography> improvement
-            </Typography>
-          </Stack>
-        </Stack>
-
-        {/* Student & Parent Onboarding */}
-        <Stack spacing={1} sx={{ borderRight: { xs: 'none', md: '1px solid var(--mui-palette-divider)' }, borderBottom: { xs: '1px solid var(--mui-palette-divider)', md: 'none' }, pb: { xs: 2, md: 0 } }}>
-          <Typography color="text.secondary">Onboarded Students & Parents</Typography>
-          <Typography variant="h3">728</Typography>
-          <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-            <TrendUpIcon color="var(--mui-palette-success-main)" fontSize="var(--icon-fontSize-md)" />
-            <Typography color="text.secondary" variant="body2">
-              <Typography color="success.main" component="span" variant="subtitle2">+9%</Typography> this month
-            </Typography>
-          </Stack>
-        </Stack>
-
-        {/* Trip Success Rate */}
-        <Stack spacing={1}>
-          <Typography color="text.secondary">Trip Success Rate (Weekly)</Typography>
-          <Typography variant="h3">96.5%</Typography>
-          <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-            <TrendDownIcon color="var(--mui-palette-error-main)" fontSize="var(--icon-fontSize-md)" />
-            <Typography color="text.secondary" variant="body2">
-              <Typography color="error.main" component="span" variant="subtitle2">-1.2%</Typography> vs last week
-            </Typography>
-          </Stack>
-        </Stack>
-      </Box>
+      </CardContent>
+     
     </Card>
   );
 }
