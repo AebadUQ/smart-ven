@@ -27,7 +27,7 @@ export interface Filters {
   sort?: string;
 }
 
-export function StudentFilter({ filters, setFilters }: any): React.JSX.Element {
+export function Schoolfilter({ filters, setFilters }: any): React.JSX.Element {
   const [categoryForms, setCategoryForms] = useState([]);
   const [selectedTab, setSelectedTab] = useState(filters?.categoryId || '');
   const router = useRouter();
@@ -81,15 +81,14 @@ export function StudentFilter({ filters, setFilters }: any): React.JSX.Element {
           {/* 📧 Email Filter */}
           <FilterButton
             displayValue={filters?.email || ""}
-            label="Van"
+            label="School"
             onFilterApply={(value) => handleFilterChange('email', value as string)}
             onFilterDelete={() => handleFilterChange('email', '')}
-            popover={<GenericFilterPopover field="Email" />}
+            popover={<GenericFilterPopover field="School" />}
             value={filters?.email || ""}
           />
 
-          {/* 🚍 Route Filter */}
-          <FilterButton
+          {/* <FilterButton
             displayValue={filters?.route || ""}
             label="Route"
             onFilterApply={(value) => handleFilterChange('route', value as string)}
@@ -98,7 +97,6 @@ export function StudentFilter({ filters, setFilters }: any): React.JSX.Element {
             value={filters?.route || ""}
           />
 
-          {/* 🏫 School Filter */}
           <FilterButton
             displayValue={filters?.school || ""}
             label="Class"
@@ -106,21 +104,13 @@ export function StudentFilter({ filters, setFilters }: any): React.JSX.Element {
             onFilterDelete={() => handleFilterChange('school', '')}
             popover={<GenericFilterPopover field="School" />}
             value={filters?.school || ""}
-          />
+          /> */}
 
           {/* ❌ Clear Button */}
           {hasFilters ? <Button onClick={handleClearFilters}>Clear filters</Button> : null}
         </Stack>
 
-        {/* 📅 Date Filter */}
-        {/* <FilterButton
-          displayValue={filters?.createdAt || ""}
-          label="Date"
-          onFilterApply={(value) => handleFilterChange('createdAt', value)}
-          onFilterDelete={() => handleFilterChange('createdAt', '')}
-          popover={<DateFilterPopover />}
-          value={filters?.createdAt || ""}
-        /> */}
+     
 
 <Button 
   variant="contained" 

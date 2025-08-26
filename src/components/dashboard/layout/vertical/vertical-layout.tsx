@@ -1,15 +1,11 @@
 'use client';
-
 import * as React from 'react';
 import Box from '@mui/material/Box';
 import GlobalStyles from '@mui/material/GlobalStyles';
-
 import { useSettings } from '@/hooks/use-settings';
-
 import { layoutConfig } from '../config';
 import { MainNav } from './main-nav';
 import { SideNav } from './side-nav';
-import { useUser } from '@/hooks/use-user';
 
 export interface VerticalLayoutProps {
   children?: React.ReactNode;
@@ -17,45 +13,7 @@ export interface VerticalLayoutProps {
 
 export function VerticalLayout({ children }: VerticalLayoutProps): React.JSX.Element {
   const { settings } = useSettings();
-
-  const { user } = useUser();
-    
-    // Function to filter menu items based on user permissions
-    const getFilteredNavItems = () => {
-      if (!user || !user.Modules) {
-        return [];
-      }
-    
-      // Collect allowed modules and permissions
-      const allowedModules = new Set(user.Modules.map((module: any) => module.slug));
-      
-    
-      
-    
-      // Filter navigation items based on user permissions
-      const filteredNavItems = layoutConfig.navItems
-  .filter((section) => {
-    // Check if the whole section is allowed
-    const isSectionAllowed = allowedModules.has(section.key);
-    
-    return isSectionAllowed;
-  })
-  .map((section) => ({
-    ...section,
-    items: section.items.map((item) => ({
-      ...item,
-      items: item.items ? [...item.items] : undefined, // Keep all child items if they exist
-    })),
-  }));
-    
-    
-      return filteredNavItems;
-    };
-    
-    const filteredNavItems = layoutConfig.navItems;
-    // const filteredNavItems = getFilteredNavItems();
-    
-    
+  const filteredNavItems = layoutConfig.navItems;
   return (
     <React.Fragment>
       <GlobalStyles

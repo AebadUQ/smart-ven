@@ -19,6 +19,7 @@ import useListApi from '@/hooks/useListApi';
 import { Chip, CircularProgress, IconButton } from '@mui/material';
 import Link from 'next/link';
 import { DriverFilter } from './driverfilter';
+import { DRIVER } from '@/api/endpoint';
 
 interface PageProps {
   searchParams: { name?: string; phone?: string; sortDir?: 'asc' | 'desc'; status?: string };
@@ -37,7 +38,7 @@ export default function Page({ searchParams }: PageProps): React.JSX.Element {
     pageSize,
     pageIndex,
     setFilter,
-  } = useListApi<any>('api/driver', '');
+  } = useListApi<any>(DRIVER.GET_ALL_DRIVER);
 
   const columns: ColumnDef<any>[] = [
     {
@@ -47,27 +48,25 @@ export default function Page({ searchParams }: PageProps): React.JSX.Element {
         <Stack direction="row" spacing={1} alignItems="center">
           <img
             src={row?.photoUrl || '/assets/avatar-1.png'}
-            alt={row?.name || 'Driver Avatar'}
+            alt={row?.fullname }
             style={{ width: 40, height: 40, borderRadius: '50%' }}
           />
           <Stack>
             <Typography color="text.primary" variant="body2">
-              {row?.name || 'Aebad ul quadir'}
+              {row?.fullname }
             </Typography>
-            <Typography color="text.secondary" variant="caption">
-              {row?.phone || '0334 0354382'}
-            </Typography>
+            
           </Stack>
         </Stack>
       ),
     },
     {
-      name: 'CNIC',
+      name: 'Driver Contact',
       width: '160px',
       formatter: (row) => (
-        <Typography color="text.secondary" variant="body2">
-          {row?.cnic || '42101-1234567-1'}
-        </Typography>
+        <Typography color="text.secondary" variant="caption">
+              {row?.email }
+            </Typography>
       ),
     },
     {

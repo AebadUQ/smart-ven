@@ -32,7 +32,7 @@ export interface Config {
 
 export const config = {
   site: {
-    name: 'Smart Ven Digital Services Portal',
+    name: 'Smart Ven',
     description: '',
     language: 'en',
     themeColor: '#090a0b',

@@ -15,9 +15,10 @@ export function CenteredLayout({ children }: CenteredLayoutProps): React.JSX.Ele
         justifyContent: 'center',
         minHeight: '100%',
         p: { xs: 2, md: 3 },
+        backgroundColor:'#F6F7F9'
       }}
     >
-      <Box sx={{ maxWidth: '560px', width: '100%' }}>{children}</Box>
+      <Box sx={{ maxWidth: '500px', width: '100%',backgroundColor:'#FFFFFF',p:4,borderRadius:'20px',    boxShadow: '0px 5px 22px 0px #0000000A, 0px 0px 0px 1px #0000000F',border:'0px' }}>{children}</Box>
     </Box>
   );
 }

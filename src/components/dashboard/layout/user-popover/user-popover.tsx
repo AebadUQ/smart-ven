@@ -9,21 +9,9 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import MenuItem from '@mui/material/MenuItem';
 import Popover from '@mui/material/Popover';
 import Typography from '@mui/material/Typography';
-import { CreditCard as CreditCardIcon } from '@phosphor-icons/react/dist/ssr/CreditCard';
-import { LockKey as LockKeyIcon } from '@phosphor-icons/react/dist/ssr/LockKey';
 import { User as UserIcon } from '@phosphor-icons/react/dist/ssr/User';
-
-import type { User } from '@/types/user';
-import { config } from '@/config';
 import { paths } from '@/paths';
-import { AuthStrategy } from '@/lib/auth/strategy';
-
-import { Auth0SignOut } from './auth0-sign-out';
-import { CognitoSignOut } from './cognito-sign-out';
-import { CustomSignOut } from './custom-sign-out';
-import { FirebaseSignOut } from './firebase-sign-out';
-import { SupabaseSignOut } from './supabase-sign-out';
-import { useUser } from '@/hooks/use-user';
+import { useAuthContext } from '@/contexts/AuthContext';
 
 export interface UserPopoverProps {
   anchorEl: null | Element;
@@ -32,7 +20,7 @@ export interface UserPopoverProps {
 }
 
 export function UserPopover({ anchorEl, onClose, open }: UserPopoverProps): React.JSX.Element {
-  const { user } = useUser();
+  const { user, logout } = useAuthContext()
 
   return (
     <Popover
@@ -44,7 +32,7 @@ export function UserPopover({ anchorEl, onClose, open }: UserPopoverProps): Reac
       transformOrigin={{ horizontal: 'right', vertical: 'top' }}
     >
       <Box sx={{ p: 2 }}>
-        <Typography>{user?.role?.name}</Typography>
+        <Typography>{user?.name}</Typography>
         <Typography color="text.secondary" variant="body2">
           {user?.email}
         </Typography>
@@ -61,11 +49,10 @@ export function UserPopover({ anchorEl, onClose, open }: UserPopoverProps): Reac
       </List>
       <Divider />
       <Box sx={{ p: 1 }}>
-        {config.auth.strategy === AuthStrategy.CUSTOM ? <CustomSignOut /> : null}
-        {config.auth.strategy === AuthStrategy.AUTH0 ? <Auth0SignOut /> : null}
-        {config.auth.strategy === AuthStrategy.COGNITO ? <CognitoSignOut /> : null}
-        {config.auth.strategy === AuthStrategy.FIREBASE ? <FirebaseSignOut /> : null}
-        {config.auth.strategy === AuthStrategy.SUPABASE ? <SupabaseSignOut /> : null}
+        <MenuItem component="div" onClick={() => logout()} sx={{ justifyContent: 'center' }}>
+          Sign out
+        </MenuItem>
+
       </Box>
     </Popover>
   );

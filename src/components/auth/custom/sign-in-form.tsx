@@ -25,6 +25,9 @@ import { authClient } from '@/lib/auth/custom/client';
 import { useUser } from '@/hooks/use-user';
 import { DynamicLogo } from '@/components/core/logo';
 import { toast } from '@/components/core/toaster';
+import { Envelope } from '@phosphor-icons/react/dist/ssr';
+import { fontSize } from '@mui/system';
+import { Lock } from '@phosphor-icons/react';
 
 interface OAuthProvider {
   id: 'google' | 'discord';
@@ -78,42 +81,53 @@ export function SignInForm(): React.JSX.Element {
     // Redirect to OAuth provider
   }, []);
 
-  const onSubmit = React.useCallback(
-    async (values: Values): Promise<void> => {
-      setIsPending(true);
+  // const onSubmit = React.useCallback(
+  //   async (values: Values): Promise<void> => {
+  //     setIsPending(true);
 
-      const { error } = await authClient.signInWithPassword(values);
+  //     const { error } = await authClient.signInWithPassword(values);
 
-      if (error) {
-        setError('root', { type: 'server', message: error });
-        setIsPending(false);
-        return;
-      }
+  //     if (error) {
+  //       setError('root', { type: 'server', message: error });
+  //       setIsPending(false);
+  //       return;
+  //     }
 
-      // Refresh the auth state
-      await checkSession?.();
+  //     // Refresh the auth state
+  //     await checkSession?.();
 
      
-      router.refresh();
-    },
-    [checkSession, router, setError]
-  );
+  //     router.refresh();
+  //   },
+  //   [checkSession, router, setError]
+  // );
 
   return (
-    <Stack spacing={4}>
+    <Stack spacing={2}>
       <div>
-        <Box component={RouterLink} href={paths.home} sx={{ display: 'inline-block', fontSize: 0 }}>
-          <DynamicLogo colorDark="light" colorLight="dark" height={32} width={122} />
-        </Box>
-      </div>
+  <Box
+    component={RouterLink}
+    href={paths.home}
+    sx={{
+      display: 'inline-block',
+      fontSize: 0,
+      position: 'relative',
+      left: -20, // move 12px to the left
+    }}
+  >
+    <DynamicLogo colorDark="light" colorLight="dark" height={100} width={100} />
+  </Box>
+</div>
+
       <Stack spacing={1}>
-        <Typography variant="h5">Sign in</Typography>
-       
+        <Typography variant="h5">Log in</Typography>
+               <Typography variant="body2" color='#667085'>Enter your email and password.</Typography>
+
       </Stack>
       <Stack spacing={3}>
        
         <Stack spacing={2}>
-          <form onSubmit={handleSubmit(onSubmit)}>
+          <form onSubmit={()=>{}}>
             <Stack spacing={2}>
               <Controller
                 control={control}
@@ -122,7 +136,7 @@ export function SignInForm(): React.JSX.Element {
                 render={({ field }) => (
                   <FormControl error={Boolean(errors.email)}>
                     <InputLabel>Email address</InputLabel>
-                    <OutlinedInput {...field} type="email" />
+                    <OutlinedInput {...field} type="email" startAdornment={<Envelope color='#1560BD' fontSize={'18px'}/>}/>
                     {errors.email ? <FormHelperText>{errors.email.message}</FormHelperText> : null}
                   </FormControl>
                 )}
@@ -134,6 +148,7 @@ export function SignInForm(): React.JSX.Element {
                   <FormControl error={Boolean(errors.password)}>
                     <InputLabel>Password</InputLabel>
                     <OutlinedInput
+                    startAdornment={<Lock color='#1560BD' fontSize={'18px'}/>}
                       {...field}
                       endAdornment={
                         showPassword ? (
@@ -166,13 +181,13 @@ export function SignInForm(): React.JSX.Element {
               {/* <Button disabled={isPending} type="submit" variant="contained">
                 Sign in
               </Button> */}
-              <Button disabled={isPending}  variant="contained" onClick={()=>router.push('/dashboard')}>
-                Sign in
+              <Button disabled={isPending} sx={{backgroundColor:'#1560BD'}}  variant="contained" onClick={()=>router.push('/dashboard')}>
+                Log in
               </Button>
             </Stack>
           </form>
-          <div>
-            <Link component={RouterLink} href={paths.auth.custom.resetPassword} variant="subtitle2">
+          <div style={{display:'flex',justifyContent:'center'}}>
+            <Link component={RouterLink} href={paths.auth.custom.resetPassword} variant="subtitle2" color='#FFB800'>
               Forgot password?
             </Link>
           </div>

@@ -1,17 +1,16 @@
-import { ChangeEvent, useCallback, useEffect, useState } from "react";
-import { ApiResponse } from "../types/apiResponse";
-import { fetchData } from "../services/apiService";
-import { fetchJobData } from "../services/jobs.api";
-import _ from "lodash";
-
-//import { showNotificationMessage } from "../Helper";
-
-type FilterType = {
-  [key: string]: string;
-} | null;
-
-function useListApi<T>(listUrl: string, deleteUrl: string, type: string = 'middleware') {
-  //state
+import { useCallback, useEffect, useMemo, useState, ChangeEvent } from "react";
+import api from '@/api/axios';
+type FilterType = Record<string, string> | null;
+interface MetaData {
+  page: number;
+  limit: number;
+  totalDocs: number;
+}
+interface ApiResponse<T> {
+  data: T | { data: T; metaData: MetaData };
+  metaData?: MetaData;
+}
+function useListApi<T>(listUrl: string) {
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [total, setTotal] = useState(0);
@@ -19,128 +18,93 @@ function useListApi<T>(listUrl: string, deleteUrl: string, type: string = 'middl
   const [selectedItem, setSelectedItem] = useState("");
   const [data, setData] = useState<T[]>([]);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [sort, setSort] = useState<any | null>(null);
-  const [query, setQuery] = useState<string>("");
+  const [sort, setSort] = useState<{ key?: string; order?: string } | null>(null);
+  const [query, setQuery] = useState("");
   const [filter, setFilterState] = useState<FilterType>(null);
-
   const setFilter = (filters: FilterType) => {
     setFilterState(filters);
     setPageIndex(1);
   };
-  // fetch api
+
+  const resetData = () => {
+    setPageIndex(1);
+    setTotal(0);
+    setData([]);
+  };
   const fetchDataApi = async () => {
-    // set loading true
     setLoading(true);
 
-    // set query params
-    const sortOrder = sort?.order ?? "";
-    const sortKey = sort?.key ?? "";
-    const sortBy =
-      sortOrder != "" && sortKey != "" ? `${sortKey}:${sortOrder}` : "";
-    const filterOptions = filter ? { ...filter } : {};
+    const sortBy = sort?.key && sort?.order ? `${sort.key}:${sort.order}` : "";
     const params = {
       page: pageIndex,
       search: query,
       limit: pageSize,
       sortBy,
-      ...filterOptions,
+      ...filter,
     };
 
     try {
-      // fetch result
-      let result; 
-     
-      if(type === "middleware" ){
-       result = await fetchData<ApiResponse<any[]>>(listUrl, params);
-  
-      }
-      else{
-        result = await fetchJobData<ApiResponse<any[]>>(listUrl, params);
-  
-      }
-      
-      // for testing
-      await new Promise((resolve) => setTimeout(resolve, 300));
+      // , { params }
+      const { data: res } = await api.get<ApiResponse<T[]>>(listUrl);
+console.log("res",res)
+      const rows = Array.isArray(res.data) ? res.data : res.data.data;
+      const meta: MetaData = res.metaData || (res.data as any).metaData || {};
 
-      // set data in state
-      setLoading(false);
-      if(Array.isArray(result?.data)){
-        setData(result?.data);
-      }else{
-        setData(result?.data?.data);
-      }
-      setPageIndex((result?.data?.metaData?.page) ?? 1);
-      setPageSize((result?.data?.metaData?.limit) ?? 10);
-      setTotal((result?.data?.metaData?.totalDocs) ?? 0);
+      setData(rows);
+      setPageIndex(meta.page ?? 1);
+      setPageSize(meta.limit ?? 10);
+      setTotal(meta.totalDocs ?? 0);
     } catch (error) {
-      console.log(`error`, error);
+      console.error("Fetch Error:", error);
+    } finally {
       setLoading(false);
     }
   };
 
-  // change events
-  const onPaginationChange = (page: number) => {
-    setPageIndex(page);
-  };
+  const onPaginationChange = (page: number) => setPageIndex(page);
 
   const onPageSizeChange = (value: number) => {
-    setPageIndex(1);
     setPageSize(value);
-    setData([]);
+    resetData();
   };
 
-  const onSort = (sort: OnSortParam) => {
-    setSort(sort);
-  };
+  const onSort = (sort: { key: string; order: string }) => setSort(sort);
 
-  function onSearchChange(val: string) {
+  const onSearchChange = (val: string) => {
     setQuery(val);
-    setPageIndex(1);
-    setTotal(0);
-    setData([]);
-  }
+    resetData();
+  };
 
-  const debounceFn = _.debounce(onSearchChange, 500);
+  const debouncedSearch = useMemo(() => {
+    let timer: NodeJS.Timeout;
+    return (val: string) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => onSearchChange(val), 500);
+    };
+  }, []);
 
   const onEditSearch = (e: ChangeEvent<HTMLInputElement>) => {
-    debounceFn(e.target.value);
+    debouncedSearch(e.target.value);
   };
 
-  const handleDeleteClick = useCallback(
-    (id: string) => () => {
-      setSelectedItem(id);
-      setShowDeleteDialog(true);
-    },
-    []
-  );
+  const handleDeleteClick = useCallback((id: string) => {
+    setSelectedItem(id);
+    setShowDeleteDialog(true);
+  }, []);
 
-  const onDeleteDialogClose = () => {
-    setShowDeleteDialog(false);
-  };
+  const onDeleteDialogClose = () => setShowDeleteDialog(false);
 
   const onDeleteConfirm = async () => {
-    try {
-      // hide dialog
-      setShowDeleteDialog(false);
-
-      // set loading true
-      setLoading(true);
-
-      fetchDataApi();
-    } catch (error) {
-      // console error
-      console.log(`error`, error);
-
-      setLoading(false);
-    }
+    setShowDeleteDialog(false);
+    setLoading(true);
+    await fetchDataApi();
+    setLoading(false);
   };
 
-  // use effect call
   useEffect(() => {
     fetchDataApi();
   }, [pageIndex, sort, query, pageSize, filter]);
 
-  // return state and functions
   return {
     pageIndex,
     pageSize,

@@ -9,8 +9,9 @@ import { paths } from "@/paths";
 import { DataTable, type ColumnDef } from "@/components/core/data-table";
 import { CustomersPagination } from "@/components/dashboard/customer/customers-pagination";
 import useListApi from "@/hooks/useListApi";
-import { StudentFilter } from "./studentfilter";
+import { Schoolfilter } from "./schoolFilter";
 import { CheckCircleIcon, MinusIcon, ClockIcon, PlusIcon, EditIcon, Eye, Trash } from "@/components/icons";
+import { SCHOOL } from "@/api/endpoint";
 interface PageProps {
   searchParams: { email?: string; phone?: string; sortDir?: 'asc' | 'desc'; status?: string };
 }
@@ -29,26 +30,21 @@ export default function Page({ searchParams }: PageProps): React.JSX.Element {
     pageSize,
     pageIndex,
     setFilter,
-  } = useListApi<any>('');
-console.log("Student data",data)
+  } = useListApi<any>(SCHOOL.GET_ALL_SCHOOL);
   const columns = [
     // 🧑‍🎓 Student Info Column
     {
-      name: 'Student',
+      name: 'School',
       width: '240px',
       formatter: (row): React.JSX.Element => (
         <Stack direction="row" spacing={1} alignItems="center">
-          <img
-            src={row?.photoUrl || '/assets/avatar-1.png'}
-            alt={row?.fullName}
-            style={{ width: 40, height: 40, borderRadius: '50%' }}
-          />
+         
           <Stack>
             <Typography color="text.primary" variant="body2">
-              {row?.name || 'Aebad ul quadir'}
+              {row?.schoolName }
             </Typography>
             <Typography color="text.secondary" variant="caption">
-              {row?.email || 'aebadulquadir123@gmail.com'}
+              {row?.schoolEmail }
             </Typography>
           </Stack>
         </Stack>
@@ -57,12 +53,12 @@ console.log("Student data",data)
 
     // 👨‍👩 Parent/Guardian
     {
-      name: 'Parent/Guardian',
+      name: 'Address',
       width: '200px',
       formatter: (row): React.JSX.Element => (
         <Stack>
           <Typography color="text.primary" variant="body2">
-            {row?.parentName || 'Zia ul quadir'}
+            {row?.address }
           </Typography>
           {/* <Typography color="text.secondary" variant="caption">
           {row?.parentPhone || 'N/A'}
@@ -73,33 +69,33 @@ console.log("Student data",data)
 
     // 🏷️ Class/Grade
     {
-      name: 'Class/Grade',
+      name: 'Branch Name',
       width: '150px',
       formatter: (row): React.JSX.Element => (
         <Typography color="text.secondary" variant="body2">
-          {row?.classGrade || 'Fifth Class'}
+          {row?.branchName }
         </Typography>
       ),
     },
 
     // 🚐 Van Assigned
     {
-      name: 'Van Assigned',
+      name: 'Contact',
       width: '150px',
       formatter: (row): React.JSX.Element => (
         <Typography color="text.secondary" variant="body2">
-          {row?.vanName || '(BXL-637)'}
+          {row?.contactNumber }
         </Typography>
       ),
     },
 
     // 🛣️ Route #
     {
-      name: 'Route #',
-      width: '120px',
+      name: 'Geo Location',
+      width: '160px',
       formatter: (row): React.JSX.Element => (
         <Typography color="text.secondary" variant="body2">
-          {row?.routeName || '105'}
+          {row?.lat + "  " + row?.long}
         </Typography>
       ),
     },
@@ -119,23 +115,10 @@ console.log("Student data",data)
       name: 'Status',
       width: '100px',
     },
-    // {
-    //   name: 'Status',
-    //   width: '100px',
-    //   formatter: (row): React.JSX.Element => (
-    //     <Chip
-    //       label={row?.status || 'active'}
-    //       size="small"
-    //       variant="filled"
-    //       color={row?.status?.toLowerCase() === 'active' ? 'success' : 'default'}
-    //     />
-    //   ),
-    // },
-
-    // ⚙️ Actions
+   
     {
       name: 'Actions',
-      width: '80px',
+      width: '40px',
       align: 'right',
       formatter: (row): React.JSX.Element => {
         const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -208,20 +191,20 @@ console.log("Student data",data)
       <Stack spacing={3}>
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3} sx={{ alignItems: 'flex-start' }}>
           <Box sx={{ flex: '1 1 auto' }}>
-            <Typography variant="h5">Student Management</Typography>
+            <Typography variant="h5">School Management</Typography>
           </Box>
 
           <Box>
-            <Link href="/student/create" passHref>
+            <Link href="/school/create" passHref>
               <Button variant="contained" color="primary" endIcon={<PlusIcon />}  >
-                Add Student
+                Add School
               </Button>
             </Link>
           </Box>
         </Stack>
 
         <Card>
-          <StudentFilter filters={filter} setFilters={setFilter} />
+          <Schoolfilter filters={filter} setFilters={setFilter} />
 
           <Box sx={{ overflowX: 'auto' }}>
             {loading ? (

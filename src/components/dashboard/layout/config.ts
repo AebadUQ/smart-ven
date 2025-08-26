@@ -22,6 +22,12 @@ export const layoutConfig = {
         { key: 'tracking', title: 'Live Tracking', href: paths.dashboard.tracking, icon: 'house' },
       ],
     },
+     {
+      key: 'school',
+      items: [
+        { key: 'school', title: 'School Management', href: paths.dashboard.school, icon: 'house' },
+      ],
+    },
        {
       key: 'student',
       items: [
@@ -31,7 +37,7 @@ export const layoutConfig = {
        {
       key: 'van-driver',
       items: [
-        { key: 'van-driver', title: 'Van & Driver Management', href: paths.dashboard.tracking.tracking, icon: 'house' },
+        { key: 'van-driver', title: 'Van & Driver Management', href: paths.dashboard.drivers, icon: 'house' },
       ],
     },
      {

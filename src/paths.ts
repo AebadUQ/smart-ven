@@ -56,10 +56,11 @@ export const paths = {
     overview: '/dashboard',
         sudashboard: '/su-dashboard',
     tracking: '/tracking',
+    school: '/school',
 
     student: '/student',
     reports: '/reports',
-
+drivers:'/drivers',
     form: '/form',
     lead: '/leads',
     callCenter: '/call-center',

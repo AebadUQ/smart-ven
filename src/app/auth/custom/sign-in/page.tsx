@@ -5,15 +5,16 @@ import { config } from '@/config';
 import { SignInForm } from '@/components/auth/custom/sign-in-form';
 import { GuestGuard } from '@/components/auth/guest-guard';
 import { SplitLayout } from '@/components/auth/split-layout';
+import { CenteredLayout } from '@/components/auth/centered-layout';
 
 export const metadata = { title: `Sign in | Custom | Auth | ${config.site.name}` } satisfies Metadata;
 
 export default function Page(): React.JSX.Element {
   return (
     <GuestGuard>
-      <SplitLayout>
+      <CenteredLayout>
         <SignInForm />
-      </SplitLayout>
+      </CenteredLayout>
     </GuestGuard>
   );
 }
