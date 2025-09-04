@@ -5,7 +5,8 @@ export const AUTH = {
 };
 
 export const STUDENT ={
-    GET_ALL_STUDENTS:'/school/getKidsProfile'
+    GET_ALL_STUDENTS:'/Admin/Get-Students',
+    CREATE_STUDENT:'/Admin/addStudent'
 }
 export const SCHOOL ={
     GET_ALL_SCHOOL:'/Admin/getAllSchools'
