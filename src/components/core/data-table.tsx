@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import * as React from 'react';
-import Checkbox from '@mui/material/Checkbox';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
+import * as React from "react";
+import Checkbox from "@mui/material/Checkbox";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
 
 export interface ColumnDef<TRowModel> {
-  align?: 'left' | 'right' | 'center';
+  align?: "left" | "right" | "center";
   field?: keyof TRowModel;
   formatter?: (row: TRowModel, index: number) => React.ReactNode;
   hideName?: boolean;
@@ -23,42 +23,79 @@ export interface DataTableProps<TRowModel> {
   columns: ColumnDef<TRowModel>[];
   rows: TRowModel[];
   selectable?: boolean;
+  /** Provide a stable ID for each row if your data doesn't have `id` */
   uniqueRowId?: (row: TRowModel, index: number) => RowId;
+  /** Called whenever selection changes */
+  onSelectionChange?: (selectedIds: RowId[], selectedRows: TRowModel[]) => void;
 }
 
-export function DataTable<TRowModel extends object & { id?: RowId | null }>({
+export function DataTable<
+  TRowModel extends Record<string, unknown> & { id?: RowId | null }
+>({
   columns,
   rows,
-  selectable,
+  selectable = false,
   uniqueRowId,
+  onSelectionChange,
 }: DataTableProps<TRowModel>) {
   const [selected, setSelected] = React.useState<Set<RowId>>(new Set());
 
-  const getRowId = (row: TRowModel, index: number) =>
-    row.id ?? uniqueRowId?.(row, index) ?? index;
+  const getRowId = React.useCallback(
+    (row: TRowModel, index: number): RowId =>
+      row.id ?? uniqueRowId?.(row, index) ?? index,
+    [uniqueRowId]
+  );
 
   const selectedAll = rows.length > 0 && selected.size === rows.length;
   const selectedSome = selected.size > 0 && selected.size < rows.length;
 
-  const toggleSelectAll = () => {
-    if (selectedAll) {
-      setSelected(new Set());
-    } else {
-      setSelected(new Set(rows.map((row, i) => getRowId(row, i))));
-    }
-  };
+  const emitSelection = React.useCallback(
+    (setVal: Set<RowId>) => {
+      if (!onSelectionChange) return;
+      const ids = Array.from(setVal);
+      const selectedRows = rows.filter((row, i) => setVal.has(getRowId(row, i)));
+      onSelectionChange(ids, selectedRows);
+    },
+    [onSelectionChange, rows, getRowId]
+  );
 
-  const toggleSelectOne = (id: RowId) => {
-    setSelected((prev) => {
-      const copy = new Set(prev);
-      if (copy.has(id)) {
-        copy.delete(id);
-      } else {
-        copy.add(id);
-      }
-      return copy;
-    });
-  };
+  const updateSelection = React.useCallback(
+    (next: Set<RowId>) => {
+      setSelected(next);
+      emitSelection(next);
+    },
+    [emitSelection]
+  );
+
+  const toggleSelectAll = React.useCallback(() => {
+    if (!rows.length) return;
+    if (selectedAll) {
+      updateSelection(new Set());
+    } else {
+      updateSelection(new Set(rows.map((r, i) => getRowId(r, i))));
+    }
+  }, [rows, selectedAll, updateSelection, getRowId]);
+
+  const toggleSelectOne = React.useCallback(
+    (id: RowId) => {
+      const copy = new Set(selected);
+      copy.has(id) ? copy.delete(id) : copy.add(id);
+      updateSelection(copy);
+    },
+    [selected, updateSelection]
+  );
+
+  // If rows change (e.g., pagination/filtering), keep only IDs that still exist
+  React.useEffect(() => {
+    const validIds = new Set<RowId>(
+      rows.map((r, i) => getRowId(r, i))
+    );
+    const next = new Set(Array.from(selected).filter((id) => validIds.has(id)));
+    if (next.size !== selected.size) {
+      updateSelection(next);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rows, getRowId]);
 
   return (
     <Table>
@@ -70,43 +107,42 @@ export function DataTable<TRowModel extends object & { id?: RowId | null }>({
                 checked={selectedAll}
                 indeterminate={selectedSome}
                 onChange={toggleSelectAll}
+                inputProps={{ "aria-label": "Select all rows" }}
               />
             </TableCell>
           )}
           {columns.map((col) => (
             <TableCell
               key={col.name}
-              sx={{
-                width: col.width,
-                textAlign: col.align ?? 'left',
-              }}
+              sx={{ width: col.width, textAlign: col.align ?? "left" }}
             >
               {!col.hideName && col.name}
             </TableCell>
           ))}
         </TableRow>
       </TableHead>
+
       <TableBody>
         {rows.map((row, index) => {
           const id = getRowId(row, index);
           const isChecked = selected.has(id);
 
           return (
-            <TableRow key={id} selected={isChecked}>
+            <TableRow key={String(id)} selected={isChecked} hover>
               {selectable && (
                 <TableCell padding="checkbox">
                   <Checkbox
                     checked={isChecked}
                     onChange={() => toggleSelectOne(id)}
+                    inputProps={{ "aria-label": `Select row ${id}` }}
                   />
                 </TableCell>
               )}
+
               {columns.map((col) => (
                 <TableCell
-                  key={col.name}
-                  sx={{
-                    textAlign: col.align ?? 'left',
-                  }}
+                  key={`${String(id)}-${col.name}`}
+                  sx={{ textAlign: col.align ?? "left" }}
                 >
                   {col.formatter
                     ? col.formatter(row, index)
@@ -122,151 +158,3 @@ export function DataTable<TRowModel extends object & { id?: RowId | null }>({
     </Table>
   );
 }
-
-// 'use client';
-
-// import * as React from 'react';
-// import Checkbox from '@mui/material/Checkbox';
-// import Table from '@mui/material/Table';
-// import type { TableProps } from '@mui/material/Table';
-// import TableBody from '@mui/material/TableBody';
-// import TableCell from '@mui/material/TableCell';
-// import TableHead from '@mui/material/TableHead';
-// import TableRow from '@mui/material/TableRow';
-
-// export interface ColumnDef<TRowModel> {
-//   align?: 'left' | 'right' | 'center';
-//   field?: keyof TRowModel;
-//   formatter?: (row: TRowModel, index: number) => React.ReactNode;
-//   hideName?: boolean;
-//   name: string;
-//   width?: number | string;
-// }
-
-// type RowId = number | string;
-
-// export interface DataTableProps<TRowModel> extends Omit<TableProps, 'onClick'> {
-//   columns: ColumnDef<TRowModel>[];
-//   hideHead?: boolean;
-//   hover?: boolean;
-//   onClick?: (event: React.MouseEvent, row: TRowModel) => void;
-//   onDeselectAll?: (event: React.ChangeEvent) => void;
-//   onDeselectOne?: (event: React.ChangeEvent, row: TRowModel) => void;
-//   onSelectAll?: (event: React.ChangeEvent) => void;
-//   onSelectOne?: (event: React.ChangeEvent, row: TRowModel) => void;
-//   rows: TRowModel[];
-//   selectable?: boolean;
-//   selected?: Set<RowId>;
-//   uniqueRowId?: (row: TRowModel) => RowId;
-// }
-
-// export function DataTable<TRowModel extends object & { id?: RowId | null }>({
-//   columns,
-//   hideHead,
-//   hover,
-//   onClick,
-//   onDeselectAll,
-//   onDeselectOne,
-//   onSelectOne,
-//   onSelectAll,
-//   rows,
-//   selectable,
-//   selected,
-//   uniqueRowId,
-//   ...props
-// }: DataTableProps<TRowModel>): React.JSX.Element {
-//   const selectedSome = (selected?.size ?? 0) > 0 && (selected?.size ?? 0) < rows.length;
-//   const selectedAll = rows?.length > 0 && selected?.size === rows.length;
-
-//   return (
-//     <Table {...props}>
-//       <TableHead sx={{ ...(hideHead && { visibility: 'collapse', '--TableCell-borderWidth': 0 }) }}>
-//         <TableRow>
-//           {selectable ? (
-//             <TableCell padding="checkbox" sx={{ width: '40px', minWidth: '40px', maxWidth: '40px' }}>
-//               <Checkbox
-//                 checked={selectedAll}
-//                 indeterminate={selectedSome}
-//                 onChange={(event: React.ChangeEvent) => {
-//                   if (selectedAll) {
-//                     onDeselectAll?.(event);
-//                   } else {
-//                     onSelectAll?.(event);
-//                   }
-//                 }}
-//               />
-//             </TableCell>
-//           ) : null}
-//           {columns.map(
-//             (column): React.JSX.Element => (
-//               <TableCell
-//                 key={column.name}
-//                 sx={{
-//                   width: column.width,
-//                   minWidth: column.width,
-//                   maxWidth: column.width,
-//                   ...(column.align && { textAlign: column.align }),
-//                 }}
-//               >
-//                 {column.hideName ? null : column.name}
-//               </TableCell>
-//             )
-//           )}
-//         </TableRow>
-//       </TableHead>
-//       <TableBody>
-//         {rows?.map((row, index): React.JSX.Element => {
-//           const rowId = row.id ? row.id : uniqueRowId?.(row);
-//           const rowSelected = rowId ? selected?.has(rowId) : false;
-
-//           return (
-//             <TableRow
-//               hover={hover}
-//               key={rowId ?? index}
-//               selected={rowSelected}
-//               {...(onClick && {
-//                 onClick: (event: React.MouseEvent) => {
-//                   onClick(event, row);
-//                 },
-//               })}
-//               sx={{ ...(onClick && { cursor: 'pointer' }) }}
-//             >
-//               {selectable ? (
-//                 <TableCell padding="checkbox">
-//                   <Checkbox
-//                     checked={rowId ? rowSelected : false}
-//                     onChange={(event: React.ChangeEvent) => {
-//                       if (rowSelected) {
-//                         onDeselectOne?.(event, row);
-//                       } else {
-//                         onSelectOne?.(event, row);
-//                       }
-//                     }}
-//                     onClick={(event: React.MouseEvent) => {
-//                       if (onClick) {
-//                         event.stopPropagation();
-//                       }
-//                     }}
-//                   />
-//                 </TableCell>
-//               ) : null}
-//               {columns.map(
-//                 (column): React.JSX.Element => (
-//                   <TableCell key={column.name} sx={{ ...(column.align && { textAlign: column.align }) }}>
-//                     {
-//                       (column.formatter
-//                         ? column.formatter(row, index)
-//                         : column.field
-//                           ? row[column.field]
-//                           : null) as React.ReactNode
-//                     }
-//                   </TableCell>
-//                 )
-//               )}
-//             </TableRow>
-//           );
-//         })}
-//       </TableBody>
-//     </Table>
-//   );
-// }

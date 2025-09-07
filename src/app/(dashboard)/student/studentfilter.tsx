@@ -17,6 +17,9 @@ import { paths } from '@/paths';
 import { FilterButton, FilterPopover, useFilterContext } from '@/components/core/filter-button';
 import { Option } from '@/components/core/option';
 import { Trash } from '@phosphor-icons/react';
+import { deleteStudents } from "@/store/reducers/student-slice";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "@/store";
 
 export interface Filters {
   email?: string;
@@ -27,11 +30,10 @@ export interface Filters {
   sort?: string;
 }
 
-export function StudentFilter({ filters, setFilters }: any): React.JSX.Element {
+export function StudentFilter({ filters, setFilters, selected }: any): React.JSX.Element {
   const [categoryForms, setCategoryForms] = useState([]);
-  const [selectedTab, setSelectedTab] = useState(filters?.categoryId || '');
   const router = useRouter();
-
+  const dispatch = useDispatch<AppDispatch>()
 
   const handleFilterChange = useCallback((key: keyof Filters, value?: string) => {
     setFilters((prev: Filters) => {
@@ -50,10 +52,15 @@ export function StudentFilter({ filters, setFilters }: any): React.JSX.Element {
   }, []);
 
   const hasFilters = Object.values(filters || {}).some((val) => !!val);
+  const handleBulkDelete = async () => {
+    const studentIds = selected.map((item: any) => item.student.id);
+    dispatch(deleteStudents(studentIds));
 
+
+  }
   return (
     <div>
-      <Tabs
+      {/* <Tabs
         onChange={(_, value) => {
           setSelectedTab(value);
           handleFilterChange('categoryId', value === '' ? null : value);
@@ -63,16 +70,15 @@ export function StudentFilter({ filters, setFilters }: any): React.JSX.Element {
         variant="scrollable"
       >
         <Tab key="all" label="All" value="" sx={{ minHeight: 'auto' }} />
-        {/* Dynamic Tabs if needed */}
-        {/* {categoryForms?.map((tab) => (
+        {categoryForms?.map((tab) => (
           <Tab
             key={tab.id}
             label={tab.name}
             sx={{ minHeight: 'auto' }}
             value={tab.id}
           />
-        ))} */}
-      </Tabs>
+        ))}
+      </Tabs> */}
 
       <Divider />
 
@@ -122,13 +128,14 @@ export function StudentFilter({ filters, setFilters }: any): React.JSX.Element {
           value={filters?.createdAt || ""}
         /> */}
 
-<Button 
-  variant="contained" 
-  color="error" 
-  startIcon={<Trash weight="fill" />}  
->
-  Delete
-</Button>
+        <Button
+          variant="contained"
+          color="error"
+          startIcon={<Trash weight="fill" />}
+          onClick={() => handleBulkDelete()}
+        >
+          Delete
+        </Button>
         {/* 🔃 Sort Select */}
         <Select
           name="sort"
@@ -168,27 +175,27 @@ function GenericFilterPopover({ field }: { field: string }) {
 }
 
 // 📅 Date Filter Popover
-function DateFilterPopover() {
-  const { anchorEl, onApply, onClose, open, value: initialValue } = useFilterContext();
-  const [value, setValue] = useState(initialValue ? dayjs(initialValue) : null);
+// function DateFilterPopover() {
+//   const { anchorEl, onApply, onClose, open, value: initialValue } = useFilterContext();
+//   const [value, setValue] = useState(initialValue ? dayjs(initialValue) : null);
 
-  useEffect(() => {
-    setValue(initialValue ? dayjs(initialValue) : null);
-  }, [initialValue]);
+//   useEffect(() => {
+//     setValue(initialValue ? dayjs(initialValue) : null);
+//   }, [initialValue]);
 
-  return (
-    <FilterPopover anchorEl={anchorEl} onClose={onClose} open={open} title="Filter by Date">
-      <DatePicker
-        value={value}
-        onChange={(newDate) => setValue(newDate)}
-        format="DD/MM/YYYY"
-      />
-      <Button
-        onClick={() => onApply(value ? value.format('DD/MM/YYYY') : '')}
-        variant="contained"
-      >
-        Apply
-      </Button>
-    </FilterPopover>
-  );
-}
+//   return (
+//     <FilterPopover anchorEl={anchorEl} onClose={onClose} open={open} title="Filter by Date">
+//       <DatePicker
+//         value={value}
+//         onChange={(newDate) => setValue(newDate)}
+//         format="DD/MM/YYYY"
+//       />
+//       <Button
+//         onClick={() => onApply(value ? value.format('DD/MM/YYYY') : '')}
+//         variant="contained"
+//       >
+//         Apply
+//       </Button>
+//     </FilterPopover>
+//   );
+// }

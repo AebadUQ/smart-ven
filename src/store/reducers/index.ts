@@ -1,11 +1,11 @@
 import { combineReducers } from 'redux';
-import counter from './counter-slice';
 import student from './student-slice'
-
+import auth from './auth-slice'
 // Your reducer logic follows
 const reducers = combineReducers({
-  counter,
-  student
+  auth,
+  student,
+
   // Additional reducers if needed
 });
 

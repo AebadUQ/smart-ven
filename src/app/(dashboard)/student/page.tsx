@@ -22,8 +22,6 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { paths } from "@/paths";
 import { DataTable, type ColumnDef } from "@/components/core/data-table";
 import { CustomersPagination } from "@/components/dashboard/customer/customers-pagination";
-import useListApi from "@/hooks/useListApi";
-import { StudentFilter } from "./studentfilter";
 import {
   CheckCircleIcon,
   MinusIcon,
@@ -33,54 +31,39 @@ import {
   Eye,
   Trash,
 } from "@/components/icons";
-import { STUDENT } from "@/api/endpoint"; // ✅ Import API endpoints
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/store";
+import { deleteStudents, getAllStudents } from "@/store/reducers/student-slice";
+import { StudentRecord } from "@/types/student";
+import { StudentFilter } from "./studentfilter";
 
-interface PageProps {
-  searchParams: {
-    email?: string;
-    phone?: string;
-    sortDir?: "asc" | "desc";
-    status?: string;
-  };
-}
-
-export default function Page({
-  searchParams,
-}: PageProps): React.JSX.Element {
+export default function Page(): React.JSX.Element {
   const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
+  const [selectedStudents, setSelectedStudents] = React.useState<StudentRecord[]>([]);
 
-  // ✅ getAllStudents API call via useListApi
-  const {
-    data,
-    loading,
-    onPaginationChange,
-    onPageSizeChange,
-    onSort,
-    filter,
-    total,
-    pageSize,
-    pageIndex,
-    setFilter,
-  } = useListApi<any>(STUDENT.GET_ALL_STUDENTS);
+  const { loading, students, pagination } = useSelector(
+    (state: RootState) => state.student
+  );
 
-  console.log("Student data", data);
-
-  const columns = [
+  React.useEffect(() => {
+    dispatch(getAllStudents({ page: 1, limit: 10 }));
+  }, [dispatch]);
+console.log("selectedStudents",selectedStudents)
+  const columns: ColumnDef<StudentRecord>[] = [
     {
       name: "Student",
       width: "240px",
       formatter: (row): React.JSX.Element => (
         <Stack direction="row" spacing={1} alignItems="center">
           <img
-            src={row?.photoUrl || "/assets/avatar-1.png"}
-            alt={row?.name}
+            src={"/assets/avatar-1.png"}
+            alt={row?.student?.fullname}
             style={{ width: 40, height: 40, borderRadius: "50%" }}
           />
-          <Stack>
-            <Typography color="text.primary" variant="body2">
-              {row?.student.fullname}
-            </Typography>
-          </Stack>
+          <Typography color="text.primary" variant="body2">
+            {row?.student?.fullname}
+          </Typography>
         </Stack>
       ),
     },
@@ -88,11 +71,9 @@ export default function Page({
       name: "Parent/Guardian",
       width: "200px",
       formatter: (row): React.JSX.Element => (
-        <Stack>
-          <Typography color="text.primary" variant="body2">
-            {row?.parent.fullname}
-          </Typography>
-        </Stack>
+        <Typography color="text.primary" variant="body2">
+          {row.parent.fullname}
+        </Typography>
       ),
     },
     {
@@ -100,7 +81,7 @@ export default function Page({
       width: "150px",
       formatter: (row): React.JSX.Element => (
         <Typography color="text.secondary" variant="body2">
-          {row?.student.grade}
+          {row.student.grade}
         </Typography>
       ),
     },
@@ -109,71 +90,65 @@ export default function Page({
       width: "150px",
       formatter: (row): React.JSX.Element => (
         <Typography color="text.secondary" variant="body2">
-          {row?.student.carNumber || 'N/A'}
+          {row.van?.carNumber || "N/A"}
         </Typography>
       ),
     },
     {
-      name: "Route #",
-      width: "120px",
+      name: "Driver",
+      width: "180px",
       formatter: (row): React.JSX.Element => (
         <Typography color="text.secondary" variant="body2">
-          {row?.route?.name || 'N/A'}
+          {row.driver?.fullname || "N/A"}
         </Typography>
       ),
     },
-  {
-  name: "Status",
-  width: "100px",
-  formatter: (row): React.JSX.Element => {
-    const mapping = {
-      active: {
-        label: "active",
-        icon: (
-          <CheckCircleIcon
-            color="var(--mui-palette-success-main)"
-            weight="fill"
-          />
-        ),
-      },
-      inactive: {
-        label: "inactive",
-        icon: <MinusIcon color="var(--mui-palette-error-main)" />,
-      },
-      pending: {
-        label: "Pending",
-        icon: (
-          <ClockIcon
-            color="var(--mui-palette-warning-main)"
-            weight="fill"
-          />
-        ),
-      },
-    } as const;
+    {
+      name: "Status",
+      width: "120px",
+      formatter: (row): React.JSX.Element => {
+        const mapping = {
+          active: {
+            label: "Active",
+            icon: (
+              <CheckCircleIcon
+                color="var(--mui-palette-success-main)"
+                weight="fill"
+              />
+            ),
+          },
+          inactive: {
+            label: "Inactive",
+            icon: <MinusIcon color="var(--mui-palette-error-main)" />,
+          },
+          pending: {
+            label: "Pending",
+            icon: (
+              <ClockIcon
+                color="var(--mui-palette-warning-main)"
+                weight="fill"
+              />
+            ),
+          },
+        } as const;
 
-    // 👇 yahan casting karna zaroori hai
-    const status = (row?.student?.status ?? "active") as keyof typeof mapping;
+        const status = (row.student?.status?.trim() ||
+          "pending") as keyof typeof mapping;
 
-    const { label, icon } = mapping[status];
+        const { label, icon } = mapping[status];
 
-    return (
-      <Chip icon={icon} label={label} size="small" variant="outlined" />
-    );
-  },
-}
-,
+        return <Chip icon={icon} label={label} size="small" variant="outlined" />;
+      },
+    },
     {
       name: "Actions",
       width: "80px",
       align: "right",
       formatter: (row): React.JSX.Element => {
-        const [anchorEl, setAnchorEl] =
-          React.useState<null | HTMLElement>(null);
+        const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
         const open = Boolean(anchorEl);
 
-        const handleMenuOpen = (
-          event: React.MouseEvent<HTMLElement>
-        ) => {
+        const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
           setAnchorEl(event.currentTarget);
         };
 
@@ -182,21 +157,17 @@ export default function Page({
         };
 
         const handleView = () => {
-          router.push(
-            `${paths.dashboard.student}/${row?.student.id || ""}`
-          );
+          router.push(`${paths.dashboard.student}/${row.student.id}`);
           handleMenuClose();
         };
 
         const handleEdit = () => {
-          router.push(
-            `${paths.dashboard.student}/${row?.schoolId || ""}/edit`
-          );
+          router.push(`${paths.dashboard.student}/${row.student.id}/edit`);
           handleMenuClose();
         };
 
         const handleDelete = () => {
-          console.log("Delete:", row);
+          dispatch(deleteStudents([row.student.id]));
           handleMenuClose();
         };
 
@@ -243,7 +214,7 @@ export default function Page({
         );
       },
     },
-  ] satisfies ColumnDef<any>[];
+  ];
 
   return (
     <Box
@@ -259,9 +230,7 @@ export default function Page({
           sx={{ alignItems: "flex-start" }}
         >
           <Box sx={{ flex: "1 1 auto" }}>
-            <Typography variant="h5">
-              Student Management
-            </Typography>
+            <Typography variant="h5">Student Management</Typography>
           </Box>
 
           <Box>
@@ -278,7 +247,7 @@ export default function Page({
         </Stack>
 
         <Card>
-          <StudentFilter filters={filter} setFilters={setFilter} />
+          <StudentFilter filters={null} setFilters={null} selected={selectedStudents}/>
 
           <Box sx={{ overflowX: "auto" }}>
             {loading ? (
@@ -291,11 +260,12 @@ export default function Page({
               >
                 <CircularProgress />
               </Box>
-            ) : data?.length ? (
+            ) : students?.length ? (
               <DataTable<any>
                 columns={columns}
-                rows={data}
-                selectable={true}
+                rows={students}
+                selectable
+        onSelectionChange={(ids, rows) => setSelectedStudents(rows)}
               />
             ) : (
               <Box sx={{ p: 3 }}>
@@ -311,15 +281,15 @@ export default function Page({
           </Box>
           <Divider />
           <CustomersPagination
-            count={total}
-            page={pageIndex}
-            rowsPerPage={pageSize}
-            onPaginationChange={(event, newPage) =>
-              onPaginationChange(newPage + 1)
-            }
-            onRowsPerPageChange={(event) =>
-              onPageSizeChange(parseInt(event.target.value, 10))
-            }
+            count={pagination.total}
+            page={pagination.page - 1}
+            rowsPerPage={pagination.limit}
+            onPaginationChange={(event, newPage) => {
+              dispatch(getAllStudents({ page: newPage + 1, limit: pagination.limit }));
+            }}
+            onRowsPerPageChange={(event) => {
+              dispatch(getAllStudents({ page: 1, limit: parseInt(event.target.value, 10) }));
+            }}
           />
         </Card>
       </Stack>

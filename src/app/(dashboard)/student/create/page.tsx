@@ -5,6 +5,7 @@ import RouterLink from 'next/link';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from '@mui/material/Link';
+import { toast } from '@/components/core/toaster';
 
 import {
   Avatar, Box, Button, Card, CardActions, CardContent, FormControl,
@@ -16,11 +17,11 @@ import { Camera as CameraIcon } from '@phosphor-icons/react/dist/ssr/Camera';
 import { Controller, useForm } from 'react-hook-form';
 import { z as zod } from 'zod';
 import { paths } from '@/paths';
-import { toast } from '@/components/core/toaster';
 import { ArrowLeft as ArrowLeftIcon } from '@phosphor-icons/react/dist/ssr/ArrowLeft';
 import { grades, vans, genders, exceptions, parents, routes } from '@/utils/data';
 import { addStudent } from '@/store/reducers/student-slice';
 import { AppDispatch, RootState } from '@/store';
+import { uploadImage } from "@/utils/uploadImage";
 
 function fileToBase64(file: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -48,7 +49,7 @@ const schema = zod.object({
 
 type Values = zod.infer<typeof schema>;
 const defaultValues: Values = {
-  kidImage: 'https://media.licdn.com/dms/image/v2/D4D03AQED_3sDqYNYxw/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1710534304007?e=1759968000&v=beta&t=9TykYLbJrnUisT720afJpJxuErgBAgku6HqAm8Q89e0',
+  kidImage: '',
   fullname: '',
   schoolId: '',
   grade: '',
@@ -76,13 +77,18 @@ export default function StudentCreateForm(): React.JSX.Element {
   });
 
   const avatarInputRef = React.useRef<HTMLInputElement>(null);
-  const kidImage = watch('kidImage');
+  const kidImage = watch("kidImage");
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const base64 = await fileToBase64(file);
-      setValue('kidImage', base64);
+    if (!file) return;
+
+    try {
+      const imageUrl = await uploadImage(file);
+      setValue("kidImage", imageUrl);
+    } catch (error: any) {
+      toast.error(error.message || 'Something went wrong');
+
     }
   };
 
@@ -107,7 +113,6 @@ export default function StudentCreateForm(): React.JSX.Element {
   return (
     <Box sx={{ maxWidth: 'var(--Content-maxWidth)', m: 'var(--Content-margin)', p: 'var(--Content-padding)', width: 'var(--Content-width)' }}>
       <form onSubmit={handleSubmit(onSubmit)}>
-        {JSON.stringify(errors)}
         <Card>
           <CardContent>
             <Stack spacing={4}>
@@ -115,7 +120,7 @@ export default function StudentCreateForm(): React.JSX.Element {
                 <Link
                   color="text.primary"
                   component={RouterLink}
-                  href={paths.dashboard.jobs.browse}
+                  href={paths.dashboard.student}
                   sx={{ alignItems: 'center', display: 'inline-flex', gap: 1 }}
                   variant="subtitle2"
                 >
@@ -322,7 +327,7 @@ export default function StudentCreateForm(): React.JSX.Element {
             </Stack>
           </CardContent>
           <CardActions sx={{ justifyContent: 'flex-end' }}>
-            <Button variant="text" color="inherit" sx={{ minWidth: 100 }} onClick={()=>router.back()}>
+            <Button variant="text" color="inherit" sx={{ minWidth: 100 }} onClick={() => router.back()}>
               Cancel
             </Button>
 
