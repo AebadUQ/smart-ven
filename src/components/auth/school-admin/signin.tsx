@@ -35,8 +35,8 @@ const schema = zod.object({
 type Values = zod.infer<typeof schema>;
 
 const defaultValues: Values = {
-    email: 'waliiqbal2020@gmail.com',
-    password: 'b620de682115',
+    email: 'aebaduq@gmail.com',
+    password: '4b41b48d5467',
 };
 
 export function SchoolSignin(): React.JSX.Element {
@@ -58,8 +58,8 @@ export function SchoolSignin(): React.JSX.Element {
     const onSubmit = async (values: { email: string; password: string }) => {
         try {
             const res = await dispatch(login(values))
-            if(res){
-router.push('/dashboard')
+            if (res) {
+                router.push('/dashboard')
             }
 
         } catch (error) {

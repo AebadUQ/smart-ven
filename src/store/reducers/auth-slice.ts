@@ -31,7 +31,7 @@ export const login = createAsyncThunk(
   async (credentials: { email: string; password: string }, { rejectWithValue }) => {
     try {
       const response = await api.post<any>(AUTH.SCHOOL_ADMIN, credentials);
-      const { status, data } = response;
+      const { status, data } = response.data;
       return { ...data, status };
     } catch (error: any) {
       return rejectWithValue(error.response?.data || "Login failed");

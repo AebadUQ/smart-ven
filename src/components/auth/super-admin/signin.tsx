@@ -33,8 +33,8 @@ const schema = zod.object({
 type Values = zod.infer<typeof schema>;
 
 const defaultValues: Values = {
-  email: 'admin@admin.com',
-  password: '4868c125aa92',
+  email: 'waliiqbal2020@gmail.com',
+  password: 'karachi786',
 };
 
 export function SASignin(): React.JSX.Element {

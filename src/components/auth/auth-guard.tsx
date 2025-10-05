@@ -12,7 +12,7 @@ export default function AuthGuard({ children }: Props) {
   const router = useRouter();
 
   useEffect(() => {
-    if (!token) router.replace('/auth/admin');
+    if (!token) router.replace('/auth/signin');
   }, [token, router]);
 
   if (!token) return <div>Loading...</div>; // loader while checking

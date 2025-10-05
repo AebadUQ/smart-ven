@@ -19,15 +19,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [token, setToken] = useState<string | null>(null);
   const router = useRouter();
 
-  useEffect(() => {
-    // Load token from localStorage on mount
-    const savedToken = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-    if (savedToken) {
-      setToken(savedToken);
-      // Optionally fetch user info if needed
-      // fetchUser(savedToken);
-    }
-  }, []);
+  // useEffect(() => {
+  //   const savedToken = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  //   if (savedToken) {
+  //     setToken(savedToken);
+ 
+  //   }
+  // }, []);
 
   const login = async (email: string, password: string) => {
     try {
@@ -38,7 +36,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setToken(token);
       setUser(user);
 
-      router.push('/dashboard'); // redirect after login
+      router.push('/dashboard'); 
     } catch (error) {
       console.error('Login failed:', error);
       throw error;
@@ -49,7 +47,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     localStorage.removeItem('token');
     setToken(null);
     setUser(null);
-    router.push('/auth/admin'); // redirect after logout
+    router.push('/auth/signin'); 
   };
 
   return (

@@ -8,7 +8,9 @@ export const AUTH = {
 export const STUDENT ={
     GET_ALL_STUDENTS:'/Admin/Get-Students',
     CREATE_STUDENT:'/Admin/addStudent',
-    DELETE_STUDENT:'/Admin/removeKids'
+    DELETE_STUDENT:'/Admin/removeKids',
+    GET_STUDENT_BY_ID:'/Admin/getStudentById',
+    ASSIGN_VAN:'/Admin/assignVanToStudent'
 }
 export const SCHOOL ={
     GET_ALL_SCHOOL:'/Admin/getAllSchools'

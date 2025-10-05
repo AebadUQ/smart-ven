@@ -12,7 +12,7 @@ const withAuth = (WrappedComponent: React.ComponentType<any>) => {
 
     useEffect(() => {
       if (!token) {
-        router.push('/auth/admin'); // redirect if not logged in
+        router.push('/auth/signin'); // redirect if not logged in
       }
     }, [token, router]);
 

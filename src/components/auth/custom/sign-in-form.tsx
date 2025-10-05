@@ -22,7 +22,7 @@ import { z as zod } from 'zod';
 
 import { paths } from '@/paths';
 import { authClient } from '@/lib/auth/custom/client';
-import { useUser } from '@/hooks/use-user';
+// import { useUser } from '@/hooks/use-user';
 import { DynamicLogo } from '@/components/core/logo';
 import { toast } from '@/components/core/toaster';
 import { Envelope } from '@phosphor-icons/react/dist/ssr';
@@ -52,7 +52,7 @@ const defaultValues = { email: '', password: '' } satisfies Values;
 export function SignInForm(): React.JSX.Element {
   const router = useRouter();
 
-  const { checkSession } = useUser();
+  // const { checkSession } = useUser();
 
   const [showPassword, setShowPassword] = React.useState<boolean>();
 

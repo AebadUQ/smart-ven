@@ -22,7 +22,7 @@ import { dayjs } from '@/lib/dayjs';
 
 
 import type { Post } from './types';
-import { EditViewModal } from '@/app/(dashboard)/offers/view-edit-modal';
+// import { EditViewModal } from '@/app/(dashboard)/offers/view-edit-modal';
 import { usePopover } from '@/hooks/use-popover';
 
 
@@ -112,7 +112,7 @@ export function PostCard({ post, setPostData, setOpen,viewdata,setViewdata,editD
       </Box>
 
       {/* Offer Modal */}
-      <EditViewModal  anchorEl={popover.anchorRef.current} onClose={popover.handleClose} open={popover.open} post={post} setOpen={setOpen} setViewdata={setViewdata} viewdata={viewdata} editData={editData} setEditData={setEditData} />
+      {/* <EditViewModal  anchorEl={popover.anchorRef.current} onClose={popover.handleClose} open={popover.open} post={post} setOpen={setOpen} setViewdata={setViewdata} viewdata={viewdata} editData={editData} setEditData={setEditData} /> */}
     </Card>
   );
 }

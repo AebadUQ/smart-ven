@@ -1,11 +1,9 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Box,
-  Button,
   Card,
   Divider,
   Stack,
@@ -26,15 +24,20 @@ import {
   CheckCircleIcon,
   MinusIcon,
   ClockIcon,
-  PlusIcon,
-  EditIcon,
   Eye,
+  EditIcon,
   Trash,
 } from "@/components/icons";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/store";
-import { deleteStudents, getAllStudents } from "@/store/reducers/student-slice";
-import { StudentRecord } from "@/types/student";
+import {
+  getAllStudents,
+  deleteStudentsAndRefetch,
+  getStudentDetail,               // <-- import
+} from "@/store/reducers/student-slice";
+import { Eye as EyeIcon } from '@phosphor-icons/react/dist/ssr/Eye';
+
+import type { StudentRecord } from "@/types/student";
 import { StudentFilter } from "./studentfilter";
 
 export default function Page(): React.JSX.Element {
@@ -49,7 +52,7 @@ export default function Page(): React.JSX.Element {
   React.useEffect(() => {
     dispatch(getAllStudents({ page: 1, limit: 10 }));
   }, [dispatch]);
-console.log("selectedStudents",selectedStudents)
+
   const columns: ColumnDef<StudentRecord>[] = [
     {
       name: "Student",
@@ -132,97 +135,113 @@ console.log("selectedStudents",selectedStudents)
           },
         } as const;
 
-        const status = (row.student?.status?.trim() ||
+        const statusKey = (row.student?.status?.trim()?.toLowerCase() ||
           "pending") as keyof typeof mapping;
 
-        const { label, icon } = mapping[status];
+        const { label, icon } = mapping[statusKey] ?? mapping.pending;
 
         return <Chip icon={icon} label={label} size="small" variant="outlined" />;
       },
     },
     {
-      name: "Actions",
-      width: "80px",
-      align: "right",
-      formatter: (row): React.JSX.Element => {
-        const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-        const open = Boolean(anchorEl);
+  name: 'Actions',
+  width: '100px',
+  align: 'right',
+  formatter: (row) => {
+    const handleView = async () => {
+      try {
+        await dispatch(getStudentDetail(row.student.id)).unwrap(); // dispatch detail
+        router.push(`${paths.dashboard.student}/${row.student.id}`); // then navigate
+      } finally {
+        // handleMenuClose();
+      }
+    };
 
-        const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-          setAnchorEl(event.currentTarget);
-        };
+    return (
+      <Stack direction="row" spacing={0} sx={{ justifyContent: 'flex-end' }}>
+        <IconButton
+          size="small"
+          onClick={handleView}
+        >
+          <EyeIcon />
+        </IconButton>
+      </Stack>
+    );
+  },
+}
+,
+    // {
+    //   name: "Actions",
+    //   width: "80px",
+    //   align: "right",
+    //   formatter: (row): React.JSX.Element => {
+    //     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+    //     const open = Boolean(anchorEl);
 
-        const handleMenuClose = () => {
-          setAnchorEl(null);
-        };
+    //     const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) =>
+    //       setAnchorEl(event.currentTarget);
+    //     const handleMenuClose = () => setAnchorEl(null);
 
-        const handleView = () => {
-          router.push(`${paths.dashboard.student}/${row.student.id}`);
-          handleMenuClose();
-        };
+        // const handleView = async () => {
+        //   try {
+        //     await dispatch(getStudentDetail(row.student.id)).unwrap();  // <-- dispatch detail
+        //     router.push(`${paths.dashboard.student}/${row.student.id}`); // then navigate
+        //   } finally {
+        //     handleMenuClose();
+        //   }
+        // };
 
-        const handleEdit = () => {
-          router.push(`${paths.dashboard.student}/${row.student.id}/edit`);
-          handleMenuClose();
-        };
+    //     const handleEdit = () => {
+    //       router.push(`${paths.dashboard.student}/${row.student.id}/edit`);
+    //       handleMenuClose();
+    //     };
 
-        const handleDelete = () => {
-          dispatch(deleteStudents([row.student.id]));
-          handleMenuClose();
-        };
+    //     const handleDelete = async () => {
+    //       await dispatch(deleteStudentsAndRefetch([row.student.id]));
+    //       handleMenuClose();
+    //     };
 
-        return (
-          <>
-            <IconButton onClick={handleMenuOpen} size="small">
-              <MoreVertIcon />
-            </IconButton>
-            <Menu
-              anchorEl={anchorEl}
-              open={open}
-              onClose={handleMenuClose}
-              anchorOrigin={{
-                vertical: "bottom",
-                horizontal: "right",
-              }}
-              transformOrigin={{
-                vertical: "top",
-                horizontal: "right",
-              }}
-            >
-              <MenuItem onClick={handleView}>
-                <ListItemIcon>
-                  <Eye fontSize="medium" />
-                </ListItemIcon>
-                <ListItemText primary="View" />
-              </MenuItem>
+    //     return (
+    //       <>
+    //         <IconButton onClick={handleMenuOpen} size="small">
+    //           <MoreVertIcon />
+    //         </IconButton>
+    //         <Menu
+    //           anchorEl={anchorEl}
+    //           open={open}
+    //           onClose={handleMenuClose}
+    //           anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+    //           transformOrigin={{ vertical: "top", horizontal: "right" }}
+    //         >
+    //           <MenuItem onClick={handleView}>
+    //             <ListItemIcon>
+    //               <Eye fontSize="medium" />
+    //             </ListItemIcon>
+    //             <ListItemText primary="View" />
+    //           </MenuItem>
 
-              <MenuItem onClick={handleEdit}>
-                <ListItemIcon>
-                  <EditIcon fontSize="medium" />
-                </ListItemIcon>
-                <ListItemText primary="Edit" />
-              </MenuItem>
+    //           <MenuItem onClick={handleEdit}>
+    //             <ListItemIcon>
+    //               <EditIcon fontSize="medium" />
+    //             </ListItemIcon>
+    //             <ListItemText primary="Edit" />
+    //           </MenuItem>
 
-              <MenuItem onClick={handleDelete}>
-                <ListItemIcon>
-                  <Trash fontSize="medium" color="red" />
-                </ListItemIcon>
-                <ListItemText primary="Delete" />
-              </MenuItem>
-            </Menu>
-          </>
-        );
-      },
-    },
+    //           <MenuItem onClick={handleDelete}>
+    //             <ListItemIcon>
+    //               <Trash fontSize="medium" color="red" />
+    //             </ListItemIcon>
+    //             <ListItemText primary="Delete" />
+    //           </MenuItem>
+    //         </Menu>
+    //       </>
+    //     );
+    //   },
+    // },
   ];
 
   return (
-    <Box
-      sx={{
-        bgcolor: "var(--mui-palette-background-level1)",
-        p: 3,
-      }}
-    >
+    <Box sx={{ bgcolor: "var(--mui-palette-background-level1)", p: 3 }}>
       <Stack spacing={3}>
         <Stack
           direction={{ xs: "column", sm: "row" }}
@@ -232,32 +251,18 @@ console.log("selectedStudents",selectedStudents)
           <Box sx={{ flex: "1 1 auto" }}>
             <Typography variant="h5">Student Management</Typography>
           </Box>
-
-          <Box>
-            <Link href="/student/create" passHref>
-              <Button
-                variant="contained"
-                color="primary"
-                endIcon={<PlusIcon />}
-              >
-                Add Student
-              </Button>
-            </Link>
-          </Box>
         </Stack>
 
         <Card>
-          <StudentFilter filters={null} setFilters={null} selected={selectedStudents}/>
+          <StudentFilter
+            filters={null}
+            setFilters={null}
+            selected={selectedStudents}
+          />
 
           <Box sx={{ overflowX: "auto" }}>
             {loading ? (
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  p: 3,
-                }}
-              >
+              <Box sx={{ display: "flex", justifyContent: "center", p: 3 }}>
                 <CircularProgress />
               </Box>
             ) : students?.length ? (
@@ -265,7 +270,7 @@ console.log("selectedStudents",selectedStudents)
                 columns={columns}
                 rows={students}
                 selectable
-        onSelectionChange={(ids, rows) => setSelectedStudents(rows)}
+                onSelectionChange={(_, rows) => setSelectedStudents(rows)}
               />
             ) : (
               <Box sx={{ p: 3 }}>
@@ -279,16 +284,23 @@ console.log("selectedStudents",selectedStudents)
               </Box>
             )}
           </Box>
+
           <Divider />
+
           <CustomersPagination
             count={pagination.total}
-            page={pagination.page - 1}
+            page={Math.max(0, pagination.page - 1)}
             rowsPerPage={pagination.limit}
-            onPaginationChange={(event, newPage) => {
-              dispatch(getAllStudents({ page: newPage + 1, limit: pagination.limit }));
+            onPaginationChange={(_, newPage) => {
+              dispatch(
+                getAllStudents({ page: newPage + 1, limit: pagination.limit })
+              );
+              setSelectedStudents([]);
             }}
             onRowsPerPageChange={(event) => {
-              dispatch(getAllStudents({ page: 1, limit: parseInt(event.target.value, 10) }));
+              const newLimit = parseInt(event.target.value, 10);
+              dispatch(getAllStudents({ page: 1, limit: newLimit }));
+              setSelectedStudents([]);
             }}
           />
         </Card>

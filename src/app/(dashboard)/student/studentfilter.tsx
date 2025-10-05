@@ -84,8 +84,7 @@ export function StudentFilter({ filters, setFilters, selected }: any): React.JSX
 
       <Stack direction="row" spacing={2} sx={{ alignItems: 'center', flexWrap: 'wrap', px: 3, py: 2 }}>
         <Stack direction="row" spacing={2} sx={{ alignItems: 'center', flex: '1 1 auto', flexWrap: 'wrap' }}>
-          {/* 📧 Email Filter */}
-          <FilterButton
+          {/* <FilterButton
             displayValue={filters?.email || ""}
             label="Van"
             onFilterApply={(value) => handleFilterChange('email', value as string)}
@@ -94,7 +93,6 @@ export function StudentFilter({ filters, setFilters, selected }: any): React.JSX
             value={filters?.email || ""}
           />
 
-          {/* 🚍 Route Filter */}
           <FilterButton
             displayValue={filters?.route || ""}
             label="Route"
@@ -104,7 +102,6 @@ export function StudentFilter({ filters, setFilters, selected }: any): React.JSX
             value={filters?.route || ""}
           />
 
-          {/* 🏫 School Filter */}
           <FilterButton
             displayValue={filters?.school || ""}
             label="Class"
@@ -114,19 +111,10 @@ export function StudentFilter({ filters, setFilters, selected }: any): React.JSX
             value={filters?.school || ""}
           />
 
-          {/* ❌ Clear Button */}
-          {hasFilters ? <Button onClick={handleClearFilters}>Clear filters</Button> : null}
+          {hasFilters ? <Button onClick={handleClearFilters}>Clear filters</Button> : null} */}
         </Stack>
 
-        {/* 📅 Date Filter */}
-        {/* <FilterButton
-          displayValue={filters?.createdAt || ""}
-          label="Date"
-          onFilterApply={(value) => handleFilterChange('createdAt', value)}
-          onFilterDelete={() => handleFilterChange('createdAt', '')}
-          popover={<DateFilterPopover />}
-          value={filters?.createdAt || ""}
-        /> */}
+       
 
         <Button
           variant="contained"
@@ -137,7 +125,7 @@ export function StudentFilter({ filters, setFilters, selected }: any): React.JSX
           Delete
         </Button>
         {/* 🔃 Sort Select */}
-        <Select
+        {/* <Select
           name="sort"
           onChange={(e) => handleFilterChange('sort', e.target.value)}
           sx={{ maxWidth: '100%', width: '120px' }}
@@ -145,7 +133,7 @@ export function StudentFilter({ filters, setFilters, selected }: any): React.JSX
         >
           <Option value="desc">Newest</Option>
           <Option value="asc">Oldest</Option>
-        </Select>
+        </Select> */}
       </Stack>
     </div>
   );

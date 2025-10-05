@@ -14,7 +14,7 @@ import Chip from '@mui/material/Chip';
 import { CheckCircle as CheckCircleIcon } from '@phosphor-icons/react/dist/ssr/CheckCircle';
 import { Clock as ClockIcon } from '@phosphor-icons/react/dist/ssr/Clock';
 import { dayjs } from '@/lib/dayjs';
-import { FormFilters } from '../form/form-filters';
+// import { FormFilters } from '../form/form-filters';
 import { CustomersPagination } from '@/components/dashboard/customer/customers-pagination';
 import { CustomersSelectionProvider } from '@/components/dashboard/customer/customers-selection-context';
 import { CustomersTable } from '@/components/dashboard/customer/customers-table';
@@ -155,7 +155,7 @@ export default function Page({ searchParams }: PageProps): React.JSX.Element {
         </Stack>
         <CustomersSelectionProvider customers={filteredCustomers}>
           <Card>
-            <FormFilters filters={filter} setFilters={setFilter} />
+            {/* <FormFilters filters={filter} setFilters={setFilter} /> */}
                         
             <Divider />
             <Box sx={{ overflowX: 'auto' }}>
