@@ -1,9 +1,8 @@
-// store/authSlice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
-import { AUTH } from "@/api/endpoint"; // e.g. AUTH.LOGIN
+import { AUTH } from "@/api/endpoint";
 import api from "@/api/axios";
 
-// Define auth types
+// ─── Types ─────────────────────────────────────────────────────
 interface User {
   id: string;
   name: string;
@@ -13,7 +12,8 @@ interface User {
 
 interface AuthState {
   user: User | null;
-  token: string | null;
+  token: string | null;           // main auth token
+  resetToken: string | null;      // reset/OTP token
   loading: boolean;
   error: string | null;
 }
@@ -21,11 +21,14 @@ interface AuthState {
 const initialState: AuthState = {
   user: null,
   token: null,
+  resetToken: null,
   loading: false,
   error: null,
 };
 
-// Thunk for login
+// ─── Thunks ────────────────────────────────────────────────────
+
+// 🔹 Login
 export const login = createAsyncThunk(
   "auth/login",
   async (credentials: { email: string; password: string }, { rejectWithValue }) => {
@@ -39,6 +42,55 @@ export const login = createAsyncThunk(
   }
 );
 
+// 🔹 Forgot Password (returns OTP + temporary token)
+export const forgotPassword = createAsyncThunk(
+  "auth/forgotPassword",
+  async (payload: { email: string }, { rejectWithValue }) => {
+    try {
+      const response = await api.post<any>(AUTH.FORGET_PASSWORD, payload);
+      const { status, data } = response.data;
+
+     
+
+      return { ...data, status };
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || "Forgot password request failed");
+    }
+  }
+);
+
+// 🔹 Reset Password
+export const resetPassword = createAsyncThunk(
+  "auth/resetPassword",
+  async (
+    payload: { email: string; otp: string; newPassword: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      const response = await api.post<any>(AUTH.RESET_PASSWORD, payload);
+      const { status, data } = response.data;
+      return { ...data, status };
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || "Reset password request failed");
+    }
+  }
+);
+
+// 🔹 Resend OTP
+export const resendOtp = createAsyncThunk(
+  "auth/resendOtp",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await api.post<any>(AUTH.RESEND_OTP);
+      const { status, data } = response.data;
+      return { ...data, status };
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || "Resend OTP request failed");
+    }
+  }
+);
+
+// ─── Slice ─────────────────────────────────────────────────────
 const authSlice = createSlice({
   name: "auth",
   initialState,
@@ -46,6 +98,7 @@ const authSlice = createSlice({
     logout: (state) => {
       state.user = null;
       state.token = null;
+      state.resetToken = null;
       state.error = null;
       state.loading = false;
       if (typeof window !== "undefined") {
@@ -65,6 +118,7 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      // ── Login
       .addCase(login.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -80,7 +134,27 @@ const authSlice = createSlice({
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
         state.error = (action.payload as string) || "Login failed";
-      });
+      })
+
+      // ── Forgot Password
+      .addCase(forgotPassword.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(forgotPassword.fulfilled, (state, action: PayloadAction<any>) => {
+        state.loading = false;
+        state.resetToken = action.payload?.token || null;
+        if (typeof window !== "undefined" && action.payload?.token) {
+          localStorage.setItem("token", action.payload.token);
+        }
+      })
+      .addCase(forgotPassword.rejected, (state, action) => {
+        state.loading = false;
+        state.error =
+          (action.payload as string) || "Forgot password request failed";
+      })
+
+     
   },
 });
 

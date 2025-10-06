@@ -14,6 +14,7 @@ import { LocalizationProvider } from '@/components/core/localization-provider';
 import { SettingsButton } from '@/components/core/settings/settings-button';
 import { ThemeProvider } from '@/components/core/theme-provider/theme-provider';
 import { Toaster } from '@/components/core/toaster';
+
 export const metadata = { title: config.site.name } satisfies Metadata;
 export const viewport = {
   width: 'device-width',

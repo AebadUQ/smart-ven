@@ -132,7 +132,7 @@ export function Table9(): React.JSX.Element {
         />
         <Divider />
         <Box sx={{ overflowX: 'auto' }}>
-          <DataTable<Event> columns={columns} rows={events} />
+          <DataTable<any> columns={columns} rows={events} />
         </Box>
       </Card>
     </Box>

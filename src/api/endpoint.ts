@@ -2,7 +2,11 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 export const AUTH = {
     SUPERAMIN_LOGIN: `${BASE_URL}/Admin/login`,
-    SCHOOL_ADMIN: `${BASE_URL}/Admin/login`
+    SCHOOL_ADMIN: `${BASE_URL}/Admin/login`,
+    FORGET_PASSWORD:`${BASE_URL}/Admin/forgot-password`,
+    RESET_PASSWORD:`${BASE_URL}/Admin/reset-password`,
+    RESEND_OTP:`${BASE_URL}/Admin/resend-otp`
+
 };
 
 export const STUDENT ={

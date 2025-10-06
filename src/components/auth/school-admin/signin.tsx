@@ -4,18 +4,18 @@ import * as React from 'react';
 import RouterLink from 'next/link';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
-
 import {
-    Alert,
-    Box,
-    Button,
-    FormControl,
-    FormHelperText,
-    InputLabel,
-    OutlinedInput,
-    Stack,
-    Typography,
-    Link
+  Alert,
+  Box,
+  Button,
+  CircularProgress,
+  FormControl,
+  FormHelperText,
+  InputLabel,
+  OutlinedInput,
+  Stack,
+  Typography,
+  Link,
 } from '@mui/material';
 import { Controller, useForm } from 'react-hook-form';
 import { z as zod } from 'zod';
@@ -26,145 +26,170 @@ import { DynamicLogo } from '@/components/core/logo';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/store';
 import { login } from '@/store/reducers/auth-slice';
-// 🧠 Form schema
+
+// ─── Schema ───────────────────────────────────────────────
 const schema = zod.object({
-    email: zod.string().min(1, 'Email is required').email('Invalid email address'),
-    password: zod.string().min(1, 'Password is required'),
+  email: zod.string().min(1, 'Email is required').email('Invalid email address'),
+  password: zod.string().min(1, 'Password is required'),
 });
 
 type Values = zod.infer<typeof schema>;
 
 const defaultValues: Values = {
-    email: 'aebaduq@gmail.com',
-    password: '4b41b48d5467',
+  email: 'waliiqbal2020@gmail.com',
+  password: 'karachi786',
 };
 
+// ─── Component ─────────────────────────────────────────────
 export function SchoolSignin(): React.JSX.Element {
-    const router = useRouter();
-    const dispatch = useDispatch<AppDispatch>()
-    const [showPassword, setShowPassword] = React.useState(false);
-    const [isPending, setIsPending] = React.useState(false);
+  const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
 
-    const {
-        control,
-        handleSubmit,
-        setError,
-        formState: { errors },
-    } = useForm<Values>({
-        defaultValues,
-        resolver: zodResolver(schema),
-    });
+  const [showPassword, setShowPassword] = React.useState(false);
+  const [isPending, setIsPending] = React.useState(false);
 
-    const onSubmit = async (values: { email: string; password: string }) => {
-        try {
-            const res = await dispatch(login(values))
-            if (res) {
-                router.push('/dashboard')
-            }
+  const {
+    control,
+    handleSubmit,
+    setError,
+    formState: { errors },
+  } = useForm<Values>({
+    defaultValues,
+    resolver: zodResolver(schema),
+  });
 
-        } catch (error) {
-            console.error("Unexpected error:", error);
-        }
+  const onSubmit = async (values: Values) => {
+    if (isPending) return; // prevent double-click
+    setIsPending(true);
 
-    };
+    try {
+      await dispatch(login(values)).unwrap();
+      router.push('/dashboard');
+    } catch (err: any) {
+      setError('root', {
+        type: 'server',
+        message: err?.message || 'Invalid email or password',
+      });
+    } finally {
+      setIsPending(false);
+    }
+  };
 
-    return (
-        <Stack spacing={2}>
-            {/* Logo */}
-            <Box
-                component={RouterLink}
-                href={paths.home}
-                sx={{ display: 'inline-block', fontSize: 0, position: 'relative', left: -20 }}
+  return (
+    <Stack spacing={2}>
+      {/* Logo */}
+      <Box
+        component={RouterLink}
+        href={paths.home}
+        sx={{ display: 'inline-block', fontSize: 0, position: 'relative', left: -20 }}
+      >
+        <DynamicLogo colorDark="light" colorLight="dark" height={100} width={100} />
+      </Box>
+
+      <Stack spacing={1}>
+        <Typography variant="h5">Log in</Typography>
+        <Typography variant="body2" color="#667085">
+          Enter your email and password.
+        </Typography>
+      </Stack>
+
+      <Stack spacing={3}>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <Stack spacing={2}>
+            {/* Email */}
+            <Controller
+              control={control}
+              name="email"
+              render={({ field }) => (
+                <FormControl error={Boolean(errors.email)}>
+                  <InputLabel>Email address</InputLabel>
+                  <OutlinedInput
+                    {...field}
+                    disabled={isPending}
+                    type="email"
+                    style={{backgroundColor:'#F6F7F9'}}
+                    startAdornment={<Envelope color="#1560BD" fontSize="18px" style={{marginRight:'8px'}}/>}
+                  />
+                  {errors.email && <FormHelperText>{errors.email.message}</FormHelperText>}
+                </FormControl>
+              )}
+            />
+
+            {/* Password */}
+            <Controller
+              control={control}
+              name="password"
+              render={({ field }) => (
+                <FormControl error={Boolean(errors.password)}>
+                  <InputLabel>Password</InputLabel>
+                  <OutlinedInput
+                    {...field}
+                    disabled={isPending}
+                    startAdornment={<Lock color="#1560BD" fontSize="18px" style={{marginRight:'8px'}} />}
+                    style={{backgroundColor:'#F6F7F9'}}
+
+                    endAdornment={
+                      showPassword ? (
+                        <Eye
+                          cursor="pointer"
+                          fontSize="var(--icon-fontSize-md)"
+                          onClick={() => !isPending && setShowPassword(false)}
+                        />
+                      ) : (
+                        <EyeSlash
+                          cursor="pointer"
+                          fontSize="var(--icon-fontSize-md)"
+                          onClick={() => !isPending && setShowPassword(true)}
+                        />
+                      )
+                    }
+                    type={showPassword ? 'text' : 'password'}
+                  />
+                  {errors.password && <FormHelperText>{errors.password.message}</FormHelperText>}
+                </FormControl>
+              )}
+            />
+
+            {/* General Error */}
+            {errors.root && <Alert severity="error">{errors.root.message}</Alert>}
+
+            {/* Submit Button */}
+            <Button
+              disabled={isPending}
+              type="submit"
+              variant="contained"
+              fullWidth
+              sx={{
+                backgroundColor: '#1560BD',
+                height: 45,
+                textTransform: 'none',
+                fontWeight: 600,
+              }}
             >
-                <DynamicLogo colorDark="light" colorLight="dark" height={100} width={100} />
-            </Box>
+              {isPending ? (
+                <>
+                  <CircularProgress size={18} sx={{ color: 'inherit', mr: 1 }} />
+                  Logging in...
+                </>
+              ) : (
+                'Log in'
+              )}
+            </Button>
+          </Stack>
+        </form>
 
-            <Stack spacing={1}>
-                <Typography variant="h5">Log in</Typography>
-                <Typography variant="body2" color="#667085">
-                    Enter your email and password.
-                </Typography>
-            </Stack>
-
-            <Stack spacing={3}>
-                <form onSubmit={handleSubmit(onSubmit)}>
-                    <Stack spacing={2}>
-                        {/* Email */}
-                        <Controller
-                            control={control}
-                            name="email"
-                            render={({ field }) => (
-                                <FormControl error={Boolean(errors.email)}>
-                                    <InputLabel>Email address</InputLabel>
-                                    <OutlinedInput
-                                        {...field}
-                                        type="email"
-                                        startAdornment={<Envelope color="#1560BD" fontSize="18px" />}
-                                    />
-                                    {errors.email && <FormHelperText>{errors.email.message}</FormHelperText>}
-                                </FormControl>
-                            )}
-                        />
-
-                        {/* Password */}
-                        <Controller
-                            control={control}
-                            name="password"
-                            render={({ field }) => (
-                                <FormControl error={Boolean(errors.password)}>
-                                    <InputLabel>Password</InputLabel>
-                                    <OutlinedInput
-                                        {...field}
-                                        startAdornment={<Lock color="#1560BD" fontSize="18px" />}
-                                        endAdornment={
-                                            showPassword ? (
-                                                <Eye
-                                                    cursor="pointer"
-                                                    fontSize="var(--icon-fontSize-md)"
-                                                    onClick={() => setShowPassword(false)}
-                                                />
-                                            ) : (
-                                                <EyeSlash
-                                                    cursor="pointer"
-                                                    fontSize="var(--icon-fontSize-md)"
-                                                    onClick={() => setShowPassword(true)}
-                                                />
-                                            )
-                                        }
-                                        type={showPassword ? 'text' : 'password'}
-                                    />
-                                    {errors.password && <FormHelperText>{errors.password.message}</FormHelperText>}
-                                </FormControl>
-                            )}
-                        />
-
-                        {/* General Error */}
-                        {errors.root && <Alert severity="error">{errors.root.message}</Alert>}
-
-                        {/* Submit Button */}
-                        <Button
-                            disabled={isPending}
-                            type="submit"
-                            variant="contained"
-                            sx={{ backgroundColor: '#1560BD' }}
-                        >
-                            {isPending ? 'Logging in...' : 'Log in'}
-                        </Button>
-                    </Stack>
-                </form>
-
-                {/* Forgot Password Link */}
-                <Box display="flex" justifyContent="center">
-                    <Link
-                        component={RouterLink}
-                        href={'/auth/forget-password'}
-                        variant="subtitle2"
-                        color="#FFB800"
-                    >
-                        Forgot password?
-                    </Link>
-                </Box>
-            </Stack>
-        </Stack>
-    );
+        {/* Forgot Password Link */}
+        <Box display="flex" justifyContent="center">
+          <Link
+            component={RouterLink}
+            href="/auth/forget-password"
+            variant="subtitle2"
+            color="#FFB800"
+          >
+            Forgot password?
+          </Link>
+        </Box>
+      </Stack>
+    </Stack>
+  );
 }
