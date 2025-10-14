@@ -60,6 +60,7 @@ export const paths = {
 
     student: '/student',
     reports: '/reports',
+    van:'/van',
 drivers:'/drivers',
     form: '/form',
     lead: '/leads',

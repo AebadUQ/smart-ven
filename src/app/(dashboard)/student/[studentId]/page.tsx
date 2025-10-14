@@ -1,4 +1,3 @@
-// app/student/[id]/page.tsx
 "use client";
 
 import * as React from "react";
@@ -17,6 +16,12 @@ import LinearProgress from "@mui/material/LinearProgress";
 import Link from "@mui/material/Link";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
+import Button from "@mui/material/Button";
+import Modal from "@mui/material/Modal";
+import MenuItem from "@mui/material/MenuItem";
+import Select from "@mui/material/Select";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
 import { ArrowLeft as ArrowLeftIcon } from "@phosphor-icons/react/dist/ssr/ArrowLeft";
 import { CheckCircle as CheckCircleIcon } from "@phosphor-icons/react/dist/ssr/CheckCircle";
 import { House as HouseIcon } from "@phosphor-icons/react/dist/ssr/House";
@@ -27,32 +32,64 @@ import { PropertyItem } from "@/components/core/property-item";
 import { PropertyList } from "@/components/core/property-list";
 import { RootState, AppDispatch } from "@/store";
 import { getStudentDetail } from "@/store/reducers/student-slice";
+import { assignVanToStudent, getAllSchoolVans } from "@/store/reducers/van-slice";
 
 export default function Page(): React.JSX.Element {
   const params = useParams<{ id: string }>();
   const id = params?.studentId;
   const dispatch = useDispatch<AppDispatch>();
   const { studentDetail, detailLoading } = useSelector((s: RootState) => s.student);
+  const { vans, loading, error } = useSelector((state: RootState) => state.van);
 
-  // Fetch on mount if missing or mismatched
+  // Modal state
+  const [modalOpen, setModalOpen] = React.useState(false);
+  const [selectedVan, setSelectedVan] = React.useState<string>("");
+
+  // Fetch student detail
   React.useEffect(() => {
-    if (id && (!studentDetail || studentDetail.id !== id)) {
-      dispatch(getStudentDetail(id));
-    }
+    const fetchStudent = async () => {
+      if (id && (!studentDetail || studentDetail.id !== id)) {
+        try {
+          await dispatch(getStudentDetail(id)).unwrap();
+        } catch (err) {
+          console.error("Failed to fetch student detail:", err);
+        }
+      }
+    };
+    fetchStudent();
   }, [dispatch, id, studentDetail]);
 
-  // Optional one-time retry if still empty after first attempt
+  // Fetch school vans
+  React.useEffect(() => {
+    const fetchVans = async () => {
+      try {
+        await dispatch(getAllSchoolVans()).unwrap();
+      } catch (err) {
+        console.error("Failed to fetch school vans:", err);
+      }
+    };
+    fetchVans();
+  }, [dispatch]);
+
+  // Optional retry logic
   const retriedRef = React.useRef(false);
   React.useEffect(() => {
-    if (
-      id &&
-      !detailLoading &&
-      (!studentDetail || studentDetail.id !== id) &&
-      !retriedRef.current
-    ) {
-      retriedRef.current = true;
-      dispatch(getStudentDetail(id));
-    }
+    const retryFetch = async () => {
+      if (
+        id &&
+        !detailLoading &&
+        (!studentDetail || studentDetail.id !== id) &&
+        !retriedRef.current
+      ) {
+        retriedRef.current = true;
+        try {
+          await dispatch(getStudentDetail(id)).unwrap();
+        } catch (err) {
+          console.error("Retry fetch student failed:", err);
+        }
+      }
+    };
+    retryFetch();
   }, [dispatch, id, detailLoading, studentDetail]);
 
   const statusLabel = (studentDetail?.status || "").trim().toLowerCase();
@@ -69,9 +106,29 @@ export default function Page(): React.JSX.Element {
     <Chip label="Pending" size="small" variant="outlined" />
   );
 
+const handleAssign = async () => {
+  if (!selectedVan || !id) return;
+
+  try {
+    await dispatch(assignVanToStudent({ kidId: id, vanId: selectedVan })).unwrap();
+    setModalOpen(false);
+    // Optionally refetch student detail to reflect the new van assignment
+    await dispatch(getStudentDetail(id)).unwrap();
+  } catch (err) {
+    console.error("Failed to assign van:", err);
+  }
+};
+
   return (
-    <Box sx={{ p: 4, width: "100%" }}>
+    <Box sx={{ p: 4, width: "100%", position: "relative" }}>
       {detailLoading && <LinearProgress sx={{ mb: 2 }} />}
+
+      {/* Top-right Assign Van Button */}
+      <Box sx={{ position: "absolute", top: 16, right: 16 }}>
+        <Button variant="contained" onClick={() => setModalOpen(true)}>
+          Assign Van
+        </Button>
+      </Box>
 
       <Stack spacing={4}>
         <Stack spacing={2}>
@@ -110,11 +167,7 @@ export default function Page(): React.JSX.Element {
           <Grid xs={12}>
             <Card sx={{ width: "100%" }}>
               <CardHeader
-                avatar={
-                  <Avatar>
-                    <UserIcon />
-                  </Avatar>
-                }
+                avatar={<Avatar><UserIcon /></Avatar>}
                 title="Student Details"
               />
               <CardContent sx={{ width: "100%", overflowX: "auto" }}>
@@ -136,11 +189,7 @@ export default function Page(): React.JSX.Element {
           <Grid xs={12}>
             <Card sx={{ width: "100%" }}>
               <CardHeader
-                avatar={
-                  <Avatar>
-                    <HouseIcon />
-                  </Avatar>
-                }
+                avatar={<Avatar><HouseIcon /></Avatar>}
                 title="School & Route Info"
               />
               <CardContent sx={{ width: "100%", overflowX: "auto" }}>
@@ -161,6 +210,54 @@ export default function Page(): React.JSX.Element {
           </Typography>
         )}
       </Stack>
+
+      {/* Modal */}
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            bgcolor: "background.paper",
+            p: 4,
+            borderRadius: 2,
+            width: 600,
+            maxHeight: "80vh",
+            overflowY: "auto",
+          }}
+        >
+          <Typography variant="h6" mb={2}>Assign Van</Typography>
+          <FormControl fullWidth>
+            <InputLabel id="van-select-label">Select Van</InputLabel>
+            <Select
+              labelId="van-select-label"
+              value={selectedVan}
+              label="Select Van"
+              onChange={(e) => setSelectedVan(e.target.value)}
+              MenuProps={{
+                PaperProps: {
+                  style: {
+                    maxHeight: 300,
+                    width: 250,
+                  },
+                },
+              }}
+            >
+              {vans.map((van) => (
+                <MenuItem key={van._id} value={van._id}>
+                  {van.vehicleType} - {van.carNumber}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <Stack direction="row" spacing={2} mt={3} justifyContent="flex-end">
+            <Button variant="outlined" onClick={() => setModalOpen(false)}>Cancel</Button>
+            <Button variant="contained" onClick={handleAssign} disabled={!selectedVan}>Save</Button>
+          </Stack>
+        </Box>
+      </Modal>
     </Box>
   );
 }

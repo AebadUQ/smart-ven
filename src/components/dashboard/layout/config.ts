@@ -22,12 +22,12 @@ export const layoutConfig = {
         { key: 'tracking', title: 'Live Tracking', href: paths.dashboard.tracking, icon: 'house' },
       ],
     },
-     {
-      key: 'school',
-      items: [
-        { key: 'school', title: 'School Management', href: paths.dashboard.school, icon: 'house' },
-      ],
-    },
+    //  {
+    //   key: 'school',
+    //   items: [
+    //     { key: 'school', title: 'School Management', href: paths.dashboard.school, icon: 'house' },
+    //   ],
+    // },
        {
       key: 'student',
       items: [
@@ -35,9 +35,9 @@ export const layoutConfig = {
       ],
     },
        {
-      key: 'van-driver',
+      key: 'van',
       items: [
-        { key: 'van-driver', title: 'Van & Driver Management', href: paths.dashboard.drivers, icon: 'house' },
+        { key: 'van', title: 'Van  Management', href: paths.dashboard.van, icon: 'house' },
       ],
     },
      {
@@ -49,7 +49,7 @@ export const layoutConfig = {
      {
       key: 'route-planner',
       items: [
-        { key: 'route-planner', title: 'Route Planner', href: paths.dashboard.tracking.stat, icon: 'house' },
+        { key: 'route-planner', title: 'Route Planner', href: paths.dashboard.tracking, icon: 'house' },
       ],
     },
      {
