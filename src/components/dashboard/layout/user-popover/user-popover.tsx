@@ -12,6 +12,9 @@ import Typography from '@mui/material/Typography';
 import { User as UserIcon } from '@phosphor-icons/react/dist/ssr/User';
 import { paths } from '@/paths';
 import { useAuthContext } from '@/contexts/AuthContext';
+import { useDispatch } from 'react-redux';
+import { AppDispatch, RootState } from "@/store";
+import { logout } from '@/store/reducers/auth-slice';
 
 export interface UserPopoverProps {
   anchorEl: null | Element;
@@ -20,8 +23,7 @@ export interface UserPopoverProps {
 }
 
 export function UserPopover({ anchorEl, onClose, open }: UserPopoverProps): React.JSX.Element {
-  const { user, logout } = useAuthContext()
-
+  const dispatch = useDispatch<AppDispatch>();
   return (
     <Popover
       anchorEl={anchorEl}
@@ -32,9 +34,9 @@ export function UserPopover({ anchorEl, onClose, open }: UserPopoverProps): Reac
       transformOrigin={{ horizontal: 'right', vertical: 'top' }}
     >
       <Box sx={{ p: 2 }}>
-        <Typography>{user?.name}</Typography>
+        <Typography>{ 'Name'}</Typography>
         <Typography color="text.secondary" variant="body2">
-          {user?.email}
+          { 'email@email.com'}
         </Typography>
       </Box>
       <Divider />
@@ -49,7 +51,7 @@ export function UserPopover({ anchorEl, onClose, open }: UserPopoverProps): Reac
       </List>
       <Divider />
       <Box sx={{ p: 1 }}>
-        <MenuItem component="div" onClick={() => logout()} sx={{ justifyContent: 'center' }}>
+        <MenuItem component="div" onClick={() => dispatch(logout())} sx={{ justifyContent: 'center' }}>
           Sign out
         </MenuItem>
 
