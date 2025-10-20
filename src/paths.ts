@@ -57,7 +57,7 @@ export const paths = {
         sudashboard: '/su-dashboard',
     tracking: '/tracking',
     school: '/school',
-
+    planner:'/planner',
     student: '/student',
     reports: '/reports',
     van:'/van',
@@ -68,6 +68,7 @@ drivers:'/drivers',
     merchant: '/merchants',
     offer: '/offers',
     priority: '/priority',
+    alert: '/alert',
 
     marketing: {
       campaign: '/marketing/campaigns',

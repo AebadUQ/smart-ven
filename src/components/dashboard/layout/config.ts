@@ -43,21 +43,27 @@ export const layoutConfig = {
      {
       key: 'parent',
       items: [
-        { key: 'parent', title: 'Parent Management', href: paths.dashboard.parents.parents, icon: 'house' },
+        { key: 'parent', title: 'Complaint Management', href: paths.dashboard.parents.parents, icon: 'house' },
       ],
     },
      {
       key: 'route-planner',
       items: [
-        { key: 'route-planner', title: 'Route Planner', href: paths.dashboard.tracking, icon: 'house' },
+        { key: 'route-planner', title: 'Route Planner', href: paths.dashboard.planner, icon: 'house' },
       ],
     },
-     {
+    {
       key: 'alert',
       items: [
-        { key: 'dashboard', title: 'Alerts Overview', href: paths.dashboard.settings.auditlogs, icon: 'gear' },
+        { key: 'alert', title: 'Alert', href: paths.dashboard.alert, icon: 'house' },
       ],
     },
+    //  {
+    //   key: 'alert',
+    //   items: [
+    //     { key: 'dashboard', title: 'Alerts Overview', href: paths.dashboard.settings.auditlogs, icon: 'gear' },
+    //   ],
+    // },
      {
       key: 'report',
       items: [

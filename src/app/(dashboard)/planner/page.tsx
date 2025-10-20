@@ -1,73 +1,73 @@
 "use client";
 
 import * as React from "react";
-import { Box, Card, Divider, Stack, Typography, Chip, IconButton, Menu, MenuItem, ListItemIcon, ListItemText, CircularProgress } from "@mui/material";
+import { Box, Card, Divider, Stack, Typography, IconButton, Menu, MenuItem, ListItemIcon, ListItemText, CircularProgress } from "@mui/material";
 import { DataTable, type ColumnDef } from "@/components/core/data-table";
 import { CustomersPagination } from "@/components/dashboard/customer/customers-pagination";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { Eye as EyeIcon, Edit as EditIcon, Trash as TrashIcon } from '@phosphor-icons/react/dist/ssr/Eye';
 
-type ParentTicket = {
-  id: number;
-  type: "Driver" | "Parent";
-  reportMessage: string;
-  reportTitle: string;
-  complaintImage?: string;
-  complaintAudio?: string;
-  status: "Open" | "In Progress" | "Closed";
+type TripRecord = {
+  vanId: string;
+  title: string;
+  startTime: string;
+  tripType: "morning" | "evening";
+  tripDays: Record<string, boolean>;
+  startPoint: { lat: number; long: number };
+  endPoint: { lat: number; long: number };
 };
 
-export default function ParentTicketPage(): React.JSX.Element {
-  const [selectedTickets, setSelectedTickets] = React.useState<ParentTicket[]>([]);
+export default function RoutePlannerPage(): React.JSX.Element {
+  const [selectedTrips, setSelectedTrips] = React.useState<TripRecord[]>([]);
   const [loading, setLoading] = React.useState(false);
-  const [tickets, setTickets] = React.useState<ParentTicket[]>([
+  const [trips, setTrips] = React.useState<TripRecord[]>([
     {
-      id: 101,
-      type: "Parent",
-      reportMessage: "Van did not arrive on time",
-      reportTitle: "Late Van",
-      complaintImage: "/assets/complaint1.jpg",
-      complaintAudio: "/assets/audio1.mp3",
-      status: "Open",
+      vanId: "68ca57b2b1f408f198b1768a",
+      title: "Morning School Pickup",
+      startTime: "07:30 AM",
+      tripType: "morning",
+      tripDays: { monday: true, tuesday: true, wednesday: true, thursday: true, friday: true },
+      startPoint: { lat: 24.9200, long: 67.0600 },
+      endPoint: { lat: 24.9500, long: 67.1000 },
     },
     {
-      id: 102,
-      type: "Driver",
-      reportMessage: "Student was not picked up",
-      reportTitle: "Missed Pickup",
-      complaintImage: "/assets/complaint2.jpg",
-      complaintAudio: "/assets/audio2.mp3",
-      status: "In Progress",
+      vanId: "68ca57b2b1f408f198b1768b",
+      title: "Evening School Drop",
+      startTime: "03:30 PM",
+      tripType: "evening",
+      tripDays: { monday: true, tuesday: true, wednesday: true, thursday: true, friday: true },
+      startPoint: { lat: 24.9500, long: 67.1000 },
+      endPoint: { lat: 24.9200, long: 67.0600 },
     },
   ]);
-  const [pagination, setPagination] = React.useState({ page: 1, limit: 10, total: 2 });
 
-  const columns: ColumnDef<ParentTicket>[] = [
-    { name: "Ticket ID", width: "120px", formatter: (row) => <Typography variant="body2">{row.id}</Typography> },
-    { name: "Type", width: "120px", formatter: (row) => <Typography variant="body2">{row.type}</Typography> },
-    { name: "Report Message", width: "250px", formatter: (row) => <Typography variant="body2">{row.reportMessage}</Typography> },
-    { name: "Report Title", width: "200px", formatter: (row) => <Typography variant="body2">{row.reportTitle}</Typography> },
+  const [pagination, setPagination] = React.useState({ page: 1, limit: 10, total: trips.length });
+
+  const columns: ColumnDef<TripRecord>[] = [
+    { name: "Van ID", width: "180px", formatter: (row) => <Typography variant="body2">{row.vanId}</Typography> },
+    { name: "Title", width: "200px", formatter: (row) => <Typography variant="body2">{row.title}</Typography> },
+    { name: "Start Time", width: "120px", formatter: (row) => <Typography variant="body2">{row.startTime}</Typography> },
+    { name: "Trip Type", width: "120px", formatter: (row) => <Typography variant="body2">{row.tripType}</Typography> },
     {
-      name: "Complaint Image",
-      width: "120px",
-      formatter: (row) => (
-        row.complaintImage ? <img src={row.complaintImage} alt="complaint" style={{ width: 50, height: 50, borderRadius: 4 }} /> : <Typography variant="body2">N/A</Typography>
-      ),
-    },
-    {
-      name: "Complaint Audio",
-      width: "150px",
-      formatter: (row) => (
-        row.complaintAudio ? <audio controls src={row.complaintAudio} style={{ width: "100%" }} /> : <Typography variant="body2">N/A</Typography>
-      ),
-    },
-    {
-      name: "Status",
-      width: "120px",
+      name: "Trip Days",
+      width: "200px",
       formatter: (row) => {
-        const color = row.status === "Open" ? "green" : row.status === "In Progress" ? "orange" : "gray";
-        return <Chip label={row.status} size="small" style={{ borderColor: color, color }} variant="outlined" />;
+        const days = Object.entries(row.tripDays)
+          .filter(([_, v]) => v)
+          .map(([k]) => k.charAt(0).toUpperCase() + k.slice(1, 3)) // Mon, Tue, ...
+          .join(", ");
+        return <Typography variant="body2">{days}</Typography>;
       },
+    },
+    {
+      name: "Start Point",
+      width: "150px",
+      formatter: (row) => <Typography variant="body2">{row.startPoint.lat}, {row.startPoint.long}</Typography>,
+    },
+    {
+      name: "End Point",
+      width: "150px",
+      formatter: (row) => <Typography variant="body2">{row.endPoint.lat}, {row.endPoint.long}</Typography>,
     },
     {
       name: "Actions",
@@ -79,9 +79,9 @@ export default function ParentTicketPage(): React.JSX.Element {
         const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
         const handleMenuClose = () => setAnchorEl(null);
 
-        const handleView = () => { console.log("View ticket:", row.id); handleMenuClose(); };
-        const handleEdit = () => { console.log("Edit ticket:", row.id); handleMenuClose(); };
-        const handleDelete = () => { console.log("Delete ticket:", row.id); handleMenuClose(); };
+        const handleView = () => { console.log("View trip:", row.vanId); handleMenuClose(); };
+        const handleEdit = () => { console.log("Edit trip:", row.vanId); handleMenuClose(); };
+        const handleDelete = () => { console.log("Delete trip:", row.vanId); handleMenuClose(); };
 
         return (
           <>
@@ -108,17 +108,17 @@ export default function ParentTicketPage(): React.JSX.Element {
   return (
     <Box sx={{ bgcolor: "var(--mui-palette-background-level1)", p: 3 }}>
       <Stack spacing={3}>
-        <Typography variant="h5">Complain management</Typography>
+        <Typography variant="h5">Route Planner</Typography>
         <Card>
           <Box sx={{ overflowX: "auto" }}>
             {loading ? (
               <Box sx={{ display: "flex", justifyContent: "center", p: 3 }}><CircularProgress /></Box>
-            ) : tickets.length ? (
+            ) : trips.length ? (
               <DataTable<any>
                 columns={columns}
-                rows={tickets}
+                rows={trips}
                 selectable
-                onSelectionChange={(_, rows) => setSelectedTickets(rows)}
+                onSelectionChange={(_, rows) => setSelectedTrips(rows)}
               />
             ) : (
               <Box sx={{ p: 3 }}><Typography color="text.secondary" sx={{ textAlign: "center" }} variant="body2">No Data found</Typography></Box>
@@ -132,13 +132,13 @@ export default function ParentTicketPage(): React.JSX.Element {
             onPaginationChange={(_, newPage) => {
               console.log("Change page:", newPage + 1);
               setPagination(prev => ({ ...prev, page: newPage + 1 }));
-              setSelectedTickets([]);
+              setSelectedTrips([]);
             }}
             onRowsPerPageChange={(event) => {
               const newLimit = parseInt(event.target.value, 10);
               console.log("Change rows per page:", newLimit);
               setPagination(prev => ({ ...prev, page: 1, limit: newLimit }));
-              setSelectedTickets([]);
+              setSelectedTrips([]);
             }}
           />
         </Card>

@@ -118,7 +118,7 @@ const handleAssign = async () => {
     console.error("Failed to assign van:", err);
   }
 };
-
+console.log("studentDetail",studentDetail)
   return (
     <Box sx={{ p: 4, width: "100%", position: "relative" }}>
       {detailLoading && <LinearProgress sx={{ mb: 2 }} />}
@@ -194,9 +194,13 @@ const handleAssign = async () => {
               />
               <CardContent sx={{ width: "100%", overflowX: "auto" }}>
                 <PropertyList divider={<Divider />} orientation="vertical">
-                  <PropertyItem name="School ID" value={studentDetail?.schoolId || "—"} />
-                  <PropertyItem name="Parent ID" value={studentDetail?.parentId || "—"} />
-                  <PropertyItem name="Van Assigned" value={studentDetail?.VanId || "—"} />
+                  <PropertyItem name="School Name" value={studentDetail?.schoolName || "—"} />
+                  <PropertyItem name="Parent Name" value={studentDetail?.parentName || "—"} />
+                                    <PropertyItem name="Parent Email" value={studentDetail?.parentEmail || "—"} />
+
+                  <PropertyItem name="Van Type" value={studentDetail?.vehicleType || "—"} />
+                                    <PropertyItem name="Route " value={studentDetail?.route || "—"} />
+
                   <PropertyItem name="Class/Grade" value={studentDetail?.grade || "—"} />
                 </PropertyList>
               </CardContent>

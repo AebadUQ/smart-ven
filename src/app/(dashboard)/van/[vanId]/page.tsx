@@ -92,7 +92,7 @@ export default function Page(): React.JSX.Element {
   ) : (
     <Chip label="Unknown" size="small" variant="outlined" />
   );
-
+console.log("selectedVan",selectedVan)
   return (
     <Box sx={{ p: 4, width: "100%", position: "relative" }}>
       {(selectedVanLoading || driversLoading) && <LinearProgress sx={{ mb: 2 }} />}
@@ -145,12 +145,12 @@ export default function Page(): React.JSX.Element {
                 <CardHeader avatar={<Avatar><HouseIcon /></Avatar>} title="Vehicle & Route Info" />
                 <CardContent>
                   <PropertyList divider={<Divider />} orientation="vertical">
-                    <PropertyItem name="Van ID" value={selectedVan._id} />
+                    <PropertyItem name="Van ID" value={selectedVan.id} />
                     <PropertyItem name="Vehicle Type" value={selectedVan.vehicleType} />
-                    <PropertyItem name="Car Number" value={selectedVan.carNumber} />
-                    <PropertyItem name="Capacity" value={selectedVan.venCapacity} />
-                    <PropertyItem name="Route Assigned" value={selectedVan.assignRoute} />
-                    <PropertyItem name="Condition" value={selectedVan.condition || "—"} />
+                    <PropertyItem name="Car Number" value={selectedVan.numberPlate} />
+                    <PropertyItem name="Capacity" value={selectedVan.capacity} />
+                    <PropertyItem name="Route Assigned" value={selectedVan.route} />
+                    <PropertyItem name="Condition" value={selectedVan.condition || "N/A"} />
                   </PropertyList>
                 </CardContent>
               </Card>
@@ -185,11 +185,11 @@ export default function Page(): React.JSX.Element {
               onChange={(e) => setSelectedDriver(e.target.value)}
               MenuProps={{ PaperProps: { style: { maxHeight: 300, width: 250 } } }}
             >
-              {drivers.map((driver) => (
+              {/* {drivers?.map((driver) => (
                 <MenuItem key={driver._id} value={driver._id}>
                   {driver.fullname} ({driver.phoneNo || "N/A"})
                 </MenuItem>
-              ))}
+              ))} */}
             </Select>
           </FormControl>
 
