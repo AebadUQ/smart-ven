@@ -170,74 +170,7 @@ export default function Page(): React.JSX.Element {
   },
 }
 ,
-    // {
-    //   name: "Actions",
-    //   width: "80px",
-    //   align: "right",
-    //   formatter: (row): React.JSX.Element => {
-    //     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-    //     const open = Boolean(anchorEl);
 
-    //     const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) =>
-    //       setAnchorEl(event.currentTarget);
-    //     const handleMenuClose = () => setAnchorEl(null);
-
-        // const handleView = async () => {
-        //   try {
-        //     await dispatch(getStudentDetail(row.student.id)).unwrap();  // <-- dispatch detail
-        //     router.push(`${paths.dashboard.student}/${row.student.id}`); // then navigate
-        //   } finally {
-        //     handleMenuClose();
-        //   }
-        // };
-
-    //     const handleEdit = () => {
-    //       router.push(`${paths.dashboard.student}/${row.student.id}/edit`);
-    //       handleMenuClose();
-    //     };
-
-    //     const handleDelete = async () => {
-    //       await dispatch(deleteStudentsAndRefetch([row.student.id]));
-    //       handleMenuClose();
-    //     };
-
-    //     return (
-    //       <>
-    //         <IconButton onClick={handleMenuOpen} size="small">
-    //           <MoreVertIcon />
-    //         </IconButton>
-    //         <Menu
-    //           anchorEl={anchorEl}
-    //           open={open}
-    //           onClose={handleMenuClose}
-    //           anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-    //           transformOrigin={{ vertical: "top", horizontal: "right" }}
-    //         >
-    //           <MenuItem onClick={handleView}>
-    //             <ListItemIcon>
-    //               <Eye fontSize="medium" />
-    //             </ListItemIcon>
-    //             <ListItemText primary="View" />
-    //           </MenuItem>
-
-    //           <MenuItem onClick={handleEdit}>
-    //             <ListItemIcon>
-    //               <EditIcon fontSize="medium" />
-    //             </ListItemIcon>
-    //             <ListItemText primary="Edit" />
-    //           </MenuItem>
-
-    //           <MenuItem onClick={handleDelete}>
-    //             <ListItemIcon>
-    //               <Trash fontSize="medium" color="red" />
-    //             </ListItemIcon>
-    //             <ListItemText primary="Delete" />
-    //           </MenuItem>
-    //         </Menu>
-    //       </>
-    //     );
-    //   },
-    // },
   ];
 
   return (

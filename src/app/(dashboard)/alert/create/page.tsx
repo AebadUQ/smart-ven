@@ -14,44 +14,91 @@ import {
   SelectChangeEvent,
   Button,
   Grid,
+  CircularProgress,
+  Autocomplete,
 } from "@mui/material";
-
-// Dummy data for dropdowns
-const parents = [
-  { id: "p1", name: "Mr. Khan" },
-  { id: "p2", name: "Mrs. Ahmed" },
-  { id: "p3", name: "Mr. Ali" },
-];
-
-const vans = [
-  { id: "v1", name: "Van #1" },
-  { id: "v2", name: "Van #2" },
-  { id: "v3", name: "Van #3" },
-];
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/store";
+import { addAlert, clearAlertStatus } from "@/store/reducers/alert-slice";
+import { getAllSchoolVans } from "@/store/reducers/van-slice";
+import { useRouter } from "next/navigation";
 
 export default function AddAlertForm(): React.JSX.Element {
+  const dispatch = useDispatch<AppDispatch>();
+  const router = useRouter();
+
+  const { loading, success, error } = useSelector(
+    (state: RootState) => state.alert
+  );
+  const { vans, loading: vansLoading } = useSelector(
+    (state: RootState) => state.van
+  );
+
   const [alertType, setAlertType] = React.useState("");
   const [recipientType, setRecipientType] = React.useState("");
-  const [recipientId, setRecipientId] = React.useState(""); // selected parent/van
+  const [vanId, setVanId] = React.useState<string>(""); // SINGLE VALUE
   const [message, setMessage] = React.useState("");
 
-  const handleSubmit = () => {
+  // Fetch vans when SPECIFIC_VAN is selected
+  React.useEffect(() => {
+    if (recipientType === "SPECIFIC_VAN") {
+      dispatch(getAllSchoolVans({ page: 1, limit: 50 }))
+        .unwrap()
+        .catch(console.error);
+    }
+  }, [recipientType, dispatch]);
+
+  // Handle submit
+  const handleSubmit = async () => {
+    if (!alertType || !recipientType || !message) {
+      alert("Please fill in all required fields!");
+      return;
+    }
+
     const data = {
       alertType,
       recipientType,
-      recipientId: recipientId || null,
+      vanId, 
       message,
     };
-    console.log("Alert submitted:", data);
-    alert("Alert data logged in console!");
+
+    await dispatch(addAlert(data));
   };
+
+  // Reset form on success
+  React.useEffect(() => {
+    if (success) {
+      setAlertType("");
+      setRecipientType("");
+      setVanId("");
+      setMessage("");
+      dispatch(clearAlertStatus());
+      router.push("/alert");
+    }
+  }, [success, dispatch, router]);
+
+  React.useEffect(() => {
+    if (error) {
+      dispatch(clearAlertStatus());
+    }
+  }, [error, dispatch]);
+
+  // Map vans for Autocomplete
+  const mappedVans = vans.map((v) => ({
+    _id: v.van.id,
+    vehicleType: v.van.vehicleType,
+    carNumber: v.van.carNumber,
+    driverName: v.driver.fullname || "No driver",
+  }));
 
   return (
     <Box sx={{ p: 3 }}>
       <Card sx={{ p: 3 }}>
         <Stack spacing={3}>
           <Typography variant="h5">Add / Edit Alert</Typography>
+
           <Grid container spacing={2}>
+            {/* Alert Type */}
             <Grid item xs={12} sm={6}>
               <TextField
                 label="Alert Type"
@@ -61,49 +108,61 @@ export default function AddAlertForm(): React.JSX.Element {
               />
             </Grid>
 
+            {/* Recipient Type */}
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
-                <InputLabel id="recipient-type-label">Send To</InputLabel>
+                <InputLabel id="recipient-type-label">Recipient Type</InputLabel>
                 <Select
                   labelId="recipient-type-label"
                   value={recipientType}
-                  label="Send To"
+                  label="Recipient Type"
                   onChange={(e: SelectChangeEvent) => {
                     setRecipientType(e.target.value);
-                    setRecipientId(""); // reset selected
+                    setVanId("");
                   }}
                 >
-                  <MenuItem value="ALL_PARENTS">All Parents</MenuItem>
                   <MenuItem value="ALL_DRIVERS">All Drivers</MenuItem>
-                  <MenuItem value="SPECIFIC_PARENT">Specific Parent</MenuItem>
                   <MenuItem value="SPECIFIC_VAN">Specific Van</MenuItem>
+                  <MenuItem value="ALL_PARENTS">All Parents</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
 
-            {/* Conditional dropdown */}
-            {(recipientType === "SPECIFIC_PARENT" || recipientType === "SPECIFIC_VAN") && (
+            {/* Van selection */}
+            {recipientType === "SPECIFIC_VAN" && (
               <Grid item xs={12} sm={6}>
-                <FormControl fullWidth>
-                  <InputLabel id="recipient-id-label">
-                    {recipientType === "SPECIFIC_PARENT" ? "Select Parent" : "Select Van"}
-                  </InputLabel>
-                  <Select
-                    labelId="recipient-id-label"
-                    value={recipientId}
-                    label={recipientType === "SPECIFIC_PARENT" ? "Select Parent" : "Select Van"}
-                    onChange={(e: SelectChangeEvent) => setRecipientId(e.target.value)}
-                  >
-                    {(recipientType === "SPECIFIC_PARENT" ? parents : vans).map((item) => (
-                      <MenuItem key={item.id} value={item.id}>
-                        {item.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                <Autocomplete
+                  options={mappedVans}
+                  getOptionLabel={(option) =>
+                    `${option.vehicleType} - ${option.carNumber} (${option.driverName})`
+                  }
+                  loading={vansLoading}
+                  value={mappedVans.find((v) => v._id === vanId) || null}
+                  onChange={(event, newValue) => {
+                    setVanId(newValue?._id || "");
+                  }}
+                  isOptionEqualToValue={(option, value) => option._id === value._id}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Select Van"
+                      variant="outlined"
+                      InputProps={{
+                        ...params.InputProps,
+                        endAdornment: (
+                          <>
+                            {vansLoading ? <CircularProgress size={20} /> : null}
+                            {params.InputProps.endAdornment}
+                          </>
+                        ),
+                      }}
+                    />
+                  )}
+                />
               </Grid>
             )}
 
+            {/* Message Field */}
             <Grid item xs={12}>
               <TextField
                 label="Message"
@@ -115,9 +174,24 @@ export default function AddAlertForm(): React.JSX.Element {
               />
             </Grid>
 
-            <Grid item xs={12}>
-              <Button variant="contained" color="primary" fullWidth onClick={handleSubmit}>
-                Submit
+            {/* Submit */}
+            <Grid
+              item
+              xs={12}
+              sx={{ display: "flex", justifyContent: "flex-end" }}
+            >
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleSubmit}
+                sx={{ minWidth: 150 }}
+                disabled={loading}
+              >
+                {loading ? (
+                  <CircularProgress size={22} color="inherit" />
+                ) : (
+                  "Submit"
+                )}
               </Button>
             </Grid>
           </Grid>

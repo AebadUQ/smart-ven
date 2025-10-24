@@ -35,3 +35,11 @@ export const VAN = {
     
 
 }
+
+    export const ALERT = {
+        GET_ALL_ALERTS: '/alert/getAlert',
+        ADD_ALERT:'/alert/addAlert'
+        
+        
+
+    }

@@ -5,6 +5,7 @@ import storage from 'redux-persist/lib/storage';
 import student from './student-slice';
 import auth from './auth-slice';
 import van from './van-slice'
+import alert from './alert-slice'
 import driver from './driver-slice'
 const authPersistConfig = {
   key: 'auth',
@@ -18,7 +19,8 @@ const reducers = combineReducers({
   auth: persistedAuthReducer,
   student,
   van,
-  driver
+  driver,
+  alert
 });
 
 export default reducers;

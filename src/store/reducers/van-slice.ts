@@ -32,8 +32,16 @@ export interface Van {
   [key: string]: any;
 }
 
+export interface PaginationMeta {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 interface VanState {
   vans: Van[];
+  pagination: PaginationMeta;
   selectedVan?: Van | null;
   loading: boolean;
   error: string | null;
@@ -51,6 +59,7 @@ interface VanState {
 
 const initialState: VanState = {
   vans: [],
+  pagination: { total: 0, page: 1, limit: 10, totalPages: 0 },
   selectedVan: null,
   loading: false,
   error: null,
@@ -68,18 +77,19 @@ const initialState: VanState = {
 
 // ─── Thunks ────────────────────────────────────────────────────
 
-// Get all vans
-export const getAllSchoolVans = createAsyncThunk<Van[]>(
-  "van/getAllSchoolVans",
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await api.get(VAN.GET_ALL_VAN_OF_SCHOOL);
-      return response.data.data as Van[];
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || "Failed to fetch vans");
-    }
+// Get all vans with pagination
+export const getAllSchoolVans = createAsyncThunk< 
+  { vans: Van[]; pagination: PaginationMeta },
+  { page?: number; limit?: number }
+>("van/getAllSchoolVans", async ({ page = 1, limit = 10 }, { rejectWithValue }) => {
+  try {
+    const response = await api.get(VAN.GET_ALL_VAN_OF_SCHOOL, { params: { page, limit } });
+    const { data, pagination } = response.data as { data: Van[]; pagination: PaginationMeta };
+    return { vans: data, pagination };
+  } catch (error: any) {
+    return rejectWithValue(error.response?.data?.message || "Failed to fetch vans");
   }
-);
+});
 
 // Assign van to student
 interface AssignVanPayload {
@@ -124,24 +134,6 @@ export const addVan = createAsyncThunk<Van, Partial<Van>, { rejectValue: string 
   }
 );
 
-// ─── Update van ────────────────────────────────────────────────
-interface UpdateVanPayload {
-  vanId: string;
-  [key: string]: any;
-}
-
-export const updateVan = createAsyncThunk<Van>(
-  "van/updateVan",
-  async (payload, { rejectWithValue }) => {
-    try {
-      const response = await api.post(`${VAN.UPDATE_VAN}`, payload);
-      return response.data.data as Van;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || "Failed to update van");
-    }
-  }
-);
-
 // ─── Slice ─────────────────────────────────────────────────────
 const vanSlice = createSlice({
   name: "van",
@@ -149,6 +141,7 @@ const vanSlice = createSlice({
   reducers: {
     clearVans: (state) => {
       state.vans = [];
+      state.pagination = { total: 0, page: 1, limit: 10, totalPages: 0 };
       state.loading = false;
       state.error = null;
     },
@@ -179,10 +172,14 @@ const vanSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(getAllSchoolVans.fulfilled, (state, action: PayloadAction<Van[]>) => {
-        state.loading = false;
-        state.vans = action.payload;
-      })
+      .addCase(
+        getAllSchoolVans.fulfilled,
+        (state, action: PayloadAction<{ vans: Van[]; pagination: PaginationMeta }>) => {
+          state.loading = false;
+          state.vans = action.payload.vans;
+          state.pagination = action.payload.pagination;
+        }
+      )
       .addCase(getAllSchoolVans.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string || "Failed to fetch vans";
@@ -231,34 +228,20 @@ const vanSlice = createSlice({
       .addCase(addVan.fulfilled, (state, action: PayloadAction<Van>) => {
         state.addVanLoading = false;
         state.addVanSuccess = true;
-        state.vans.push(action.payload);
+        if (state.vans.length < state.pagination.limit) {
+          state.vans.unshift(action.payload);
+        }
+        state.pagination.total = Math.max(0, state.pagination.total + 1);
+        state.pagination.totalPages = Math.ceil(state.pagination.total / state.pagination.limit);
       })
       .addCase(addVan.rejected, (state, action) => {
         state.addVanLoading = false;
         state.addVanSuccess = false;
         state.addVanError = action.payload || "Failed to add van";
       });
-
-    // ─── Update van ───
-    builder
-      .addCase(updateVan.pending, (state) => {
-        state.updateVanLoading = true;
-        state.updateVanError = null;
-      })
-      .addCase(updateVan.fulfilled, (state, action: PayloadAction<Van>) => {
-        state.updateVanLoading = false;
-        state.selectedVan = action.payload;
-
-        // Update in vans array if exists
-        const index = state.vans.findIndex(v => v._id === action.payload._id);
-        if (index !== -1) state.vans[index] = action.payload;
-      })
-      .addCase(updateVan.rejected, (state, action) => {
-        state.updateVanLoading = false;
-        // state.updateVanError = action.payload || "Failed to update van";
-      });
   },
 });
 
-export const { clearVans, resetAssignVan, clearSelectedVan, resetAddVan, resetUpdateVan } = vanSlice.actions;
+export const { clearVans, resetAssignVan, clearSelectedVan, resetAddVan, resetUpdateVan } =
+  vanSlice.actions;
 export default vanSlice.reducer;

@@ -234,26 +234,24 @@ console.log("studentDetail",studentDetail)
           <Typography variant="h6" mb={2}>Assign Van</Typography>
           <FormControl fullWidth>
             <InputLabel id="van-select-label">Select Van</InputLabel>
-            <Select
-              labelId="van-select-label"
-              value={selectedVan}
-              label="Select Van"
-              onChange={(e) => setSelectedVan(e.target.value)}
-              MenuProps={{
-                PaperProps: {
-                  style: {
-                    maxHeight: 300,
-                    width: 250,
-                  },
-                },
-              }}
-            >
-              {vans.map((van) => (
-                <MenuItem key={van._id} value={van._id}>
-                  {van.vehicleType} - {van.carNumber}
-                </MenuItem>
-              ))}
-            </Select>
+          <Select
+  labelId="van-select-label"
+  value={selectedVan}
+  label="Select Van"
+  onChange={(e) => setSelectedVan(e.target.value)}
+  MenuProps={{
+    PaperProps: {
+      style: { maxHeight: 300, width: 300 },
+    },
+  }}
+>
+  {vans.map((item) => (
+    <MenuItem key={item.van.id} value={item.van.id}>
+      {item.van.vehicleType} - {item.van.carNumber} {item.driver?.fullname ? `(Driver: ${item.driver.fullname})` : ""}
+    </MenuItem>
+  ))}
+</Select>
+
           </FormControl>
 
           <Stack direction="row" spacing={2} mt={3} justifyContent="flex-end">

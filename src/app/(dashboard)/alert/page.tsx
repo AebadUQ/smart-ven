@@ -1,12 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { Box, Card, Divider, Stack, Typography, Chip, IconButton, Menu, MenuItem, ListItemIcon, ListItemText, CircularProgress } from "@mui/material";
+import { Box, Card, Divider, Stack, Typography, Chip, IconButton, Menu, MenuItem, ListItemIcon, ListItemText, CircularProgress, Button } from "@mui/material";
 import { DataTable, type ColumnDef } from "@/components/core/data-table";
 import { CustomersPagination } from "@/components/dashboard/customer/customers-pagination";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { Eye as EyeIcon, Edit as EditIcon, Trash as TrashIcon } from '@phosphor-icons/react/dist/ssr/Eye';
-
+import { useRouter } from "next/navigation";
 type AlertRecord = {
   id: number;
   alertTitle: string;
@@ -17,6 +17,7 @@ type AlertRecord = {
 };
 
 export default function AlertPage(): React.JSX.Element {
+  const router = useRouter()
   const [selectedAlerts, setSelectedAlerts] = React.useState<AlertRecord[]>([]);
   const [loading, setLoading] = React.useState(false);
  const [alerts, setAlerts] = React.useState<AlertRecord[]>([
@@ -157,8 +158,16 @@ export default function AlertPage(): React.JSX.Element {
   return (
     <Box sx={{ bgcolor: "var(--mui-palette-background-level1)", p: 3 }}>
       <Stack spacing={3}>
-        <Typography variant="h5">Alerts</Typography>
-        <Card>
+<Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <Typography variant="h5">Alerts</Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => router.push("/alert/create")}
+          >
+            Add Alert
+          </Button>
+        </Box>        <Card>
           <Box sx={{ overflowX: "auto" }}>
             {loading ? (
               <Box sx={{ display: "flex", justifyContent: "center", p: 3 }}><CircularProgress /></Box>
