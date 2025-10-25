@@ -63,7 +63,7 @@ export default function Page(): React.JSX.Element {
   React.useEffect(() => {
     const fetchVans = async () => {
       try {
-        await dispatch(getAllSchoolVans()).unwrap();
+        await dispatch(getAllSchoolVans({page:1,limit:1000})).unwrap();
       } catch (err) {
         console.error("Failed to fetch school vans:", err);
       }

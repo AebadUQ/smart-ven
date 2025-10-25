@@ -1,43 +1,10 @@
-import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit"; 
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import api from "@/api/axios";
 import { DRIVER } from "@/api/endpoint";
 
-// ─── Types ─────────────────────────────────────────────────────
-export interface Driver {
-  _id: string;
-  schoolId: string;
-  fullname: string;
-  email?: string;
-  phoneNo?: string;
-  alternatePhoneNo?: string;
-  NIC?: string;
-  address?: string;
-  image?: string;
-  avatar?: string;
-  isVerified: boolean;
-  isDelete?: boolean;
-  licenceImageFront?: string;
-  licenceImageBack?: string;
-  vehicleCardImageFront?: string;
-  vehicleCardImageBack?: string;
-  createdAt: string;
-  updatedAt: string;
-  [key: string]: any;
-}
-
-interface DriverState {
-  drivers: Driver[];
-  loading: boolean;
-  error: string | null;
-  selectedDriver?: Driver | null;
-  selectedDriverLoading: boolean;
-  selectedDriverError: string | null;
-  assignDriverLoading: boolean;
-  assignDriverError: string | null;
-}
-
-const initialState: DriverState = {
+const initialState: any = {
   drivers: [],
+  pagination: null,
   loading: false,
   error: null,
   selectedDriver: null,
@@ -49,20 +16,31 @@ const initialState: DriverState = {
 
 // ─── Thunks ────────────────────────────────────────────────────
 
-// Get all drivers
-export const getAllDrivers = createAsyncThunk<Driver[]>(
+// ✅ Get all drivers (with pagination)
+export const getAllDrivers = createAsyncThunk<
+  { drivers: any[]; pagination: any },
+  { page?: number; limit?: number },
+  { rejectValue: string }
+>(
   "driver/getAllDrivers",
-  async (_, { rejectWithValue }) => {
+  async ({ page = 1, limit = 10 }, { rejectWithValue }) => {
     try {
-      const response = await api.get(DRIVER.GET_ALL_DRIVER_OF_SCHOOL);
-      return response.data.data as Driver[];
+      const response = await api.get(DRIVER.GET_ALL_DRIVER_OF_SCHOOL, {
+        params: { page, limit },
+      });
+
+      // Expected response format: { data: [], pagination: {} }
+      const { data, pagination } = response.data;
+      return { drivers: data, pagination };
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || "Failed to fetch drivers");
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch drivers"
+      );
     }
   }
 );
 
-// Assign driver to van
+// ✅ Assign driver to van
 export const assignDriverToVan = createAsyncThunk<
   { message: string },
   { driverId: string; vanId: string }
@@ -73,7 +51,9 @@ export const assignDriverToVan = createAsyncThunk<
       const response = await api.post(DRIVER.ASSIGN_DRIVER_TO_VAN, body);
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || "Failed to assign driver");
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to assign driver"
+      );
     }
   }
 );
@@ -85,6 +65,7 @@ const driverSlice = createSlice({
   reducers: {
     clearDrivers: (state) => {
       state.drivers = [];
+      state.pagination = null;
       state.loading = false;
       state.error = null;
     },
@@ -95,33 +76,38 @@ const driverSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    // Get all drivers
+    // ✅ Get all drivers
     builder
       .addCase(getAllDrivers.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(getAllDrivers.fulfilled, (state, action: PayloadAction<Driver[]>) => {
-        state.loading = false;
-        state.drivers = action.payload;
-      })
+      .addCase(
+        getAllDrivers.fulfilled,
+        (state, action: PayloadAction<{ drivers: any[]; pagination: any }>) => {
+          state.loading = false;
+          state.drivers = action.payload.drivers;
+          state.pagination = action.payload.pagination;
+        }
+      )
       .addCase(getAllDrivers.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string || "Failed to fetch drivers";
+        state.error = (action.payload as string) || "Failed to fetch drivers";
       });
 
-    // Assign driver to van
+    // ✅ Assign driver to van
     builder
       .addCase(assignDriverToVan.pending, (state) => {
         state.assignDriverLoading = true;
         state.assignDriverError = null;
       })
-      .addCase(assignDriverToVan.fulfilled, (state, action) => {
+      .addCase(assignDriverToVan.fulfilled, (state) => {
         state.assignDriverLoading = false;
       })
       .addCase(assignDriverToVan.rejected, (state, action) => {
         state.assignDriverLoading = false;
-        state.assignDriverError = action.payload as string || "Failed to assign driver";
+        state.assignDriverError =
+          (action.payload as string) || "Failed to assign driver";
       });
   },
 });

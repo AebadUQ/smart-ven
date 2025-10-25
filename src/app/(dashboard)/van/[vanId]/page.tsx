@@ -47,7 +47,7 @@ export default function Page(): React.JSX.Element {
   const { drivers, loading: driversLoading } = useSelector(
     (state: RootState) => state.driver
   );
-
+console.log("drivers",drivers)
   // Modal state
   const [modalOpen, setModalOpen] = React.useState(false);
   const [selectedDriver, setSelectedDriver] = React.useState<string>("");
@@ -59,7 +59,7 @@ export default function Page(): React.JSX.Element {
 
   // Fetch drivers list
   React.useEffect(() => {
-    dispatch(getAllDrivers());
+    dispatch(getAllDrivers({page:1,limit:1000}));
   }, [dispatch]);
 
   const handleAssignDriver = async () => {
@@ -160,47 +160,51 @@ console.log("selectedVan",selectedVan)
       </Stack>
 
       {/* Assign Driver Modal */}
-      <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
-        <Box
-          sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            bgcolor: "background.paper",
-            p: 4,
-            borderRadius: 2,
-            width: 500,
-            maxHeight: "80vh",
-            overflowY: "auto",
-          }}
-        >
-          <Typography variant="h6" mb={2}>Assign Driver</Typography>
-          <FormControl fullWidth>
-            <InputLabel id="driver-select-label">Select Driver</InputLabel>
-            <Select
-              labelId="driver-select-label"
-              value={selectedDriver}
-              label="Select Driver"
-              onChange={(e) => setSelectedDriver(e.target.value)}
-              MenuProps={{ PaperProps: { style: { maxHeight: 300, width: 250 } } }}
-            >
-              {/* {drivers?.map((driver) => (
-                <MenuItem key={driver._id} value={driver._id}>
-                  {driver.fullname} ({driver.phoneNo || "N/A"})
-                </MenuItem>
-              ))} */}
-            </Select>
-          </FormControl>
+    <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
+  <Box
+    sx={{
+      position: "absolute",
+      top: "50%",
+      left: "50%",
+      transform: "translate(-50%, -50%)",
+      bgcolor: "background.paper",
+      p: 4,
+      borderRadius: 2,
+      width: 500,
+      maxHeight: "80vh",
+      overflowY: "auto",
+    }}
+  >
+    <Typography variant="h6" mb={2}>Assign Driver</Typography>
 
-          <Stack direction="row" spacing={2} mt={3} justifyContent="flex-end">
-            <Button variant="outlined" onClick={() => setModalOpen(false)}>Cancel</Button>
-            <Button variant="contained" onClick={handleAssignDriver} disabled={!selectedDriver}>
-              Save
-            </Button>
-          </Stack>
-        </Box>
-      </Modal>
+    <FormControl fullWidth>
+      <InputLabel id="driver-select-label">Select Driver</InputLabel>
+      <Select
+        labelId="driver-select-label"
+        value={selectedDriver}
+        label="Select Driver"
+        onChange={(e) => setSelectedDriver(e.target.value)}
+        MenuProps={{
+          PaperProps: { style: { maxHeight: 300, width: 300 } },
+        }}
+      >
+        {drivers?.drivers?.map((driver: any) => (
+          <MenuItem key={driver.id} value={driver.id}>
+            {driver.fullname} ({driver.phoneNo || "N/A"})
+          </MenuItem>
+        ))}
+      </Select>
+    </FormControl>
+
+    <Stack direction="row" spacing={2} mt={3} justifyContent="flex-end">
+      <Button variant="outlined" onClick={() => setModalOpen(false)}>Cancel</Button>
+      <Button variant="contained" onClick={handleAssignDriver} disabled={!selectedDriver}>
+        Save
+      </Button>
+    </Stack>
+  </Box>
+</Modal>
+
     </Box>
   );
 }

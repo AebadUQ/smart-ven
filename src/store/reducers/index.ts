@@ -7,6 +7,7 @@ import auth from './auth-slice';
 import van from './van-slice'
 import alert from './alert-slice'
 import driver from './driver-slice'
+import complaint from './complaint-management'
 const authPersistConfig = {
   key: 'auth',
   storage,
@@ -20,7 +21,8 @@ const reducers = combineReducers({
   student,
   van,
   driver,
-  alert
+  alert,
+  complaint
 });
 
 export default reducers;
