@@ -1,110 +1,186 @@
-import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "@/api/axios";
 import { ALERT } from "@/api/endpoint";
 
-// ─── Types ─────────────────────────────────────────────────────
-export interface Alert {
-  _id?: string;
-  alertType: string;
-  recipientType: string;
-  message: string;
-  createdAt?: string;
-  updatedAt?: string;
-  [key: string]: any;
-}
-
-interface AlertState {
-  alerts: Alert[];
-  loading: boolean;
-  error: string | null;
-  success: boolean;
-}
-
-const initialState: AlertState = {
-  alerts: [],
+const initialState: any = {
+  alerts: [] as any[],
+  alertDetail: null as any,
+  pagination: { total: 0, page: 1, limit: 10, totalPages: 0 },
   loading: false,
+  detailLoading: false,
   error: null,
   success: false,
 };
 
-// ─── Thunks ────────────────────────────────────────────────────
+// ─── Thunks ────────────────────────────────────────────────
 
 // Get all alerts
-export const getAllAlerts = createAsyncThunk<Alert[]>(
+export const getAllAlerts = createAsyncThunk(
   "alert/getAllAlerts",
-  async (_, { rejectWithValue }) => {
+  async ({ page = 1, limit = 10 }: any = {}, { rejectWithValue }) => {
     try {
-      const response = await api.get(ALERT.GET_ALL_ALERTS);
-      return response.data.data as Alert[];
+      const response = await api.get(ALERT.GET_ALL_ALERTS, { params: { page, limit } });
+      const { data, pagination } = response.data as any;
+      return { alerts: data, pagination };
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || "Failed to fetch alerts");
+      return rejectWithValue(error?.response?.data || "Failed to fetch alerts");
     }
   }
 );
 
-// Add new alert
-export const addAlert = createAsyncThunk<Alert, Partial<Alert>>(
+// Get alert by ID
+export const getAlertById = createAsyncThunk(
+  "alert/getAlertById",
+  async (id: any, { rejectWithValue }) => {
+    try {
+      const response = await api.get(`${ALERT.GET_ALERT_BY_ID}/${id}`);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      return rejectWithValue(error?.response?.data || "Failed to fetch alert detail");
+    }
+  }
+);
+
+// Add alert
+export const addAlert = createAsyncThunk(
   "alert/addAlert",
-  async (alertData, { rejectWithValue }) => {
+  async (alertData: any, { rejectWithValue }) => {
     try {
       const response = await api.post(ALERT.ADD_ALERT, alertData);
-      return response.data.data as Alert;
+      return response.data.data;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || "Failed to add alert");
+      return rejectWithValue(error?.response?.data || "Failed to add alert");
     }
   }
 );
 
-// ─── Slice ─────────────────────────────────────────────────────
+// Update alert
+export const updateAlert = createAsyncThunk(
+  "alert/updateAlert",
+  async (data: any, { rejectWithValue }) => {
+    try {
+      const response = await api.post(ALERT.UPDATE_ALERT, data);
+      return response.data.data;
+    } catch (error: any) {
+      return rejectWithValue(error?.response?.data || "Failed to update alert");
+    }
+  }
+);
+
+// Delete alert
+export const deleteAlert = createAsyncThunk(
+  "alert/deleteAlert",
+  async ({ alertId }: { alertId: any }, { rejectWithValue }) => {
+    try {
+      await api.post(ALERT.DELETE_ALERT, { alertId });
+      return alertId; // return deleted alert ID
+    } catch (error: any) {
+      return rejectWithValue(error?.response?.data || "Failed to delete alert");
+    }
+  }
+);
+
+// ─── Slice ────────────────────────────────────────────────
 const alertSlice = createSlice({
   name: "alert",
   initialState,
   reducers: {
-    clearAlerts: (state) => {
-      state.alerts = [];
-      state.loading = false;
-      state.error = null;
+    clearAlertStatus: (state: any) => {
       state.success = false;
+      state.error = null;
     },
-    clearAlertStatus: (state) => {
-      state.success = false;
-      state.error = null;
+    clearAlertDetail: (state: any) => {
+      state.alertDetail = null;
     },
   },
   extraReducers: (builder) => {
     builder
       // Get all alerts
-      .addCase(getAllAlerts.pending, (state) => {
+      .addCase(getAllAlerts.pending, (state: any) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(getAllAlerts.fulfilled, (state, action: PayloadAction<Alert[]>) => {
+      .addCase(getAllAlerts.fulfilled, (state: any, action: any) => {
         state.loading = false;
-        state.alerts = action.payload;
+        state.alerts = action.payload.alerts;
+        state.pagination = action.payload.pagination;
       })
-      .addCase(getAllAlerts.rejected, (state, action) => {
+      .addCase(getAllAlerts.rejected, (state: any, action: any) => {
         state.loading = false;
-        state.error = (action.payload as string) || "Failed to fetch alerts";
+        state.error = action.payload || "Failed to fetch alerts";
       })
 
-      // Add new alert
-      .addCase(addAlert.pending, (state) => {
+      // Get alert by ID
+      .addCase(getAlertById.pending, (state: any) => {
+        state.detailLoading = true;
+        state.error = null;
+      })
+      .addCase(getAlertById.fulfilled, (state: any, action: any) => {
+        state.detailLoading = false;
+        state.alertDetail = action.payload;
+      })
+      .addCase(getAlertById.rejected, (state: any, action: any) => {
+        state.detailLoading = false;
+        state.error = action.payload || "Failed to fetch alert detail";
+      })
+
+      // Add alert
+      .addCase(addAlert.pending, (state: any) => {
         state.loading = true;
         state.error = null;
         state.success = false;
       })
-      .addCase(addAlert.fulfilled, (state, action: PayloadAction<Alert>) => {
+      .addCase(addAlert.fulfilled, (state: any, action: any) => {
         state.loading = false;
         state.success = true;
-        state.alerts.unshift(action.payload); // add new alert on top
+        state.alerts.unshift(action.payload);
       })
-      .addCase(addAlert.rejected, (state, action) => {
+      .addCase(addAlert.rejected, (state: any, action: any) => {
         state.loading = false;
         state.success = false;
-        state.error = (action.payload as string) || "Failed to add alert";
+        state.error = action.payload || "Failed to add alert";
+      })
+
+      // Update alert
+      .addCase(updateAlert.pending, (state: any) => {
+        state.loading = true;
+        state.error = null;
+        state.success = false;
+      })
+      .addCase(updateAlert.fulfilled, (state: any, action: any) => {
+        state.loading = false;
+        state.success = true;
+        const index = state.alerts.findIndex((a: any) => a._id === action.payload._id);
+        if (index !== -1) state.alerts[index] = action.payload;
+        if (state.alertDetail && state.alertDetail._id === action.payload._id) {
+          state.alertDetail = action.payload;
+        }
+      })
+      .addCase(updateAlert.rejected, (state: any, action: any) => {
+        state.loading = false;
+        state.success = false;
+        state.error = action.payload || "Failed to update alert";
+      })
+
+      // Delete alert
+      .addCase(deleteAlert.pending, (state: any) => {
+        state.loading = true;
+        state.error = null;
+        state.success = false;
+      })
+      .addCase(deleteAlert.fulfilled, (state: any, action: any) => {
+        state.loading = false;
+        state.success = true;
+        // Remove deleted alert from list
+        state.alerts = state.alerts.filter((a: any) => a._id !== action.payload);
+      })
+      .addCase(deleteAlert.rejected, (state: any, action: any) => {
+        state.loading = false;
+        state.success = false;
+        state.error = action.payload || "Failed to delete alert";
       });
   },
 });
 
-export const { clearAlerts, clearAlertStatus } = alertSlice.actions;
+export const { clearAlertStatus, clearAlertDetail } = alertSlice.actions;
 export default alertSlice.reducer;

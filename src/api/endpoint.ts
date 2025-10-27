@@ -43,6 +43,10 @@ export const COMPLAINT = {
 }
 export const ALERT = {
     GET_ALL_ALERTS: '/alert/getAlert',
+        GET_ALERT_BY_ID: '/alert/getAlertById',
+    UPDATE_ALERT:'/alert/editAlert',
+    DELETE_ALERT:'/alert/deleteAlert',
+
     ADD_ALERT: '/alert/addAlert'
 
 

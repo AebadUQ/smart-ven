@@ -24,3 +24,13 @@ export const genders = [
   { value: 'Male', label: 'Male' },
   { value: 'Female', label: 'Female' },
 ];
+
+export const formatLabel = (value: string): string => {
+  if (!value) return "-";
+
+  return value
+    .toLowerCase() // make lowercase
+    .split("_") // split by underscore
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1)) // capitalize each
+    .join(" "); // join back with space
+};

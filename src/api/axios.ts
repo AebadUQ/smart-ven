@@ -1,36 +1,5 @@
-// import axios from "axios";
-// const api = axios.create({
-//   baseURL: process.env.NEXT_PUBLIC_BASE_URL,
-// });
-
-// api.interceptors.request.use(
-//   (config) => {
-//     if (typeof window !== "undefined") {
-//       const token = localStorage.getItem("token");
-//       if (token) {
-//         config.headers.Authorization = `Bearer ${token}`;
-//       }
-//     }
-//     return config;
-//   },
-//   (error) => Promise.reject(error)
-// );
-// api.interceptors.response.use(
-//   (response) => response,
-//   (error) => {
-//     // if (error.response?.status === 401) {
-//     //   if (typeof window !== "undefined") {
-//     //     localStorage.removeItem("token");
-//     //     window.location.href = "/auth/admin";
-//     //   }
-//     // }
-//     // return Promise.reject(error);
-//   }
-// );
-
-// export default api;
 import axios from "axios";
-import { toast } from '@/components/core/toaster';
+import { toast } from "@/components/core/toaster";
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_BASE_URL,
@@ -53,14 +22,14 @@ api.interceptors.request.use(
 // ─── Response Interceptor ───────────────────────────────
 api.interceptors.response.use(
   (response) => {
-    const status = response?.status;
+    const { status, config, data } = response;
 
-    // show toast only for 200 / 201
-    if (status === 200 || status === 201) {
-      const message =
-        response?.data?.message ||
-        response?.data?.msg ||
-        "Request completed successfully";
+    // Show toast only for POST / PUT / PATCH / DELETE
+    if (
+      (status === 200 || status === 201) &&
+      ["post", "put", "patch", "delete"].includes(config.method || "")
+    ) {
+      const message = data?.message || data?.msg || "Request completed successfully";
       toast.success(message);
     }
 
@@ -69,22 +38,18 @@ api.interceptors.response.use(
   (error) => {
     const status = error?.response?.status;
 
-    // optional: handle unauthorized
-    if (status === 401) {
-      if (typeof window !== "undefined") {
-        localStorage.removeItem("token");
-        // window.location.href = "/auth/signin";
-      }
+    if (status === 401 && typeof window !== "undefined") {
+      localStorage.removeItem("token");
+      // window.location.href = "/auth/signin"; // optional redirect
     }
 
-    // show proper error toast
     const errMsg =
       error?.response?.data?.message ||
       error?.response?.data?.error ||
       error?.message ||
       "Something went wrong";
-    toast.error(errMsg);
 
+    toast.error(errMsg);
     return Promise.reject(error);
   }
 );
