@@ -64,18 +64,18 @@ export const layoutConfig = {
     //     { key: 'dashboard', title: 'Alerts Overview', href: paths.dashboard.settings.auditlogs, icon: 'gear' },
     //   ],
     // },
-     {
-      key: 'report',
-      items: [
-        { key: 'dashboard', title: 'Reports', href: paths.dashboard.settings.users, icon: 'house' },
-      ],
-    },
-     {
-      key: 'setting',
-      items: [
-        { key: 'setting', title: 'Settings', href: paths.dashboard.settings.users, icon: 'gear' },
-      ],
-    },
+    //  {
+    //   key: 'report',
+    //   items: [
+    //     { key: 'dashboard', title: 'Reports', href: paths.dashboard.settings.users, icon: 'house' },
+    //   ],
+    // },
+    //  {
+    //   key: 'setting',
+    //   items: [
+    //     { key: 'setting', title: 'Settings', href: paths.dashboard.settings.users, icon: 'gear' },
+    //   ],
+    // },
     // {
     //   key: 'sudashboard',
     //   items: [

@@ -18,12 +18,18 @@ import {
   Select,
   MenuItem,
   FormHelperText,
+  IconButton,
 } from "@mui/material";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack"; // ✅ back arrow
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/store";
-import { createRoute, clearRouteStatus } from "@/store/reducers/route-slice";
+import {
+  getRouteById,
+  updateRoute,
+  clearRouteStatus,
+} from "@/store/reducers/route-slice";
 import { getAllSchoolVans } from "@/store/reducers/van-slice";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 
 type FormValues = {
@@ -37,14 +43,22 @@ type FormValues = {
   startLong: string;
   endLat: string;
   endLong: string;
+  routeId: string;
 };
 
-export default function AddRouteForm(): React.JSX.Element {
+export default function UpdateRouteForm(): React.JSX.Element {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
+  const params = useParams();
 
-  const { loading, success, error } = useSelector((state: RootState) => state.route);
-  const { vans, loading: vansLoading } = useSelector((state: RootState) => state.van);
+  const routeId = params?.plannerId as string;
+
+  const { routeDetails, loading, success, error } = useSelector(
+    (state: RootState) => state.route
+  );
+  const { vans, loading: vansLoading } = useSelector(
+    (state: RootState) => state.van
+  );
 
   const {
     control,
@@ -78,27 +92,69 @@ export default function AddRouteForm(): React.JSX.Element {
 
   const tripDays = watch("tripDays");
 
+  // Fetch vans and route details
   React.useEffect(() => {
     dispatch(getAllSchoolVans({ page: 1, limit: 50 })).unwrap().catch(console.error);
-  }, [dispatch]);
+    if (routeId) dispatch(getRouteById(routeId)).unwrap().catch(console.error);
+  }, [dispatch, routeId]);
+
+  // Prefill form when routeDetails loaded
+  React.useEffect(() => {
+    if (routeDetails) {
+      reset({
+        routeId: routeDetails?._id,
+        vanId: routeDetails.vanId || "",
+        driverId: routeDetails.driverId || "",
+        title: routeDetails.title || "",
+        startTime: routeDetails.startTime || "",
+        tripType: routeDetails.tripType || "morning",
+        tripDays: routeDetails.tripDays || {
+          monday: false,
+          tuesday: false,
+          wednesday: false,
+          thursday: false,
+          friday: false,
+          saturday: false,
+          sunday: false,
+        },
+        startLat: routeDetails.startPoint?.lat?.toString() || "",
+        startLong: routeDetails.startPoint?.long?.toString() || "",
+        endLat: routeDetails.endPoint?.lat?.toString() || "",
+        endLong: routeDetails.endPoint?.long?.toString() || "",
+      });
+    }
+  }, [routeDetails, reset]);
 
   const onSubmit = async (data: FormValues) => {
     const payload = {
-      ...data,
-      startPoint: { lat: parseFloat(data.startLat), long: parseFloat(data.startLong) },
-      endPoint: { lat: parseFloat(data.endLat), long: parseFloat(data.endLong) },
+      routeId: routeDetails?._id,
+      vanId: data.vanId,
+      title: data.title,
+      startTime: data.startTime,
+      tripType: data.tripType,
+      tripDays: data.tripDays,
+      startPoint: {
+        lat: parseFloat(data.startLat),
+        long: parseFloat(data.startLong),
+      },
+      endPoint: {
+        lat: parseFloat(data.endLat),
+        long: parseFloat(data.endLong),
+      },
     };
-    await dispatch(createRoute(payload));
+
+    await dispatch(updateRoute(payload));
   };
 
+  // Handle success
   React.useEffect(() => {
     if (success) {
-      reset();
       dispatch(clearRouteStatus());
       router.push("/planner");
     }
-  }, [success, dispatch, router, reset]);
+  }, [success, dispatch, router]);
 
+  // Clear error after showing
   React.useEffect(() => {
     if (error) dispatch(clearRouteStatus());
   }, [error, dispatch]);
@@ -111,7 +167,13 @@ export default function AddRouteForm(): React.JSX.Element {
     <Box sx={{ p: 3 }}>
       <Card sx={{ p: 3 }}>
         <Stack spacing={3}>
-          <Typography variant="h5">Add Route</Typography>
+          {/* ✅ Back arrow with title */}
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <IconButton onClick={() => router.back()}>
+              <ArrowBackIcon />
+            </IconButton>
+            <Typography variant="h5">Update Route</Typography>
+          </Stack>
 
           <form onSubmit={handleSubmit(onSubmit)}>
             <Grid container spacing={2}>
@@ -132,11 +194,14 @@ export default function AddRouteForm(): React.JSX.Element {
                       >
                         {vans?.map((v) => (
                           <MenuItem key={v.van?.id} value={v.van?.id}>
-                            {v.van.vehicleType} - {v.van.carNumber} ({v.driver.fullname || "No driver"})
+                            {v.van.vehicleType} - {v.van.carNumber} (
+                            {v.driver.fullname || "No driver"})
                           </MenuItem>
                         ))}
                       </Select>
-                      {errors.vanId && <FormHelperText>{errors.vanId.message}</FormHelperText>}
+                      {errors.vanId && (
+                        <FormHelperText>{errors.vanId.message}</FormHelperText>
+                      )}
                     </FormControl>
                   )}
                 />
@@ -193,7 +258,9 @@ export default function AddRouteForm(): React.JSX.Element {
                         <MenuItem value="morning">Morning</MenuItem>
                         <MenuItem value="evening">Evening</MenuItem>
                       </Select>
-                      {errors.tripType && <FormHelperText>{errors.tripType.message}</FormHelperText>}
+                      {errors.tripType && (
+                        <FormHelperText>{errors.tripType.message}</FormHelperText>
+                      )}
                     </FormControl>
                   )}
                 />
@@ -217,8 +284,8 @@ export default function AddRouteForm(): React.JSX.Element {
                 </FormGroup>
               </Grid>
 
-              {/* Start & End Point */}
-              {["startLat", "startLong", "endLat", "endLong"].map((fieldName, idx) => (
+              {/* Start & End Points */}
+              {["startLat", "startLong", "endLat", "endLong"].map((fieldName) => (
                 <Grid key={fieldName} item xs={6} sm={3}>
                   <Controller
                     name={fieldName as keyof FormValues}
@@ -236,7 +303,9 @@ export default function AddRouteForm(): React.JSX.Element {
                         fullWidth
                         {...field}
                         error={!!errors[fieldName as keyof FormValues]}
-                        helperText={errors[fieldName as keyof FormValues]?.message}
+                        helperText={
+                          errors[fieldName as keyof FormValues]?.message
+                        }
                       />
                     )}
                   />
@@ -252,7 +321,11 @@ export default function AddRouteForm(): React.JSX.Element {
                   sx={{ minWidth: 150 }}
                   disabled={loading || vansLoading}
                 >
-                  {loading ? <CircularProgress size={22} color="inherit" /> : "Submit"}
+                  {loading ? (
+                    <CircularProgress size={22} color="inherit" />
+                  ) : (
+                    "Update"
+                  )}
                 </Button>
               </Grid>
             </Grid>

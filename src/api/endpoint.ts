@@ -31,23 +31,24 @@ export const VAN = {
     GET_VAN_BY_ID: '/van/getVanById',
     ADD_VAN: `${BASE_URL}/van/addVanByAdmin`,
     UPDATE_VAN: `${BASE_URL}/van/editVanByAdmin`
-
-
-
 }
 export const COMPLAINT = {
     GET_ALL_COMPLAINT: 'report/getComplainsByAdmin',
-   CHANGE_STATUS:'report/changeComplaintStatus'
-
-
+    CHANGE_STATUS: 'report/changeComplaintStatus'
 }
 export const ALERT = {
     GET_ALL_ALERTS: '/alert/getAlert',
-        GET_ALERT_BY_ID: '/alert/getAlertById',
-    UPDATE_ALERT:'/alert/editAlert',
-    DELETE_ALERT:'/alert/deleteAlert',
-
+    GET_ALERT_BY_ID: '/alert/getAlertById',
+    UPDATE_ALERT: '/alert/editAlert',
+    DELETE_ALERT: '/alert/deleteAlert',
     ADD_ALERT: '/alert/addAlert'
+}
+export const ROUTE = {
+    GET_ALL_ROUTE: 'Route/getRoutes',
+    CREATE_ROUTE:'Route/createRoute',
+    GET_ROUTE_BY_ID: '/Route/getRouteById',
+    UPDATE_ROUTE: 'Route/editRoute',
+
 
 
 
