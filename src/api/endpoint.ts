@@ -37,7 +37,7 @@ export const VAN = {
 }
 export const COMPLAINT = {
     GET_ALL_COMPLAINT: 'report/getComplainsByAdmin',
-   
+   CHANGE_STATUS:'report/changeComplaintStatus'
 
 
 }

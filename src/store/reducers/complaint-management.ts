@@ -2,18 +2,47 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { COMPLAINT } from "@/api/endpoint";
 import api from "@/api/axios";
 
+// ─── Thunks ─────────────────────────────────────
+
+// Get all complaints
 export const getAllComplaints = createAsyncThunk(
   "complaint/getAllComplaints",
-  async ({ page = 1, limit = 10 }: { page?: number; limit?: number } = {}, { rejectWithValue }) => {
+  async (
+    { page = 1, limit = 10 }: { page?: number; limit?: number } = {},
+    { rejectWithValue }
+  ) => {
     try {
-      const response = await api.get(COMPLAINT.GET_ALL_COMPLAINT, { params: { page, limit } });
-      return response.data; // data includes: { message, data, pagination }
+      const response = await api.get(COMPLAINT.GET_ALL_COMPLAINT, {
+        params: { page, limit },
+      });
+      return response.data; // { message, data, pagination }
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || "Failed to fetch complaints");
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch complaints"
+      );
     }
   }
 );
 
+// Change complaint status
+export const changeComplaintStatus = createAsyncThunk(
+  "complaint/changeComplaintStatus",
+  async (
+    { reportId, status,feedback }: { reportId: string; status: string,feedback:string },
+    { rejectWithValue }
+  ) => {
+    try {
+      const response = await api.post(COMPLAINT.CHANGE_STATUS, { reportId, status,feedback });
+      return { reportId, status, updatedComplaint: response.data.data };
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to change complaint status"
+      );
+    }
+  }
+);
+
+// ─── Slice ──────────────────────────────────────
 interface ComplaintState {
   complaints: any[];
   loading: boolean;
@@ -33,6 +62,7 @@ export const complaintSlice = createSlice({
   initialState,
   reducers: {},
   extraReducers: (builder) => {
+    // Get all complaints
     builder
       .addCase(getAllComplaints.pending, (state) => {
         state.loading = true;
@@ -40,14 +70,37 @@ export const complaintSlice = createSlice({
       })
       .addCase(getAllComplaints.fulfilled, (state, action) => {
         state.loading = false;
-        state.complaints = action.payload.data; // <-- use `data` from API
+        state.complaints = action.payload.data;
         state.pagination = {
           page: action.payload.pagination?.page || 1,
           limit: action.payload.pagination?.limit || 10,
-          total: action.payload.pagination?.total || action.payload.data.length || 0,
+          total:
+            action.payload.pagination?.total ||
+            action.payload.data.length ||
+            0,
         };
       })
       .addCase(getAllComplaints.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
+
+    // Change complaint status
+    builder
+      .addCase(changeComplaintStatus.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(changeComplaintStatus.fulfilled, (state, action) => {
+        state.loading = false;
+        const index = state.complaints.findIndex(
+          (c) => c._id === action.payload.reportId
+        );
+        if (index !== -1) {
+          state.complaints[index].status = action.payload.status;
+        }
+      })
+      .addCase(changeComplaintStatus.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });
