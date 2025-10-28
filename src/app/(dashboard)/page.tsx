@@ -8,11 +8,13 @@ import { RootState } from '@/store';
 export default function Page(): React.JSX.Element {
   const { token } = useSelector((state: RootState) => state.auth)
   return (
-   <>
-    {!token ? <SplitLayout>
+//    <>
+//     {!token ? <SplitLayout>
+//       <SignInForm />
+//     </SplitLayout> : null
+// }</>
+       <SplitLayout>
       <SignInForm />
-    </SplitLayout> : null
-}</>
-         
+    </SplitLayout>  
   );
 }
