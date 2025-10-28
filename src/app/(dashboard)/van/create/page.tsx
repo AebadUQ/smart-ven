@@ -1,15 +1,28 @@
 'use client';
 
 import * as React from 'react';
+import { useEffect } from 'react';
 import RouterLink from 'next/link';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from '@mui/material/Link';
 import { toast } from '@/components/core/toaster';
 import {
-  Avatar, Box, Button, Card, CardActions, CardContent, FormControl,
-  FormHelperText, Grid, InputLabel, OutlinedInput, Stack,
-  Typography, Select, MenuItem,
+  Avatar,
+  Box,
+  Button,
+  Card,
+  CardActions,
+  CardContent,
+  FormControl,
+  FormHelperText,
+  Grid,
+  InputLabel,
+  OutlinedInput,
+  Stack,
+  Typography,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 import { useDispatch, useSelector } from 'react-redux';
@@ -18,11 +31,10 @@ import { Controller, useForm } from 'react-hook-form';
 import { z as zod } from 'zod';
 import { paths } from '@/paths';
 import { ArrowLeft as ArrowLeftIcon } from '@phosphor-icons/react/dist/ssr/ArrowLeft';
-import { routes } from '@/utils/data';
-// import { addVan } from '@/store/reducers/van-slice';
 import { AppDispatch, RootState } from '@/store';
 import { uploadImage } from '@/utils/uploadImage';
 import { addVan } from '@/store/reducers/van-slice';
+import { getAllRoutes } from '@/store/reducers/route-slice';
 
 /* ----------------------------- Local options ----------------------------- */
 const vehicleTypes = [
@@ -67,15 +79,24 @@ function ImageUpload({
         >
           <Avatar
             src={value}
-            sx={{ width: size, height: size, bgcolor: 'background.default', color: 'text.primary' }}
+            sx={{
+              width: size,
+              height: size,
+              bgcolor: 'background.default',
+              color: 'text.primary',
+            }}
           >
             <CameraIcon width={22} height={22} />
           </Avatar>
         </Box>
 
         <Stack spacing={0.5}>
-          <Typography variant="caption" color="text.secondary">{caption}</Typography>
-          <Button variant="outlined" onClick={() => ref.current?.click()}>Select</Button>
+          <Typography variant="caption" color="text.secondary">
+            {caption}
+          </Typography>
+          <Button variant="outlined" onClick={() => ref.current?.click()}>
+            Select
+          </Button>
           <input
             ref={ref}
             type="file"
@@ -94,9 +115,6 @@ function ImageUpload({
 
 /* ------------------------------ Validation ------------------------------ */
 const schema = zod.object({
-  // driverName: zod.string().min(1, 'Full Name is required').max(255),
-  // driverNic: zod.string().min(1, 'Driver’s NIC is required').max(30, 'NIC looks too long'),
-  // driverPhone: zod.string().min(4, 'Contact Number is required'),
   venImage: zod.string().optional(),
 
   vehicleType: zod.string().min(1, 'Vehicle type is required'),
@@ -104,32 +122,49 @@ const schema = zod.object({
   condition: zod.string().min(1, 'Condition is required'),
   venCapacity: zod.coerce.number().int().min(1, 'Capacity must be at least 1'),
   deviceId: zod.string().optional(),
+
+  // we'll store the selected route _id here
   assignRoute: zod.string().optional(),
-  // driverPhoto: zod.string().optional(),
 });
 
 type Values = zod.infer<typeof schema>;
 
 const defaultValues: Values = {
-  // driverName: '',
-  // driverNic: '',
-  // driverPhone: '',
   vehicleType: 'suzuki_bolan',
   carNumber: '',
   condition: 'Good',
   venCapacity: 1,
   deviceId: '',
   assignRoute: '',
-  // driverPhoto: '',
 };
 
 /* --------------------------------- Page --------------------------------- */
 export default function VanCreateForm(): React.JSX.Element {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
+
+  // from van slice
   const loading = useSelector((state: RootState) => state.van.assignLoading);
 
-  const { control, handleSubmit, formState: { errors }, setValue, watch } = useForm<Values>({
+  // from route slice
+  const {
+    routes: routeList,
+    loading: routeLoading,
+    error: routeError,
+  } = useSelector((state: RootState) => state.route);
+
+  // fetch routes once (page=1,limit=1000)
+  useEffect(() => {
+    dispatch(getAllRoutes({ page: 1, limit: 1000 }));
+  }, [dispatch]);
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+    watch,
+  } = useForm<Values>({
     defaultValues,
     resolver: zodResolver(schema),
   });
@@ -145,24 +180,36 @@ export default function VanCreateForm(): React.JSX.Element {
     }
   };
 
- const onSubmit = async (values: Values) => {
-  try {
-    const resultAction = await dispatch(addVan(values));
+  const onSubmit = async (values: Values) => {
+    // if backend expects routeId instead of assignRoute, map it here
+    const payloadToSend = {
+      ...values,
+      routeId: values.assignRoute, // send the selected route _id
+    };
 
-    if (addVan.fulfilled.match(resultAction)) {
-      console.log("Van added successfully:", resultAction.payload);
+    try {
+      const resultAction = await dispatch(addVan(payloadToSend));
 
-      router.push("/van");
-    } else {
-      console.error("Failed to add van:", resultAction.payload);
+      if (addVan.fulfilled.match(resultAction)) {
+        console.log('Van added successfully:', resultAction.payload);
+        router.push('/van');
+      } else {
+        console.error('Failed to add van:', resultAction.payload);
+      }
+    } catch (error) {
+      console.error('Error while adding van:', error);
     }
-  } catch (error) {
-    console.error("Error while adding van:", error);
-  }
-};
+  };
 
   return (
-    <Box sx={{ maxWidth: 'var(--Content-maxWidth)', m: 'var(--Content-margin)', p: 'var(--Content-padding)', width: 'var(--Content-width)' }}>
+    <Box
+      sx={{
+        maxWidth: 'var(--Content-maxWidth)',
+        m: 'var(--Content-margin)',
+        p: 'var(--Content-padding)',
+        width: 'var(--Content-width)',
+      }}
+    >
       <form onSubmit={handleSubmit(onSubmit)}>
         <Card>
           <CardContent>
@@ -173,7 +220,11 @@ export default function VanCreateForm(): React.JSX.Element {
                   color="text.primary"
                   component={RouterLink}
                   href={paths.dashboard.van}
-                  sx={{ alignItems: 'center', display: 'inline-flex', gap: 1 }}
+                  sx={{
+                    alignItems: 'center',
+                    display: 'inline-flex',
+                    gap: 1,
+                  }}
                   variant="subtitle2"
                 >
                   <ArrowLeftIcon fontSize="var(--icon-fontSize-md)" />
@@ -183,54 +234,8 @@ export default function VanCreateForm(): React.JSX.Element {
 
               <Typography variant="h6">Add New Van</Typography>
 
-              {/* Upload Driver Photo (styled like your example) */}
-<ImageUpload value={venImage} onPick={handlePickPhoto} />
-
-              {/* Driver Details */}
-              {/* <Typography variant="subtitle2">Driver Details</Typography>
-              <Grid container spacing={3}>
-                <Grid item md={6} xs={12}>
-                  <Controller
-                    control={control}
-                    name="driverName"
-                    render={({ field }) => (
-                      <FormControl fullWidth error={!!errors.driverName}>
-                        <InputLabel required>Full Name</InputLabel>
-                        <OutlinedInput {...field} label="Full Name" />
-                        <FormHelperText>{errors.driverName?.message}</FormHelperText>
-                      </FormControl>
-                    )}
-                  />
-                </Grid>
-
-                <Grid item md={6} xs={12}>
-                  <Controller
-                    control={control}
-                    name="driverNic"
-                    render={({ field }) => (
-                      <FormControl fullWidth error={!!errors.driverNic}>
-                        <InputLabel required>Driver’s NIC</InputLabel>
-                        <OutlinedInput {...field} label="Driver’s NIC" />
-                        <FormHelperText>{errors.driverNic?.message}</FormHelperText>
-                      </FormControl>
-                    )}
-                  />
-                </Grid>
-
-                <Grid item md={6} xs={12}>
-                  <Controller
-                    control={control}
-                    name="driverPhone"
-                    render={({ field }) => (
-                      <FormControl fullWidth error={!!errors.driverPhone}>
-                        <InputLabel required>Contact Number</InputLabel>
-                        <OutlinedInput {...field} label="Contact Number" />
-                        <FormHelperText>{errors.driverPhone?.message}</FormHelperText>
-                      </FormControl>
-                    )}
-                  />
-                </Grid>
-              </Grid> */}
+              {/* Upload Van Photo */}
+              <ImageUpload value={venImage} onPick={handlePickPhoto} />
 
               {/* Vehicle Details */}
               <Typography variant="subtitle2">Vehicle Details</Typography>
@@ -245,10 +250,14 @@ export default function VanCreateForm(): React.JSX.Element {
                         <InputLabel required>Vehicle Type</InputLabel>
                         <Select {...field} label="Vehicle Type">
                           {vehicleTypes.map((v) => (
-                            <MenuItem key={v.value} value={v.value}>{v.label}</MenuItem>
+                            <MenuItem key={v.value} value={v.value}>
+                              {v.label}
+                            </MenuItem>
                           ))}
                         </Select>
-                        <FormHelperText>{errors.vehicleType?.message}</FormHelperText>
+                        <FormHelperText>
+                          {errors.vehicleType?.message}
+                        </FormHelperText>
                       </FormControl>
                     )}
                   />
@@ -261,9 +270,16 @@ export default function VanCreateForm(): React.JSX.Element {
                     name="carNumber"
                     render={({ field }) => (
                       <FormControl fullWidth error={!!errors.carNumber}>
-                        <InputLabel required>Vehicle Registration Number (Plate)</InputLabel>
-                        <OutlinedInput {...field} label="Vehicle Registration Number (Plate)" />
-                        <FormHelperText>{errors.carNumber?.message}</FormHelperText>
+                        <InputLabel required>
+                          Vehicle Registration Number (Plate)
+                        </InputLabel>
+                        <OutlinedInput
+                          {...field}
+                          label="Vehicle Registration Number (Plate)"
+                        />
+                        <FormHelperText>
+                          {errors.carNumber?.message}
+                        </FormHelperText>
                       </FormControl>
                     )}
                   />
@@ -279,10 +295,14 @@ export default function VanCreateForm(): React.JSX.Element {
                         <InputLabel required>Condition</InputLabel>
                         <Select {...field} label="Condition">
                           {vehicleConditions.map((c) => (
-                            <MenuItem key={c.value} value={c.value}>{c.label}</MenuItem>
+                            <MenuItem key={c.value} value={c.value}>
+                              {c.label}
+                            </MenuItem>
                           ))}
                         </Select>
-                        <FormHelperText>{errors.condition?.message}</FormHelperText>
+                        <FormHelperText>
+                          {errors.condition?.message}
+                        </FormHelperText>
                       </FormControl>
                     )}
                   />
@@ -296,8 +316,14 @@ export default function VanCreateForm(): React.JSX.Element {
                     render={({ field }) => (
                       <FormControl fullWidth error={!!errors.venCapacity}>
                         <InputLabel required>Capacity</InputLabel>
-                        <OutlinedInput type="number" {...field} label="Capacity" />
-                        <FormHelperText>{errors.venCapacity?.message}</FormHelperText>
+                        <OutlinedInput
+                          type="number"
+                          {...field}
+                          label="Capacity"
+                        />
+                        <FormHelperText>
+                          {errors.venCapacity?.message}
+                        </FormHelperText>
                       </FormControl>
                     )}
                   />
@@ -317,7 +343,7 @@ export default function VanCreateForm(): React.JSX.Element {
                   />
                 </Grid>
 
-                {/* Route */}
+                {/* Route (API data) */}
                 <Grid item md={6} xs={12}>
                   <Controller
                     control={control}
@@ -325,11 +351,65 @@ export default function VanCreateForm(): React.JSX.Element {
                     render={({ field }) => (
                       <FormControl fullWidth>
                         <InputLabel>Route</InputLabel>
-                        <Select {...field} label="Route">
-                          {routes.map((r) => (
-                            <MenuItem key={r.value} value={r.value}>{r.label}</MenuItem>
+
+                        <Select
+                          label="Route"
+                          disabled={routeLoading}
+                          value={field.value || ''} // keep controlled
+                          onChange={(e) => {
+                            // store selected route _id
+                            field.onChange(e.target.value);
+                          }}
+                        >
+                          {routeList?.map((r: any) => (
+                            <MenuItem key={r._id} value={r._id}>
+                              <Box
+                                sx={{
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  lineHeight: 1.3,
+                                }}
+                              >
+                                <Typography
+                                  variant="body2"
+                                  sx={{ fontWeight: 500, lineHeight: 1.3 }}
+                                >
+                                  {r.title || 'Untitled Route'}
+                                </Typography>
+
+                                <Typography
+                                  variant="caption"
+                                  sx={{ lineHeight: 1.3 }}
+                                  color="text.secondary"
+                                >
+                                  {r?.driverDetails?.fullname
+                                    ? `Driver: ${r.driverDetails.fullname}`
+                                    : r?.vanDetails?.carNumber
+                                    ? `Van: ${r.vanDetails.carNumber}`
+                                    : r.tripType && r.startTime
+                                    ? `${r.tripType} @ ${r.startTime}`
+                                    : `ID: ${r._id}`}
+                                </Typography>
+                              </Box>
+                            </MenuItem>
                           ))}
+
+                          {/* fallback states when no data */}
+                          {(!routeList || routeList.length === 0) &&
+                            !routeLoading && (
+                              <MenuItem disabled value="">
+                                {routeError
+                                  ? 'Failed to load routes'
+                                  : 'No routes found'}
+                              </MenuItem>
+                            )}
                         </Select>
+
+                        {routeError && (
+                          <FormHelperText error>
+                            {routeError}
+                          </FormHelperText>
+                        )}
                       </FormControl>
                     )}
                   />
@@ -339,7 +419,12 @@ export default function VanCreateForm(): React.JSX.Element {
           </CardContent>
 
           <CardActions sx={{ justifyContent: 'flex-end' }}>
-            <Button variant="text" color="inherit" sx={{ minWidth: 100 }} onClick={() => router.back()}>
+            <Button
+              variant="text"
+              color="inherit"
+              sx={{ minWidth: 100 }}
+              onClick={() => router.back()}
+            >
               Cancel
             </Button>
             <LoadingButton type="submit" variant="contained" loading={loading}>

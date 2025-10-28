@@ -16,9 +16,9 @@ export default function AuthGuard({ children }: Props) {
 
   useEffect(() => {
     if (token) {
-      if (pathname.startsWith('/auth')) {
+      // if (pathname.startsWith('/auth')) {
         router.replace('/dashboard');
-      }
+      // }
     } else {
       if (!pathname.startsWith('/auth')) {
         router.replace('/auth/signin');

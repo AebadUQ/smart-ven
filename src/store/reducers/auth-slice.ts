@@ -58,6 +58,19 @@ export const forgotPassword = createAsyncThunk(
     }
   }
 );
+// 🔹 Get Profile
+export const getProfile = createAsyncThunk(
+  "auth/getProfile",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await api.get<any>(AUTH.GET_PROFILE);
+      const { status, data } = response.data;
+      return { ...data, status };
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || "Failed to fetch profile");
+    }
+  }
+);
 
 // 🔹 Reset Password
 export const resetPassword = createAsyncThunk(
@@ -135,6 +148,19 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = (action.payload as string) || "Login failed";
       })
+// ── Get Profile
+.addCase(getProfile.pending, (state) => {
+  state.loading = true;
+  state.error = null;
+})
+.addCase(getProfile.fulfilled, (state, action: PayloadAction<any>) => {
+  state.loading = false;
+  state.user = action.payload.user;
+})
+.addCase(getProfile.rejected, (state, action) => {
+  state.loading = false;
+  state.error = (action.payload as string) || "Failed to fetch profile";
+})
 
       // ── Forgot Password
       .addCase(forgotPassword.pending, (state) => {
