@@ -19,6 +19,8 @@ import { NotificationsPopover } from '../notifications-popover';
 import { UserPopover } from '../user-popover/user-popover';
 import Divider from '@mui/material/Divider';
 import { useAuthContext } from '@/contexts/AuthContext';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
 export interface MainNavProps {
   items: NavItemConfig[];
 }
@@ -65,11 +67,12 @@ export function MainNav({ items }: MainNavProps): React.JSX.Element {
             direction="row"
             spacing={2}
             sx={{ alignItems: 'center', flex: '1 1 auto', justifyContent: 'flex-end' }}
-          ><NotificationsButton /> <Divider
+          >
+            {/* <NotificationsButton /> <Divider
               flexItem
               orientation="vertical"
               sx={{ borderColor: 'var(--MainNav-divider)', display: { xs: 'none', lg: 'block' } }}
-            />
+            /> */}
             <UserButton />
           </Stack>
         </Box>
@@ -135,7 +138,9 @@ function LanguageSwitch(): React.JSX.Element {
 
 function UserButton(): React.JSX.Element {
   const popover = usePopover<HTMLButtonElement>();
-  const { user } = useAuthContext();
+  // const { user } = useAuthContext();
+  const user =useSelector((state:RootState)=>state.auth.user)
+
   return (
     <React.Fragment>
       <Box
@@ -147,12 +152,11 @@ function UserButton(): React.JSX.Element {
         ref={popover.anchorRef}
         sx={{ border: 'none', background: 'transparent', cursor: 'pointer', p: 0,textTransform:'capitalize' }}
       >
-
         {user?.name}
         <CaretDownIcon color="info" />
 
       </Box>
-      <UserPopover anchorEl={popover.anchorRef.current} onClose={popover.handleClose} open={popover.open} />
+      <UserPopover anchorEl={popover.anchorRef.current} onClose={popover.handleClose} open={popover.open} user={user}/>
     </React.Fragment>
   );
 }

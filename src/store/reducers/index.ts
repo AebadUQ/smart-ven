@@ -12,7 +12,7 @@ import route from './route-slice'
 const authPersistConfig = {
   key: 'auth',
   storage,
-  whitelist: ['token'], // only persist token field (optional)
+  whitelist: ['token','user'], // only persist token field (optional)
 };
 
 const persistedAuthReducer = persistReducer(authPersistConfig, auth);

@@ -19,7 +19,7 @@ export const layoutConfig = {
      {
       key: 'tracking',
       items: [
-        { key: 'tracking', title: 'Live Tracking', href: paths.dashboard.tracking, icon: 'house' },
+        { key: 'tracking', title: 'Live Tracking', href: paths.dashboard.tracking, icon: 'truck' },
       ],
     },
     //  {
@@ -31,31 +31,31 @@ export const layoutConfig = {
        {
       key: 'student',
       items: [
-        { key: 'student', title: 'Student Management', href: paths.dashboard.student, icon: 'house' },
+        { key: 'student', title: 'Student Management', href: paths.dashboard.student, icon: 'users' },
       ],
     },
        {
       key: 'van',
       items: [
-        { key: 'van', title: 'Van  Management', href: paths.dashboard.van, icon: 'house' },
+        { key: 'van', title: 'Van  Management', href: paths.dashboard.van, icon: 'van' },
       ],
     },
      {
       key: 'parent',
       items: [
-        { key: 'parent', title: 'Complaint Management', href: paths.dashboard.parents.parents, icon: 'house' },
+        { key: 'parent', title: 'Complaint Management', href: paths.dashboard.parents.parents, icon: 'file' },
       ],
     },
      {
       key: 'route-planner',
       items: [
-        { key: 'route-planner', title: 'Route Planner', href: paths.dashboard.planner, icon: 'house' },
+        { key: 'route-planner', title: 'Route Planner', href: paths.dashboard.planner, icon: 'path' },
       ],
     },
     {
       key: 'alert',
       items: [
-        { key: 'alert', title: 'Alert', href: paths.dashboard.alert, icon: 'house' },
+        { key: 'alert', title: 'Alert', href: paths.dashboard.alert, icon: 'warning' },
       ],
     },
     //  {

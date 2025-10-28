@@ -33,8 +33,9 @@ import { Users as UsersIcon } from '@phosphor-icons/react/dist/ssr/Users';
 import { WarningDiamond as WarningDiamondIcon } from '@phosphor-icons/react/dist/ssr/WarningDiamond';
 import { SpeakerHigh as SpeakerHighIcon } from '@phosphor-icons/react/dist/ssr/SpeakerHigh';
 import { SealPercent as SealPercentIcon } from '@phosphor-icons/react/dist/ssr/SealPercent';
-
-
+import { Van } from '@phosphor-icons/react/dist/ssr';
+import { Path } from '@phosphor-icons/react/dist/ssr';
+import { Warning } from '@phosphor-icons/react';
 export const icons = {
   'address-book': AddressBookIcon,
   'PhoneCall': PhoneCallIcon,
@@ -70,4 +71,7 @@ export const icons = {
   truck: TruckIcon,
   upload: UploadIcon,
   users: UsersIcon,
+  van:Van,
+  path:Path,
+  warning:Warning
 } as Record<string, Icon>;

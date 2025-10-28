@@ -20,9 +20,10 @@ export interface UserPopoverProps {
   anchorEl: null | Element;
   onClose?: () => void;
   open: boolean;
+  user?:any
 }
 
-export function UserPopover({ anchorEl, onClose, open }: UserPopoverProps): React.JSX.Element {
+export function UserPopover({ anchorEl, onClose, open,user }: UserPopoverProps): React.JSX.Element {
   const dispatch = useDispatch<AppDispatch>();
   return (
     <Popover
@@ -36,7 +37,8 @@ export function UserPopover({ anchorEl, onClose, open }: UserPopoverProps): Reac
       <Box sx={{ p: 2 }}>
         <Typography>{ 'Name'}</Typography>
         <Typography color="text.secondary" variant="body2">
-          { 'email@email.com'}
+          {/* { 'email@email.com'} */}
+          {user?.email}
         </Typography>
       </Box>
       <Divider />

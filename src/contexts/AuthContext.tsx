@@ -31,7 +31,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const response = await api.post(AUTH.SUPERAMIN_LOGIN, { email, password });
       const { token, user } = response.data.data;
-
+console.log("response",response)
       localStorage.setItem('token', token);
       setToken(token);
       setUser(user);
