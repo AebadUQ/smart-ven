@@ -211,7 +211,7 @@ export default function RoutePlannerPage(): React.JSX.Element {
           <Button
             variant="contained"
             color="primary"
-            onClick={() => router.push(`${paths.dashboard.route}/create`)}
+            onClick={() => router.push(`${paths.dashboard.planner}/create`)}
           >
             Add Route
           </Button>
