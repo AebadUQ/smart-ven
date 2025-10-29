@@ -1,713 +1,350 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import { useForm, Controller } from "react-hook-form";
-import { z as zod } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+import * as React from 'react';
+import RouterLink from 'next/link';
+import { useRouter } from 'next/navigation';
+import { zodResolver } from '@hookform/resolvers/zod';
+import Link from '@mui/material/Link';
+import { toast } from '@/components/core/toaster';
 import {
-  Box,
-  Card,
-  CardContent,
-  CardActions,
-  Stack,
-  Typography,
-  Button,
-  FormControl,
-  FormHelperText,
-  InputLabel,
-  OutlinedInput,
-  Select,
-  MenuItem,
-  Switch,
-  Avatar,
-} from "@mui/material";
-import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+  Avatar, Box, Button, Card, CardActions, CardContent, FormControl,
+  FormHelperText, Grid, InputLabel, OutlinedInput, Stack,
+  Typography, Select, MenuItem,
+} from '@mui/material';
+import { LoadingButton } from '@mui/lab';
+import { useDispatch, useSelector } from 'react-redux';
+import { Camera as CameraIcon } from '@phosphor-icons/react/dist/ssr/Camera';
+import { Controller, useForm } from 'react-hook-form';
+import { z as zod } from 'zod';
+import { paths } from '@/paths';
+import { ArrowLeft as ArrowLeftIcon } from '@phosphor-icons/react/dist/ssr/ArrowLeft';
+import { routes } from '@/utils/data';
+// import { addVan } from '@/store/reducers/van-slice';
+import { AppDispatch, RootState } from '@/store';
+import { uploadImage } from '@/utils/uploadImage';
+import { addVan } from '@/store/reducers/van-slice';
 
-/* ------------------------------------------------------------------
-   SCHEMA / FORM STATE
-------------------------------------------------------------------- */
+/* ----------------------------- Local options ----------------------------- */
+const vehicleTypes = [
+  { value: 'Suzuki Bolan', label: 'Suzuki Bolan' },
+  { value: 'Toyota Hiace', label: 'Toyota Hiace' },
+  { value: 'Coaster', label: 'Coaster' },
+];
 
+const vehicleConditions = [
+  { value: 'Good', label: 'Good' },
+  { value: 'Average', label: 'Average' },
+  { value: 'Poor', label: 'Poor' },
+];
+
+/* ------------------------------ Reusable UI ------------------------------ */
+function ImageUpload({
+  label = 'Van Photo',
+  caption = 'Upload PNG or JPG (min 400×400)',
+  value,
+  onPick,
+  size = 100,
+}: {
+  label?: string;
+  caption?: string;
+  value?: string;
+  onPick: (file: File) => void;
+  size?: number;
+}) {
+  const ref = React.useRef<HTMLInputElement>(null);
+  return (
+    <Stack spacing={1}>
+      <Typography variant="subtitle2">{label}</Typography>
+      <Stack direction="row" spacing={3} alignItems="center">
+        <Box
+          sx={{
+            border: '1px dashed',
+            borderColor: 'divider',
+            borderRadius: '50%',
+            p: '4px',
+            display: 'inline-flex',
+          }}
+        >
+          <Avatar
+            src={value}
+            sx={{ width: size, height: size, bgcolor: 'background.default', color: 'text.primary' }}
+          >
+            <CameraIcon width={22} height={22} />
+          </Avatar>
+        </Box>
+
+        <Stack spacing={0.5}>
+          <Typography variant="caption" color="text.secondary">{caption}</Typography>
+          <Button variant="outlined" onClick={() => ref.current?.click()}>Select</Button>
+          <input
+            ref={ref}
+            type="file"
+            accept="image/*"
+            hidden
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) onPick(file);
+            }}
+          />
+        </Stack>
+      </Stack>
+    </Stack>
+  );
+}
+
+/* ------------------------------ Validation ------------------------------ */
 const schema = zod.object({
-  currentPlan: zod.string().min(1, "Plan is required"),
-  billingCycle: zod.string().min(1, "Billing cycle is required"),
-  nextInvoice: zod.string().min(1, "Next invoice date is required"),
-  paymentMethod: zod.string().min(1, "Payment method is required"),
-  pickDropExceptions: zod.boolean().default(true),
+  // driverName: zod.string().min(1, 'Full Name is required').max(255),
+  // driverNic: zod.string().min(1, 'Driver’s NIC is required').max(30, 'NIC looks too long'),
+  // driverPhone: zod.string().min(4, 'Contact Number is required'),
+  venImage: zod.string().optional(),
+
+  vehicleType: zod.string().min(1, 'Vehicle type is required'),
+  carNumber: zod.string().min(1, 'Vehicle registration number is required'),
+  condition: zod.string().min(1, 'Condition is required'),
+  venCapacity: zod.coerce.number().int().min(1, 'Capacity must be at least 1'),
+  deviceId: zod.string().optional(),
+  assignRoute: zod.string().optional(),
+  // driverPhoto: zod.string().optional(),
 });
 
 type Values = zod.infer<typeof schema>;
 
 const defaultValues: Values = {
-  currentPlan: "premium_per_student",
-  billingCycle: "monthly",
-  nextInvoice: "2025-09-01", // yyyy-mm-dd
-  paymentMethod: "Bank Transfer",
-  pickDropExceptions: true,
+  // driverName: '',
+  // driverNic: '',
+  // driverPhone: '',
+  vehicleType: 'suzuki_bolan',
+  carNumber: '',
+  condition: 'Good',
+  venCapacity: 1,
+  deviceId: '',
+  assignRoute: '',
+  // driverPhoto: '',
 };
 
-/* ------------------------------------------------------------------
-   PROGRESS TABS ("FILL THE DETAILS" pills row)
-   matches: Profile | Route Rules | Limits | Subscription & Billing ...
-------------------------------------------------------------------- */
+/* --------------------------------- Page --------------------------------- */
+export default function VanCreateForm(): React.JSX.Element {
+  const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
+  const loading = useSelector((state: RootState) => state.van.assignLoading);
 
-type TabKey =
-  | "profile"
-  | "route_rules"
-  | "limits"
-  | "subscription"
-  | "admins"
-  | "onboarding"
-  | "access"
-  | "audit"
-  | "notes"
-  | "branches";
-
-const tabsList: { key: TabKey; label: string; order: number }[] = [
-  { key: "profile", label: "Profile", order: 0 },
-  { key: "route_rules", label: "Route Rules", order: 1 },
-  { key: "limits", label: "Limits", order: 2 },
-  { key: "subscription", label: "Subscription & Billing", order: 3 },
-  { key: "admins", label: "Admins", order: 4 },
-  { key: "onboarding", label: "Onboarding", order: 5 },
-  { key: "access", label: "Access", order: 6 },
-  { key: "audit", label: "Audit Trail", order: 7 },
-  { key: "notes", label: "Notes", order: 8 },
-  { key: "branches", label: "Branches", order: 9 },
-];
-
-/* ------------------------------------------------------------------
-   SMALL UI BUILDING BLOCKS
-------------------------------------------------------------------- */
-
-function StatusPill({
-  text,
-  bg,
-  color,
-  borderColor,
-}: {
-  text: string;
-  bg: string;
-  color: string;
-  borderColor: string;
-}) {
-  return (
-    <Box
-      sx={{
-        display: "inline-flex",
-        alignItems: "center",
-        fontSize: "12px",
-        lineHeight: 1.4,
-        borderRadius: "4px",
-        border: `1px solid ${borderColor}`,
-        bgcolor: bg,
-        color: color,
-        fontWeight: 500,
-        px: 1,
-        py: "2px",
-      }}
-    >
-      {text}
-    </Box>
-  );
-}
-
-/**
- * RowItem
- * left side = static label (like "Current Plan")
- * right side = form control
- * has border bottom by default
- */
-function RowItem({
-  label,
-  children,
-  error,
-  helperText,
-  noBorder = false,
-}: {
-  label: string;
-  children: React.ReactNode;
-  error?: boolean;
-  helperText?: string;
-  noBorder?: boolean;
-}) {
-  return (
-    <Stack
-      direction={{ xs: "column", sm: "row" }}
-      sx={{
-        borderBottom: noBorder ? "none" : "1px solid",
-        borderColor: "divider",
-        p: 2,
-        "&:last-of-type": {
-          borderBottom: "none",
-        },
-      }}
-    >
-      <Box
-        sx={{
-          width: { xs: "100%", sm: "220px" },
-          flexShrink: 0,
-          color: "text.secondary",
-          fontSize: "13px",
-          fontWeight: 500,
-          mb: { xs: 1, sm: 0 },
-        }}
-      >
-        {label}
-      </Box>
-
-      <Box sx={{ flex: 1, fontSize: "13px", fontWeight: 500 }}>
-        {children}
-
-        {helperText ? (
-          <FormHelperText
-            error={error}
-            sx={{ fontSize: "12px", lineHeight: 1.4, mt: 0.5 }}
-          >
-            {helperText}
-          </FormHelperText>
-        ) : null}
-      </Box>
-    </Stack>
-  );
-}
-
-/* top card header detail block:
-   - "Student Detail" row in screenshots
-   - shows logo + contact + edit profile link
-*/
-function StudentDetailHeader() {
-  return (
-    <Box
-      sx={{
-        border: "1px solid",
-        borderColor: "divider",
-        borderRadius: 1,
-        bgcolor: "background.paper",
-        width: "100%",
-        maxWidth: "100%",
-      }}
-    >
-      <Stack
-        direction={{ xs: "column", sm: "row" }}
-        alignItems={{ xs: "flex-start", sm: "center" }}
-        spacing={2}
-        sx={{ p: 2 }}
-      >
-        {/* school logo avatar */}
-        <Avatar
-          sx={{
-            width: 48,
-            height: 48,
-            borderRadius: "6px",
-            bgcolor: "#F6F7F9",
-            border: "1px solid #E0E2E7",
-            fontSize: 12,
-            fontWeight: 500,
-          }}
-        >
-          LOGO
-        </Avatar>
-
-        {/* detail text row */}
-        <Stack
-          direction={{ xs: "column", sm: "row" }}
-          spacing={2}
-          flexWrap="wrap"
-          useFlexGap
-          sx={{
-            width: "100%",
-            fontSize: "13px",
-            "& .label": {
-              color: "text.secondary",
-              fontSize: "13px",
-              fontWeight: 400,
-            },
-            "& .value": {
-              color: "text.primary",
-              fontSize: "13px",
-              fontWeight: 500,
-            },
-          }}
-        >
-          <Stack direction="row" spacing={1}>
-            <Typography className="label" variant="body2">
-              Contact
-            </Typography>
-            <Typography className="value" variant="body2">
-              Ali Raza
-            </Typography>
-          </Stack>
-
-          <Stack direction="row" spacing={1}>
-            <Typography className="label" variant="body2">
-              /
-            </Typography>
-            <Typography className="value" variant="body2">
-              +92-300-1234567
-            </Typography>
-          </Stack>
-        </Stack>
-
-        {/* edit profile link (right aligned on desktop) */}
-        <Stack
-          direction="row"
-          alignItems="center"
-          spacing={0.5}
-          sx={{
-            ml: { xs: 0, sm: "auto" },
-            cursor: "pointer",
-            color: "primary.main",
-            fontSize: "13px",
-          }}
-        >
-          <EditOutlinedIcon
-            sx={{ fontSize: 16, color: "primary.main" }}
-          />
-          <Typography
-            variant="body2"
-            sx={{
-              color: "primary.main",
-              fontSize: "13px",
-              fontWeight: 500,
-            }}
-          >
-            Edit Profile
-          </Typography>
-        </Stack>
-      </Stack>
-    </Box>
-  );
-}
-
-/* ------------------------------------------------------------------
-   MAIN PAGE COMPONENT
-------------------------------------------------------------------- */
-
-export default function SchoolSubscriptionPage(): React.JSX.Element {
-  // which tab is "active"? this page is for Subscription & Billing
-  const activeTab: TabKey = "subscription";
-  const activeTabOrder = tabsList.find((t) => t.key === activeTab)?.order ?? 0;
-
-  // react-hook-form setup
-  const {
-    control,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-    watch,
-  } = useForm<Values>({
-    resolver: zodResolver(schema),
+  const { control, handleSubmit, formState: { errors }, setValue, watch } = useForm<Values>({
     defaultValues,
+    resolver: zodResolver(schema),
   });
 
-  const pickDropActive = watch("pickDropExceptions");
+  const venImage = watch('venImage');
 
-  const onSubmit = async (values: Values) => {
-    console.log("SUBMIT subscription & billing form ==>", values);
+  const handlePickPhoto = async (file: File) => {
+    try {
+      const imageUrl = await uploadImage(file);
+      setValue('venImage', imageUrl, { shouldValidate: true });
+    } catch (error: any) {
+      toast.error(error?.message || 'Failed to upload image');
+    }
   };
 
+ const onSubmit = async (values: Values) => {
+  try {
+    const resultAction = await dispatch(addVan(values));
+
+    if (addVan.fulfilled.match(resultAction)) {
+      console.log("Van added successfully:", resultAction.payload);
+
+      router.push("/van");
+    } else {
+      console.error("Failed to add van:", resultAction.payload);
+    }
+  } catch (error) {
+    console.error("Error while adding van:", error);
+  }
+};
+
   return (
-    <Box
-      sx={{
-        maxWidth: "var(--Content-maxWidth, 100%)",
-        m: "var(--Content-margin, 0 auto)",
-        p: "var(--Content-padding, 24px)",
-        width: "var(--Content-width, 100%)",
-        bgcolor: "background.default",
-      }}
-    >
+    <Box sx={{ maxWidth: 'var(--Content-maxWidth)', m: 'var(--Content-margin)', p: 'var(--Content-padding)', width: 'var(--Content-width)' }}>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <Card
-          sx={{
-            borderRadius: 1.5,
-            boxShadow: "0px 1px 3px rgba(0,0,0,0.06)",
-          }}
-        >
-          <CardContent sx={{ p: 2.5 }}>
-            <Stack spacing={2}>
-              {/* ---------- TOP BAR: Back + Active pill ---------- */}
-              <Stack
-                direction="row"
-                alignItems="flex-start"
-                flexWrap="wrap"
-                useFlexGap
-                spacing={1}
-              >
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{ cursor: "pointer" }}
+        <Card>
+          <CardContent>
+            <Stack spacing={4}>
+              {/* Back link */}
+              <div>
+                <Link
+                  color="text.primary"
+                  component={RouterLink}
+                  href={paths.dashboard.van}
+                  sx={{ alignItems: 'center', display: 'inline-flex', gap: 1 }}
+                  variant="subtitle2"
                 >
-                  ← Back
-                </Typography>
+                  <ArrowLeftIcon fontSize="var(--icon-fontSize-md)" />
+                  Back
+                </Link>
+              </div>
 
-                <Box
-                  sx={{
-                    ml: "auto",
-                    border: "1px solid #4CAF50",
-                    borderRadius: "4px",
-                    px: 1,
-                    py: 0.5,
-                    fontSize: "12px",
-                    lineHeight: 1.2,
-                    color: "#2e7d32",
-                    bgcolor: "rgba(76,175,80,0.08)",
-                    fontWeight: 500,
-                  }}
-                >
-                  Active
-                </Box>
-              </Stack>
+              <Typography variant="h6">Add New Van</Typography>
 
-              {/* ---------- PAGE TITLE ---------- */}
-              <Typography variant="h6" fontWeight={600}>
-                School Details
-              </Typography>
+              {/* Upload Driver Photo (styled like your example) */}
+<ImageUpload value={venImage} onPick={handlePickPhoto} />
 
-              {/* ---------- STUDENT DETAIL HEADER (logo + contact + edit) ---------- */}
-              <StudentDetailHeader />
-
-              {/* ---------- FILL THE DETAILS / PILLS ROW ---------- */}
-              <Stack spacing={1} sx={{ mt: 2 }}>
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{ fontWeight: 500 }}
-                >
-                  FILL THE DETAILS
-                </Typography>
-
-                <Stack
-                  direction="row"
-                  flexWrap="wrap"
-                  sx={{ rowGap: 1 }}
-                  useFlexGap
-                >
-                  {tabsList.map((tab) => {
-                    const isActive = tab.key === activeTab;
-                    const isCompleted = tab.order < activeTabOrder;
-                    const isUpcoming = tab.order > activeTabOrder;
-
-                    // default (upcoming)
-                    let bg = "#F6F7F9";
-                    let textColor = "#000";
-                    let dotColor = "#787878";
-                    let borderColor = "#E0E2E7";
-
-                    if (isActive) {
-                      // current tab -> blue
-                      bg = "#1560BD";
-                      textColor = "#fff";
-                      dotColor = "#FFB800";
-                      borderColor = "transparent";
-                    } else if (isCompleted) {
-                      // previous tab -> black
-                      bg = "#000";
-                      textColor = "#fff";
-                      dotColor = "#FFB800";
-                      borderColor = "transparent";
-                    }
-
-                    return (
-                      <Box
-                        key={tab.key}
-                        sx={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          mr: 1,
-                          mb: 1,
-                          px: 1.5,
-                          py: 0.5,
-                          borderRadius: "4px",
-                          fontSize: "12px",
-                          lineHeight: 1.4,
-                          fontWeight: 500,
-                          backgroundColor: bg,
-                          color: textColor,
-                          border: "1px solid",
-                          borderColor: isUpcoming
-                            ? borderColor
-                            : "transparent",
-                          minHeight: "26px",
-                          userSelect: "none",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {/* 8x8 status dot */}
-                        <Box
-                          sx={{
-                            width: 8,
-                            height: 8,
-                            borderRadius: "999px",
-                            backgroundColor: dotColor,
-                            mr: 1,
-                            flexShrink: 0,
-                          }}
-                        />
-                        {tab.label}
-                      </Box>
-                    );
-                  })}
-                </Stack>
-              </Stack>
-
-              {/* ---------- SECTION TITLE ---------- */}
-              <Typography variant="subtitle2" fontWeight={600}>
-                Subscription &amp; Billing
-              </Typography>
-
-              {/* ---------- FORM BLOCK (bordered box like screenshot) ---------- */}
-              <Box
-                sx={{
-                  border: "1px solid",
-                  borderColor: "divider",
-                  borderRadius: 1,
-                  overflow: "hidden",
-                  fontSize: "14px",
-                }}
-              >
-                {/* Current Plan */}
-                <RowItem
-                  label="Current Plan"
-                  error={!!errors.currentPlan}
-                  helperText={errors.currentPlan?.message}
-                >
+              {/* Driver Details */}
+              {/* <Typography variant="subtitle2">Driver Details</Typography>
+              <Grid container spacing={3}>
+                <Grid item md={6} xs={12}>
                   <Controller
                     control={control}
-                    name="currentPlan"
+                    name="driverName"
                     render={({ field }) => (
-                      <FormControl
-                        size="small"
-                        fullWidth
-                        error={!!errors.currentPlan}
-                        sx={{ maxWidth: 320 }}
-                      >
-                        <InputLabel required>Current Plan</InputLabel>
-                        <Select
-                          {...field}
-                          label="Current Plan"
-                          value={field.value || ""}
-                        >
-                          <MenuItem value="premium_per_student">
-                            Premium (Per Student)
-                          </MenuItem>
-                          <MenuItem value="standard_flat">
-                            Standard (Flat Fee)
-                          </MenuItem>
+                      <FormControl fullWidth error={!!errors.driverName}>
+                        <InputLabel required>Full Name</InputLabel>
+                        <OutlinedInput {...field} label="Full Name" />
+                        <FormHelperText>{errors.driverName?.message}</FormHelperText>
+                      </FormControl>
+                    )}
+                  />
+                </Grid>
+
+                <Grid item md={6} xs={12}>
+                  <Controller
+                    control={control}
+                    name="driverNic"
+                    render={({ field }) => (
+                      <FormControl fullWidth error={!!errors.driverNic}>
+                        <InputLabel required>Driver’s NIC</InputLabel>
+                        <OutlinedInput {...field} label="Driver’s NIC" />
+                        <FormHelperText>{errors.driverNic?.message}</FormHelperText>
+                      </FormControl>
+                    )}
+                  />
+                </Grid>
+
+                <Grid item md={6} xs={12}>
+                  <Controller
+                    control={control}
+                    name="driverPhone"
+                    render={({ field }) => (
+                      <FormControl fullWidth error={!!errors.driverPhone}>
+                        <InputLabel required>Contact Number</InputLabel>
+                        <OutlinedInput {...field} label="Contact Number" />
+                        <FormHelperText>{errors.driverPhone?.message}</FormHelperText>
+                      </FormControl>
+                    )}
+                  />
+                </Grid>
+              </Grid> */}
+
+              {/* Vehicle Details */}
+              <Typography variant="subtitle2">Vehicle Details</Typography>
+              <Grid container spacing={3}>
+                {/* Vehicle Type */}
+                <Grid item md={6} xs={12}>
+                  <Controller
+                    control={control}
+                    name="vehicleType"
+                    render={({ field }) => (
+                      <FormControl fullWidth error={!!errors.vehicleType}>
+                        <InputLabel required>Vehicle Type</InputLabel>
+                        <Select {...field} label="Vehicle Type">
+                          {vehicleTypes.map((v) => (
+                            <MenuItem key={v.value} value={v.value}>{v.label}</MenuItem>
+                          ))}
+                        </Select>
+                        <FormHelperText>{errors.vehicleType?.message}</FormHelperText>
+                      </FormControl>
+                    )}
+                  />
+                </Grid>
+
+                {/* Vehicle Registration Number (Plate) */}
+                <Grid item md={6} xs={12}>
+                  <Controller
+                    control={control}
+                    name="carNumber"
+                    render={({ field }) => (
+                      <FormControl fullWidth error={!!errors.carNumber}>
+                        <InputLabel required>Vehicle Registration Number (Plate)</InputLabel>
+                        <OutlinedInput {...field} label="Vehicle Registration Number (Plate)" />
+                        <FormHelperText>{errors.carNumber?.message}</FormHelperText>
+                      </FormControl>
+                    )}
+                  />
+                </Grid>
+
+                {/* Condition */}
+                <Grid item md={6} xs={12}>
+                  <Controller
+                    control={control}
+                    name="condition"
+                    render={({ field }) => (
+                      <FormControl fullWidth error={!!errors.condition}>
+                        <InputLabel required>Condition</InputLabel>
+                        <Select {...field} label="Condition">
+                          {vehicleConditions.map((c) => (
+                            <MenuItem key={c.value} value={c.value}>{c.label}</MenuItem>
+                          ))}
+                        </Select>
+                        <FormHelperText>{errors.condition?.message}</FormHelperText>
+                      </FormControl>
+                    )}
+                  />
+                </Grid>
+
+                {/* Capacity */}
+                <Grid item md={6} xs={12}>
+                  <Controller
+                    control={control}
+                    name="venCapacity"
+                    render={({ field }) => (
+                      <FormControl fullWidth error={!!errors.venCapacity}>
+                        <InputLabel required>Capacity</InputLabel>
+                        <OutlinedInput type="number" {...field} label="Capacity" />
+                        <FormHelperText>{errors.venCapacity?.message}</FormHelperText>
+                      </FormControl>
+                    )}
+                  />
+                </Grid>
+
+                {/* Device ID */}
+                <Grid item md={6} xs={12}>
+                  <Controller
+                    control={control}
+                    name="deviceId"
+                    render={({ field }) => (
+                      <FormControl fullWidth>
+                        <InputLabel>Device ID</InputLabel>
+                        <OutlinedInput {...field} label="Device ID" />
+                      </FormControl>
+                    )}
+                  />
+                </Grid>
+
+                {/* Route */}
+                <Grid item md={6} xs={12}>
+                  <Controller
+                    control={control}
+                    name="assignRoute"
+                    render={({ field }) => (
+                      <FormControl fullWidth>
+                        <InputLabel>Route</InputLabel>
+                        <Select {...field} label="Route">
+                          {routes.map((r) => (
+                            <MenuItem key={r.value} value={r.value}>{r.label}</MenuItem>
+                          ))}
                         </Select>
                       </FormControl>
                     )}
                   />
-                </RowItem>
-
-                {/* Billing Cycle */}
-                <RowItem
-                  label="Billing Cycle"
-                  error={!!errors.billingCycle}
-                  helperText={errors.billingCycle?.message}
-                >
-                  <Controller
-                    control={control}
-                    name="billingCycle"
-                    render={({ field }) => (
-                      <FormControl
-                        size="small"
-                        fullWidth
-                        error={!!errors.billingCycle}
-                        sx={{ maxWidth: 320 }}
-                      >
-                        <InputLabel required>Billing Cycle</InputLabel>
-                        <Select
-                          {...field}
-                          label="Billing Cycle"
-                          value={field.value || ""}
-                        >
-                          <MenuItem value="monthly">Monthly</MenuItem>
-                          <MenuItem value="quarterly">Quarterly</MenuItem>
-                          <MenuItem value="yearly">Yearly</MenuItem>
-                        </Select>
-                      </FormControl>
-                    )}
-                  />
-                </RowItem>
-
-                {/* Next Invoice */}
-                <RowItem
-                  label="Next Invoice"
-                  error={!!errors.nextInvoice}
-                  helperText={errors.nextInvoice?.message}
-                >
-                  <Controller
-                    control={control}
-                    name="nextInvoice"
-                    render={({ field }) => (
-                      <FormControl
-                        size="small"
-                        fullWidth
-                        error={!!errors.nextInvoice}
-                        sx={{ maxWidth: 320 }}
-                      >
-                        <InputLabel shrink required>
-                          Next Invoice
-                        </InputLabel>
-                        <OutlinedInput
-                          {...field}
-                          type="date"
-                          // outlined date -> we force label shrink above
-                          label="Next Invoice"
-                        />
-                      </FormControl>
-                    )}
-                  />
-                </RowItem>
-
-                {/* Payment Method */}
-                <RowItem
-                  label="Payment Method"
-                  error={!!errors.paymentMethod}
-                  helperText={errors.paymentMethod?.message}
-                >
-                  <Controller
-                    control={control}
-                    name="paymentMethod"
-                    render={({ field }) => (
-                      <FormControl
-                        size="small"
-                        fullWidth
-                        error={!!errors.paymentMethod}
-                        sx={{ maxWidth: 320 }}
-                      >
-                        <InputLabel required>Payment Method</InputLabel>
-                        <OutlinedInput
-                          {...field}
-                          label="Payment Method"
-                          placeholder="Bank Transfer"
-                        />
-                      </FormControl>
-                    )}
-                  />
-                </RowItem>
-
-                {/* Pick/Drop Exceptions */}
-                <RowItem
-                  label="Pick/Drop Exceptions"
-                  noBorder
-                  helperText={undefined}
-                >
-                  <Stack
-                    direction="row"
-                    spacing={2}
-                    alignItems="center"
-                    flexWrap="wrap"
-                    useFlexGap
-                  >
-                    {/* pill exactly like screenshot */}
-                    <StatusPill
-                      text={pickDropActive ? "Active" : "Inactive"}
-                      bg={
-                        pickDropActive
-                          ? "rgba(76,175,80,0.08)"
-                          : "rgba(158,158,158,0.08)"
-                      }
-                      color={pickDropActive ? "#2e7d32" : "#616161"}
-                      borderColor={
-                        pickDropActive ? "#4CAF50" : "#9e9e9e"
-                      }
-                    />
-
-                    {/* toggle allows changing that state */}
-                    <Controller
-                      control={control}
-                      name="pickDropExceptions"
-                      render={({ field }) => (
-                        <Stack
-                          direction="row"
-                          alignItems="center"
-                          spacing={1}
-                          sx={{ fontSize: 13 }}
-                        >
-                          <Switch
-                            size="small"
-                            checked={field.value}
-                            onChange={(e) =>
-                              field.onChange(e.target.checked)
-                            }
-                          />
-                          <Typography
-                            variant="body2"
-                            sx={{ fontSize: "13px" }}
-                          >
-                            Allow Exceptions
-                          </Typography>
-                        </Stack>
-                      )}
-                    />
-                  </Stack>
-                </RowItem>
-              </Box>
+                </Grid>
+              </Grid>
             </Stack>
           </CardContent>
 
-          {/* ---------- FOOTER ACTIONS (View Invoices | Change Plan | Next) ---------- */}
-          <CardActions
-            sx={{
-              flexDirection: { xs: "column", sm: "row" },
-              justifyContent: { xs: "flex-start", sm: "flex-end" },
-              alignItems: { xs: "flex-start", sm: "center" },
-              gap: 1.5,
-              p: 2,
-            }}
-          >
-            <Button
-              variant="text"
-              size="small"
-              sx={{
-                color: "text.secondary",
-                textTransform: "none",
-              }}
-              onClick={() => {
-                console.log("View invoices click");
-              }}
-            >
-              View Invoices
+          <CardActions sx={{ justifyContent: 'flex-end' }}>
+            <Button variant="text" color="inherit" sx={{ minWidth: 100 }} onClick={() => router.back()}>
+              Cancel
             </Button>
-
-            <Button
-              variant="contained"
-              size="small"
-              sx={{
-                textTransform: "none",
-                bgcolor: "#1560BD",
-                color: "#fff",
-                fontWeight: 500,
-                "&:hover": {
-                  bgcolor: "#0f4a94",
-                },
-              }}
-              onClick={() => {
-                console.log("Change plan click");
-              }}
-            >
-              Change Plan
-            </Button>
-
-            <Button
-              type="submit"
-              variant="contained"
-              size="small"
-              disabled={isSubmitting}
-              sx={{
-                textTransform: "none",
-                bgcolor: "#FFB800",
-                color: "#000",
-                fontWeight: 500,
-                minWidth: 80,
-                "&:hover": {
-                  bgcolor: "#e5a700",
-                },
-              }}
-            >
-              Next
-            </Button>
+            <LoadingButton type="submit" variant="contained" loading={loading}>
+              Add new Van
+            </LoadingButton>
           </CardActions>
         </Card>
       </form>
