@@ -118,6 +118,77 @@ export const editSchool = createAsyncThunk<
   }
 });
 
+// ✅ Create Billing / Invoice
+export const createBilling = createAsyncThunk<
+  any,
+  {
+    schoolId: string;
+    billingCycle: "weekly" | "monthly" | "quarterly" | "yearly";
+    planType: string;              // "Fixed Plan"
+    startDate: string;             // "01-Nov-2025"
+    paymentMethod: string;         // "Bank Transfer"
+    amount: string;                // "1,250.00 USD"
+    invoiceStatus: string;         // "Unpaid"
+    notes?: string;
+  },
+  { rejectValue: string }
+>("superAdmin/createBilling", async (payload, { rejectWithValue }) => {
+  try {
+    const { data } = await api.post(SUADMIN.CREATE_BILLING, payload);
+    return data?.data ?? data;
+  } catch (err: any) {
+    const msg =
+      err?.response?.data?.message ||
+      err?.response?.data?.error ||
+      err?.message ||
+      "Request failed";
+    return rejectWithValue(msg);
+  }
+});
+
+/* ✅ NEW: Get All Invoices (like your route slice style) */
+export const getAllInvoices = createAsyncThunk<
+  { invoices: any[]; pagination: { total: number; page: number; limit: number } },
+  { page?: number; limit?: number; status?: string; schoolId?: string; search?: string } | void,
+  { rejectValue: string }
+>("superAdmin/getAllInvoices", async (params, { rejectWithValue }) => {
+  try {
+    const query = {
+      page: params?.page ?? 1,
+      limit: params?.limit ?? 10,
+      status: params?.status ?? undefined,
+      schoolId: params?.schoolId ?? undefined,
+      search: params?.search ?? undefined,
+    };
+
+    const { data } = await api.get(SUADMIN.GET_ALL_INVOICE, { params: query });
+
+    // Normalize common server shapes
+    const root = data?.data ?? data;
+    const list =
+      root.items ??
+      root.invoices ??
+      root.results ??
+      root.list ??
+      (Array.isArray(root) ? root : []);
+    const total = root.total ?? root.count ?? list.length ?? 0;
+    const page = root.page ?? query.page ?? 1;
+    const limit = root.limit ?? query.limit ?? 10;
+
+    return {
+      invoices: list,
+      pagination: { total, page, limit },
+    };
+  } catch (err: any) {
+    const msg =
+      err?.response?.data?.message ||
+      err?.response?.data?.error ||
+      err?.message ||
+      "Failed to fetch invoices";
+    return rejectWithValue(msg);
+  }
+});
+
 /* ── Slice ──────────────────────────────────────────────────── */
 
 type SuperAdminState = {
@@ -128,13 +199,25 @@ type SuperAdminState = {
   // Single School
   school: any | null;
 
-  // All Schools
+  // Schools list
   schools: any[];
   total: number;
   page: number;
   limit: number;
   listLoading: boolean;
   listError: string | null;
+
+  // Billing create
+  billingCreateLoading: boolean;
+  billingCreateSuccess: boolean;
+  billingCreateError: string | null;
+  lastCreatedInvoice: any | null;
+
+  // ✅ Invoices list (route slice style)
+  invoices: any[];
+  invoicePagination: { total: number; page: number; limit: number };
+  invoicesLoading: boolean;
+  invoicesError: string | null;
 };
 
 const initialState: SuperAdminState = {
@@ -150,6 +233,17 @@ const initialState: SuperAdminState = {
   limit: 10,
   listLoading: false,
   listError: null,
+
+  billingCreateLoading: false,
+  billingCreateSuccess: false,
+  billingCreateError: null,
+  lastCreatedInvoice: null,
+
+  // ✅ invoices
+  invoices: [],
+  invoicePagination: { total: 0, page: 1, limit: 10 },
+  invoicesLoading: false,
+  invoicesError: null,
 };
 
 const superAdminSlice = createSlice({
@@ -161,6 +255,14 @@ const superAdminSlice = createSlice({
       state.success = false;
       state.error = null;
       state.school = null;
+
+      state.billingCreateLoading = false;
+      state.billingCreateSuccess = false;
+      state.billingCreateError = null;
+      state.lastCreatedInvoice = null;
+
+      state.invoicesLoading = false;
+      state.invoicesError = null;
     },
   },
   extraReducers: (builder) => {
@@ -177,10 +279,10 @@ const superAdminSlice = createSlice({
       })
       .addCase(registerSchool.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload ?? "Request failed";
+        state.error = (action.payload as string) ?? "Request failed";
       })
 
-      // Get All
+      // Get All Schools
       .addCase(getAllSchools.pending, (state) => {
         state.listLoading = true;
         state.listError = null;
@@ -194,10 +296,10 @@ const superAdminSlice = createSlice({
       })
       .addCase(getAllSchools.rejected, (state, action) => {
         state.listLoading = false;
-        state.listError = action.payload ?? "Request failed";
+        state.listError = (action.payload as string) ?? "Request failed";
       })
 
-      // Get by ID
+      // Get School by ID
       .addCase(getSchoolById.pending, (state) => {
         state.loading = true;
       })
@@ -207,10 +309,27 @@ const superAdminSlice = createSlice({
       })
       .addCase(getSchoolById.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload ?? "Request failed";
+        state.error = (action.payload as string) ?? "Request failed";
       })
 
-      // Edit
+      // Create Billing
+      .addCase(createBilling.pending, (state) => {
+        state.billingCreateLoading = true;
+        state.billingCreateError = null;
+        state.billingCreateSuccess = false;
+      })
+      .addCase(createBilling.fulfilled, (state, action) => {
+        state.billingCreateLoading = false;
+        state.billingCreateSuccess = true;
+        state.lastCreatedInvoice = action.payload;
+      })
+      .addCase(createBilling.rejected, (state, action) => {
+        state.billingCreateLoading = false;
+        state.billingCreateSuccess = false;
+        state.billingCreateError = (action.payload as string) ?? "Request failed";
+      })
+
+      // Edit School
       .addCase(editSchool.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -223,7 +342,22 @@ const superAdminSlice = createSlice({
       })
       .addCase(editSchool.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload ?? "Request failed";
+        state.error = (action.payload as string) ?? "Request failed";
+      })
+
+      /* ✅ Invoices list */
+      .addCase(getAllInvoices.pending, (state) => {
+        state.invoicesLoading = true;
+        state.invoicesError = null;
+      })
+      .addCase(getAllInvoices.fulfilled, (state, action) => {
+        state.invoicesLoading = false;
+        state.invoices = action.payload.invoices;
+        state.invoicePagination = action.payload.pagination;
+      })
+      .addCase(getAllInvoices.rejected, (state, action) => {
+        state.invoicesLoading = false;
+        state.invoicesError = (action.payload as string) ?? "Failed to fetch invoices";
       });
   },
 });

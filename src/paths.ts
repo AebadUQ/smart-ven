@@ -71,7 +71,8 @@ drivers:'/drivers',
     alert: '/alert',
     superadmin:{
       school:'/su-admin/school-management',
-      billing:'/su-admin/billing'
+      billing:'/su-admin/billing',
+      createbilling:'/su-admin/billing/create'
 
     },
     marketing: {
