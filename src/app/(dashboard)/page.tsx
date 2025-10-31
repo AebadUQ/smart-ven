@@ -10,19 +10,12 @@ export default function Page(): React.JSX.Element {
   const { token } = useSelector((state: RootState) => state.auth);
 
   React.useEffect(() => {
-    if (!token) {
+    if (token) {
+      router.replace("/dashboard");
+    } else {
       router.replace("/auth/signin");
     }
   }, [token, router]);
 
-  if (!token) {
-    return null;
-  }
-
-  return (
-    <div className="p-6">
-      <h1 className="text-xl font-semibold">Dashboard</h1>
-      <p>Welcome back 👋</p>
-    </div>
-  );
+  return <div></div>;
 }

@@ -36,6 +36,8 @@ import { SealPercent as SealPercentIcon } from '@phosphor-icons/react/dist/ssr/S
 import { Van } from '@phosphor-icons/react/dist/ssr';
 import { Path } from '@phosphor-icons/react/dist/ssr';
 import { Warning } from '@phosphor-icons/react';
+import { Building } from '@phosphor-icons/react';
+import { Invoice } from '@phosphor-icons/react';
 export const icons = {
   'address-book': AddressBookIcon,
   'PhoneCall': PhoneCallIcon,
@@ -73,5 +75,8 @@ export const icons = {
   users: UsersIcon,
   van:Van,
   path:Path,
-  warning:Warning
+  warning:Warning,
+  building:Building,
+  invoice:Invoice
+
 } as Record<string, Icon>;

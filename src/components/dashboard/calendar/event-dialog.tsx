@@ -19,7 +19,6 @@ import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { Trash as TrashIcon } from '@phosphor-icons/react/dist/ssr/Trash';
 import { Controller, useForm } from 'react-hook-form';
 import { z as zod } from 'zod';
-
 import { dayjs } from '@/lib/dayjs';
 import { logger } from '@/lib/default-logger';
 import { toast } from '@/components/core/toaster';

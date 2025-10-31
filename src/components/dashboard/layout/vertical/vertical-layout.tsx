@@ -2,6 +2,8 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
 import GlobalStyles from '@mui/material/GlobalStyles';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
 import { useSettings } from '@/hooks/use-settings';
 import { layoutConfig } from '../config';
 import { MainNav } from './main-nav';
@@ -13,7 +15,11 @@ export interface VerticalLayoutProps {
 
 export function VerticalLayout({ children }: VerticalLayoutProps): React.JSX.Element {
   const { settings } = useSettings();
-  const filteredNavItems = layoutConfig.navItems;
+  const state = useSelector((state: RootState) => state);
+
+  // get nav items dynamically based on role
+  const filteredNavItems = layoutConfig.getNavItems(state);
+
   return (
     <React.Fragment>
       <GlobalStyles
@@ -39,7 +45,7 @@ export function VerticalLayout({ children }: VerticalLayoutProps): React.JSX.Ele
       >
         <SideNav color={settings.navColor} items={filteredNavItems} />
         <Box sx={{ display: 'flex', flex: '1 1 auto', flexDirection: 'column', pl: { lg: 'var(--SideNav-width)' } }}>
-          <MainNav items={layoutConfig.navItems} />
+          <MainNav items={filteredNavItems} />
           <Box
             component="main"
             sx={{

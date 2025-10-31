@@ -69,7 +69,11 @@ drivers:'/drivers',
     offer: '/offers',
     priority: '/priority',
     alert: '/alert',
+    superadmin:{
+      school:'/su-admin/school-management',
+      billing:'/su-admin/billing'
 
+    },
     marketing: {
       campaign: '/marketing/campaigns',
       contact: '/marketing/contacts',
