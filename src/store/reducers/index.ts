@@ -10,10 +10,12 @@ import driver from './driver-slice'
 import complaint from './complaint-management'
 import route from './route-slice'
 import suadmin from './suadmin-slice'
+import dashboard from './dashboard-slice'
+import trip from './trip-slice'
 const authPersistConfig = {
   key: 'auth',
   storage,
-  whitelist: ['token','user'], // only persist token field (optional)
+  whitelist: ['token', 'user'], // only persist token field (optional)
 };
 
 const persistedAuthReducer = persistReducer(authPersistConfig, auth);
@@ -26,7 +28,7 @@ const reducers = combineReducers({
   alert,
   complaint,
   route,
-  suadmin
+  suadmin, dashboard, trip
 });
 
 export default reducers;

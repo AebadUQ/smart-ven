@@ -1,67 +1,74 @@
-import * as React from 'react';
-import type { Metadata } from 'next';
-import {Box,Stack} from '@mui/material';
-import Grid from '@mui/material/Grid2';
-import { config } from '@/config';
-import { Stats, TicketsComplain, Alert, MapTracking } from '@/components/overview';
-export const metadata = { title: `Dashboard | ${config.site.name}` } satisfies Metadata;
+"use client";
+
+import * as React from "react";
+import { Box, Stack } from "@mui/material";
+import Grid from "@mui/material/Grid2";
+import { Stats, TicketsComplain, Alert, MapTracking, TripCard } from "@/components/overview";
+import { useEffect, useState } from "react";
+import { getDashboardStats } from "@/store/reducers/dashboard-slice";
+import { getAllTrips } from "@/store/reducers/trip-slice"; // ✅ import trip thunk
+import { useDispatch, useSelector } from "react-redux";
+import { RootState, AppDispatch } from "@/store";
+
 export default function Page(): React.JSX.Element {
+  const dispatch = useDispatch<AppDispatch>();
+
+  // dashboard state
+  const { stats, loading: statsLoading } = useSelector((state: RootState) => state.dashboard);
+
+  // trip state
+  const { trips, loading: tripLoading } = useSelector((state: RootState) => state.trip);
+
+  const [filterType, setFilterType] = useState<"yearly" | "monthly">("yearly");
+  const [status, setStatus] = useState<"start" | "ongoing" | "end">("");
+
+  // ─── Load Dashboard Stats ───────────────
+  useEffect(() => {
+    dispatch(getDashboardStats({ filterType }));
+  }, [dispatch, filterType]);
+
+  // ─── Load Trips ───────────────
+  useEffect(() => {
+    dispatch(getAllTrips({ page: 1, limit: 10, status })); // ✅ passing status
+  }, [dispatch, status]);
+
+  const handleFilterChange = (type: "yearly" | "monthly") => {
+    setFilterType(type);
+  };
+
+  const handleStatusChange = (newStatus: "start" | "ongoing" | "end") => {
+    setStatus(newStatus);
+  };
+
   return (
-    <Box
-      sx={{
-        p: 'var(--Content-padding)',
-        width: 'var(--Content-width)',
-      }}
-    >
-      <Stack>
+    <Box sx={{ p: "var(--Content-padding)", width: "var(--Content-width)" }}>
+      <Stack spacing={2}>
         <Grid container spacing={2}>
-          <Grid
-            size={{
-              lg: 8,
-              xs: 12,
-            }}
-          >
+          <Grid size={{ lg: 8, xs: 12 }}>
             <Stats
-              data={[
-                { name: 'Mon', v1: 35, v2: 3350 },
-                { name: 'Tue', v1: 41, v2: 3440 },
-                { name: 'Wed', v1: 32, v2: 3054 },
-                { name: 'Thu', v1: 34, v2: 3780 },
-                { name: 'Fri', v1: 53, v2: 3849 },
-                { name: 'Sat', v1: 29, v2: 2900 },
-                { name: 'Sun', v1: 40, v2: 3600 },
-              ]}
-            />
-          </Grid>
-          <Grid
-            size={{
-              lg: 4,
-              xs: 12,
-            }}
-          >
-            <TicketsComplain
-
+              data={stats}
+              filterType={filterType}
+              onFilterChange={handleFilterChange}
+              loading={statsLoading}
             />
           </Grid>
 
-          <Grid
-            size={{
-              lg: 8,
-              xs: 12,
-            }}
-          >
+          <Grid size={{ lg: 4, xs: 12 }}>
+            {/* ✅ pass trip data + status control */}
+            <TripCard
+              trips={trips}
+              status={status}
+              onStatusChange={handleStatusChange}
+              loading={tripLoading}
+            />
+          </Grid>
+
+          <Grid size={{ lg: 8, xs: 12 }}>
             <MapTracking />
-
           </Grid>
-          <Grid
-            size={{
-              lg: 4,
-              xs: 12,
-            }}
-          >
-            <Alert
 
-            />
+          <Grid size={{ lg: 4, xs: 12 }}>
+            <Alert />
           </Grid>
         </Grid>
       </Stack>

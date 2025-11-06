@@ -64,3 +64,11 @@ export const SUADMIN={
     CREATE_BILLING:'/Invoice/createInvoice',
     GET_ALL_INVOICE:'/Invoice/getAllInvoicesBySuperAdmin'
 }
+
+export const DASHBOARD ={
+    GET_DASHBOARD_STATS:'/trips/getDashboard'
+}
+
+export const TRIP ={
+    GET_ALL_TRIP:'/trips/Get-Trips-By-Admin'
+}

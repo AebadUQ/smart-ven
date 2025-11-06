@@ -1,122 +1,46 @@
 'use client';
 
 import * as React from 'react';
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardHeader from '@mui/material/CardHeader';
 import Divider from '@mui/material/Divider';
-import Grid from '@mui/material/Grid2';
-import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
-import ErrorIcon from '@mui/icons-material/Error';
-import InfoIcon from '@mui/icons-material/Info';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import WarningIcon from '@mui/icons-material/Warning';
+import Typography from '@mui/material/Typography';
 import { BagSimple as BagSimpleIcon } from '@phosphor-icons/react/dist/ssr/BagSimple';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import { IconButton } from '@mui/material';
+import { RootState, AppDispatch } from '@/store';
+import { getAllComplaints } from '@/store/reducers/complaint-management';
+import { useRouter } from 'next/navigation';
 
-export interface Product {
-  id: string;
-  name: string;
-  image?: string;
-  category: string;
-  sales: number;
-}
-
-export interface ProductsProps {
-  list?: Product[];
-}
-
-type Variant = 'error' | 'info' | 'success' | 'warning';
-
+// Notification Card
 interface Notification {
-  id: number;
-  variant: Variant;
-  title: string;
+  _id: string;
+  issueType: string;
   description: string;
-  date: string;
+  driverName: string;
+  vanCarNumber: string;
+  createdAt: string;
 }
 
-const variantStyles: Record<
-  Variant,
-  { borderColor: string; backgroundColor: string; icon: JSX.Element }
-> = {
-  error: {
-    borderColor: '#de3e3e',
-    backgroundColor: '#feeae9',
-    icon: <ErrorIcon sx={{ color: '#de3e3e' }} />,
-  },
-  info: {
-    borderColor: '#1a73e8',
-    backgroundColor: '#d7e7ff',
-    icon: <InfoIcon sx={{ color: '#1a73e8' }} />,
-  },
-  success: {
-    borderColor: '#4caf50',
-    backgroundColor: '#d7f2dc',
-    icon: <CheckCircleIcon sx={{ color: '#4caf50' }} />,
-  },
-  warning: {
-    borderColor: '#f7b900',
-    backgroundColor: '#fef6d3',
-    icon: <WarningIcon sx={{ color: '#f7b900' }} />,
-  },
-};
-
-const notifications: Notification[] = [
-  {
-    id: 1,
-    variant: 'error',
-    title: 'Notification Title',
-    description: 'notification description',
-    date: '26 May, 2025 - 08:59 AM',
-  },
-  {
-    id: 2,
-    variant: 'info',
-    title: 'Notification Title',
-    description: 'notification description',
-    date: '26 May, 2025 - 08:59 AM',
-  },
-  {
-    id: 3,
-    variant: 'success',
-    title: 'Notification Title',
-    description: 'notification description',
-    date: '26 May, 2025 - 08:59 AM',
-  },
-  {
-    id: 4,
-    variant: 'warning',
-    title: 'Notification Title',
-    description: 'notification description',
-    date: '26 May, 2025 - 08:59 AM',
-  },
-];
-
-const stats = [
-  { label: 'Total Tickets', value: 125, bg: '#F0F7FF' },
-  { label: 'Open', value: 75, bg: '#FFF6E0' },
-  { label: 'Resolved', value: 50, bg: '#E5FFE5' },
-];
-
-const NotificationCard: React.FC<Omit<Notification, 'id'>> = ({
-  variant,
-  title,
+const NotificationCard: React.FC<Notification> = ({
+  issueType,
   description,
-  date,
+  driverName,
+  vanCarNumber,
+  createdAt,
 }) => {
-  const styles = variantStyles[variant] || variantStyles.info;
-
   return (
     <Paper
       variant="outlined"
       sx={{
-        borderColor: styles.borderColor,
-        backgroundColor: styles.backgroundColor,
+        borderColor: '#2D9CDB',
+        backgroundColor: '#E5F1FF',
         p: 2,
         display: 'flex',
         gap: 2,
@@ -124,27 +48,40 @@ const NotificationCard: React.FC<Omit<Notification, 'id'>> = ({
         alignItems: 'center',
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center' }}>{styles.icon}</Box>
+      <Avatar sx={{ bgcolor: '#2D9CDB' }}>{driverName[0]}</Avatar>
 
       <Box sx={{ flexGrow: 1 }}>
         <Typography variant="subtitle1" fontWeight="bold">
-          {title}
+          {issueType}
         </Typography>
         <Typography variant="body2" color="text.secondary" mb={0.5}>
           {description}
         </Typography>
         <Typography variant="caption" color="text.secondary">
-          {date}
+          {driverName} - {vanCarNumber} | {new Date(createdAt).toLocaleString()}
         </Typography>
       </Box>
 
-<IconButton size="small" sx={{ color: 'text.secondary' }}>
-  <ArrowForwardIosIcon />
-</IconButton>    </Paper>
+      {/* <IconButton size="small" sx={{ color: 'text.secondary' }}>
+        <ArrowForwardIosIcon />
+      </IconButton> */}
+    </Paper>
   );
 };
 
-export const Alert: React.FC<ProductsProps> = ({ list }) => {
+// Alert Component
+export const Alert: React.FC = () => {
+  const dispatch = useDispatch<AppDispatch>();
+  const router = useRouter();
+
+  const { complaints, loading } = useSelector((state: RootState) => state.complaint);
+
+  useEffect(() => {
+    dispatch(getAllComplaints({ page: 1, limit: 4 }));
+  }, [dispatch]);
+
+  const displayedComplaints = complaints?.slice(0, 4) || [];
+
   return (
     <Card>
       <CardHeader
@@ -154,24 +91,31 @@ export const Alert: React.FC<ProductsProps> = ({ list }) => {
           </Avatar>
         }
         action={
-          <Button color="secondary" size="small" sx={{ mt: 1 }}>
-            View all
+          <Button
+            color="secondary"
+            size="small"
+            sx={{ mt: 1 }}
+            onClick={() => router.push('/dashboard/path/tracking')}
+          >
+            View All
           </Button>
         }
         title="Tickets & Complaints"
         sx={{ pt: 2 }}
       />
       <Divider />
-     
+
       <Box display="flex" flexDirection="column" gap={2} p={2}>
-        {notifications.map(({ id, ...note }) => (
-          <NotificationCard key={id} {...note} />
-        ))}
+        {loading ? (
+          <Typography sx={{ p: 2 }}>Loading...</Typography>
+        ) : displayedComplaints.length === 0 ? (
+          <Typography sx={{ p: 2, textAlign: 'center', color: 'text.secondary' }}>
+            No complaints available
+          </Typography>
+        ) : (
+          displayedComplaints.map((note) => <NotificationCard key={note._id} {...note} />)
+        )}
       </Box>
-      {/* Uncomment if you want to use the DataTable component */}
-      {/* <Box sx={{ overflowX: 'auto', '--mui-palette-TableCell-border': 'transparent' }}>
-        <DataTable<Product> columns={columns} hideHead rows={list} />
-      </Box> */}
     </Card>
   );
 };
