@@ -1,6 +1,8 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import api from "@/api/axios";
 import { ROUTE } from "@/api/endpoint";
+
+// ─── Types ──────────────────────────────────────────────
 
 type TripDays = {
   monday: boolean;
@@ -14,14 +16,46 @@ type TripDays = {
 
 type Point = { lat: number; long: number };
 
+export interface PaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+}
+
+export interface RouteFilters {
+  driverName?: string;
+  // later: carNumber?: string; tripType?: string; etc.
+}
+
+export interface TripRecord {
+  _id: string;
+  vanId: string;
+  title: string;
+  startTime: string;
+  tripType: "morning" | "evening";
+  tripDays: Record<string, boolean>;
+  startPoint: Point;
+  endPoint: Point;
+  vanDetails?: { carNumber: string };
+  driverDetails?: { fullname: string };
+}
+
+type GetAllRoutesParams = {
+  page?: number;
+  limit?: number;
+} & RouteFilters;
+
 interface RouteState {
-  routes: any[];
-  routeDetails: any | null;
+  routes: TripRecord[];
+  routeDetails: TripRecord | any | null;
   loading: boolean;
   error: string | null;
   success: boolean;
-  pagination: { total: number; page: number; limit: number };
+  pagination: PaginationMeta;
+  filters: RouteFilters;
 }
+
+// ─── Initial State ──────────────────────────────────────
 
 const initialState: RouteState = {
   routes: [],
@@ -30,82 +64,112 @@ const initialState: RouteState = {
   error: null,
   success: false,
   pagination: { total: 0, page: 1, limit: 10 },
+  filters: {},
 };
 
 // ─── Thunks ──────────────────────────────────────────────
 
-// Get all routes
-export const getAllRoutes = createAsyncThunk(
-  "route/getAllRoutes",
-  async (
-    { page = 1, limit = 10 }: { page?: number; limit?: number },
-    { rejectWithValue }
-  ) => {
-    try {
-      const response = await api.get(ROUTE.GET_ALL_ROUTE, {
-        params: { page, limit },
-      });
-      const { data, pagination } = response.data;
-      return { routes: data, pagination };
-    } catch (error: any) {
-      return rejectWithValue(error?.response?.data || "Failed to fetch routes");
+// Get all routes → /Route/getRoutes?driverName=...&page=...&limit=...
+export const getAllRoutes = createAsyncThunk<
+  { routes: TripRecord[]; pagination: PaginationMeta; filters: RouteFilters },
+  GetAllRoutesParams | undefined,
+  { rejectValue: string }
+>("route/getAllRoutes", async (params = {}, { rejectWithValue }) => {
+  try {
+    const { page = 1, limit = 10, driverName } = params;
+
+    const query: Record<string, any> = { page, limit };
+
+    if (driverName && driverName.trim()) {
+      query.driverName = driverName.trim();
     }
+
+    const response = await api.get(ROUTE.GET_ALL_ROUTE, {
+      params: query,
+    });
+
+    const { data, pagination } = response.data as {
+      data: TripRecord[];
+      pagination?: PaginationMeta;
+    };
+
+    return {
+      routes: data || [],
+      pagination:
+        pagination || {
+          page,
+          limit,
+          total: data?.length || 0,
+        },
+      filters: {
+        driverName: driverName || "",
+      },
+    };
+  } catch (error: any) {
+    return rejectWithValue(
+      error?.response?.data || "Failed to fetch routes"
+    );
   }
-);
+});
 
 // Get route by ID
-export const getRouteById = createAsyncThunk(
-  "route/getRouteById",
-  async (id: string, { rejectWithValue }) => {
-    try {
-      const response = await api.get(`${ROUTE.GET_ROUTE_BY_ID}/${id}`);
-      return response.data.data;
-    } catch (error: any) {
-      return rejectWithValue(error?.response?.data || "Failed to fetch route details");
-    }
+export const getRouteById = createAsyncThunk<
+  any,
+  string,
+  { rejectValue: string }
+>("route/getRouteById", async (id, { rejectWithValue }) => {
+  try {
+    const response = await api.get(`${ROUTE.GET_ROUTE_BY_ID}/${id}`);
+    return response.data.data;
+  } catch (error: any) {
+    return rejectWithValue(
+      error?.response?.data || "Failed to fetch route details"
+    );
   }
-);
+});
 
 // Create route
-export const createRoute = createAsyncThunk(
-  "route/createRoute",
-  async (
-    payload: {
-      vanId: string;
-      title: string;
-      startTime: string;
-      tripType: "morning" | "evening";
-      tripDays: TripDays;
-      startPoint: Point;
-      endPoint: Point;
-    },
-    { rejectWithValue }
-  ) => {
-    try {
-      const response = await api.post(ROUTE.CREATE_ROUTE, payload);
-      return response.data.data;
-    } catch (error: any) {
-      return rejectWithValue(error?.response?.data || "Failed to create route");
-    }
+export const createRoute = createAsyncThunk<
+  TripRecord,
+  {
+    vanId: string;
+    title: string;
+    startTime: string;
+    tripType: "morning" | "evening";
+    tripDays: TripDays;
+    startPoint: Point;
+    endPoint: Point;
+  },
+  { rejectValue: string }
+>("route/createRoute", async (payload, { rejectWithValue }) => {
+  try {
+    const response = await api.post(ROUTE.CREATE_ROUTE, payload);
+    return response.data.data as TripRecord;
+  } catch (error: any) {
+    return rejectWithValue(
+      error?.response?.data || "Failed to create route"
+    );
   }
-);
+});
 
-// ✅ Update route
-export const updateRoute = createAsyncThunk(
-  "route/updateRoute",
-  async (payload: any, { rejectWithValue }) => {
-    try {
-      // ✅ Using POST (since your API expects it that way)
-      const response = await api.post(`${ROUTE.UPDATE_ROUTE}`, payload);
-      return response.data.data;
-    } catch (error: any) {
-      return rejectWithValue(error?.response?.data || "Failed to update route");
-    }
+// Update route (API expects POST)
+export const updateRoute = createAsyncThunk<
+  TripRecord,
+  any,
+  { rejectValue: string }
+>("route/updateRoute", async (payload, { rejectWithValue }) => {
+  try {
+    const response = await api.post(ROUTE.UPDATE_ROUTE, payload);
+    return response.data.data as TripRecord;
+  } catch (error: any) {
+    return rejectWithValue(
+      error?.response?.data || "Failed to update route"
+    );
   }
-);
-
+});
 
 // ─── Slice ──────────────────────────────────────────────
+
 const routeSlice = createSlice({
   name: "route",
   initialState,
@@ -119,77 +183,102 @@ const routeSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder
-      // Get all routes
-      .addCase(getAllRoutes.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(getAllRoutes.fulfilled, (state, action) => {
+    // Get all routes
+    builder.addCase(getAllRoutes.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+
+    builder.addCase(
+      getAllRoutes.fulfilled,
+      (
+        state,
+        action: PayloadAction<{
+          routes: TripRecord[];
+          pagination: PaginationMeta;
+          filters: RouteFilters;
+        }>
+      ) => {
         state.loading = false;
         state.routes = action.payload.routes;
         state.pagination = action.payload.pagination;
-      })
-      .addCase(getAllRoutes.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
+        state.filters = action.payload.filters;
+      }
+    );
 
-      // Get route by ID
-      .addCase(getRouteById.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(getRouteById.fulfilled, (state, action) => {
-        state.loading = false;
-        state.routeDetails = action.payload;
-      })
-      .addCase(getRouteById.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
+    builder.addCase(getAllRoutes.rejected, (state, action) => {
+      state.loading = false;
+      state.error =
+        (action.payload as string) || "Failed to fetch routes";
+    });
 
-      // Create route
-      .addCase(createRoute.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-        state.success = false;
-      })
-      .addCase(createRoute.fulfilled, (state, action) => {
-        state.loading = false;
-        state.success = true;
-        state.routes.unshift(action.payload);
-      })
-      .addCase(createRoute.rejected, (state, action) => {
-        state.loading = false;
-        state.success = false;
-        state.error = action.payload as string;
-      })
+    // Get route by ID
+    builder.addCase(getRouteById.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
 
-      // ✅ Update route
-      .addCase(updateRoute.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-        state.success = false;
-      })
-      .addCase(updateRoute.fulfilled, (state, action) => {
-        state.loading = false;
-        state.success = true;
+    builder.addCase(getRouteById.fulfilled, (state, action) => {
+      state.loading = false;
+      state.routeDetails = action.payload;
+    });
 
-        const index = state.routes.findIndex((r) => r.id === action.payload.id);
-        if (index !== -1) {
-          state.routes[index] = action.payload;
-        }
+    builder.addCase(getRouteById.rejected, (state, action) => {
+      state.loading = false;
+      state.error =
+        (action.payload as string) || "Failed to fetch route details";
+    });
 
-        if (state.routeDetails?.id === action.payload.id) {
-          state.routeDetails = action.payload;
-        }
-      })
-      .addCase(updateRoute.rejected, (state, action) => {
-        state.loading = false;
-        state.success = false;
-        state.error = action.payload as string;
-      });
+    // Create route
+    builder.addCase(createRoute.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+      state.success = false;
+    });
+
+    builder.addCase(createRoute.fulfilled, (state, action) => {
+      state.loading = false;
+      state.success = true;
+      state.routes.unshift(action.payload);
+    });
+
+    builder.addCase(createRoute.rejected, (state, action) => {
+      state.loading = false;
+      state.success = false;
+      state.error =
+        (action.payload as string) || "Failed to create route";
+    });
+
+    // Update route
+    builder.addCase(updateRoute.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+      state.success = false;
+    });
+
+    builder.addCase(updateRoute.fulfilled, (state, action) => {
+      state.loading = false;
+      state.success = true;
+
+      const updated = action.payload;
+      const index = state.routes.findIndex(
+        (r) => r._id === updated._id
+      );
+      if (index !== -1) {
+        state.routes[index] = updated;
+      }
+
+      if (state.routeDetails && state.routeDetails._id === updated._id) {
+        state.routeDetails = updated;
+      }
+    });
+
+    builder.addCase(updateRoute.rejected, (state, action) => {
+      state.loading = false;
+      state.success = false;
+      state.error =
+        (action.payload as string) || "Failed to update route";
+    });
   },
 });
 

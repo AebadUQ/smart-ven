@@ -20,26 +20,43 @@ const initialState: SliceState = {
   studentDetail: null,
   detailLoading: false,
 };
+type GetAllStudentsParams = {
+  page?: number;
+  limit?: number;
+  carNumber?: string;
+  driverName?: string; // 👈 new
+};
 
 export const getAllStudents = createAsyncThunk(
   "student/getAllStudents",
   async (
-    { page = 1, limit = 10 }: { page?: number; limit?: number },
+    {
+      page = 1,
+      limit = 10,
+      ...filters // { carNumber, driverName }
+    }: GetAllStudentsParams,
     { rejectWithValue }
   ) => {
     try {
-      const response = await api.get(STUDENT.GET_ALL_STUDENTS, { params: { page, limit } });
+      const params = {
+        page,
+        limit,
+        ...filters, // 👈 sends carNumber & driverName as query params
+      };
+
+      const response = await api.get(STUDENT.GET_ALL_STUDENTS, { params });
+
       const { data, pagination } = response.data as {
         data: StudentRecord[];
         pagination: PaginationMeta;
       };
+
       return { students: data, pagination };
     } catch (error: any) {
       return rejectWithValue(error?.response?.data || "Failed to fetch students");
     }
   }
 );
-
 export const getStudentDetail = createAsyncThunk(
   "student/getStudentDetail",
   async (id: string, { rejectWithValue }) => {

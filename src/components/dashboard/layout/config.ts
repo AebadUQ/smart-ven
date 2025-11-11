@@ -32,6 +32,18 @@ export const layoutConfig = {
             { key: "billing", title: "Billing & Subscription", href: paths.dashboard.superadmin.billing, icon: "invoice" },
           ],
         },
+          {
+        key: "tracking",
+        items: [
+          { key: "tracking", title: "Live Tracking", href: paths.dashboard.tracking, icon: "truck" },
+        ],
+      },
+      {
+        key: "parent",
+        items: [
+          { key: "parent", title: "Complaint Management", href: paths.dashboard.parents.parents, icon: "file" },
+        ],
+      },
       ];
     }
 

@@ -76,21 +76,48 @@ const initialState: VanState = {
 };
 
 // ─── Thunks ────────────────────────────────────────────────────
-
+type GetAllSchoolVansParams = {
+  page?: number;
+  limit?: number;
+  carNumber?: string;
+  driverName?: string;
+};
 // Get all vans with pagination
-export const getAllSchoolVans = createAsyncThunk< 
+export const getAllSchoolVans = createAsyncThunk<
   { vans: Van[]; pagination: PaginationMeta },
-  { page?: number; limit?: number }
->("van/getAllSchoolVans", async ({ page = 1, limit = 10 }, { rejectWithValue }) => {
-  try {
-    const response = await api.get(VAN.GET_ALL_VAN_OF_SCHOOL, { params: { page, limit } });
-    const { data, pagination } = response.data as { data: Van[]; pagination: PaginationMeta };
-    return { vans: data, pagination };
-  } catch (error: any) {
-    return rejectWithValue(error.response?.data?.message || "Failed to fetch vans");
-  }
-});
+  GetAllSchoolVansParams | undefined,
+  { rejectValue: string }
+>(
+  "van/getAllSchoolVans",
+  async (params = {}, { rejectWithValue }) => {
+    try {
+      const {
+        page = 1,
+        limit = 10,
+        ...filters // carNumber, driverName
+      } = params;
 
+      const response = await api.get(VAN.GET_ALL_VAN_OF_SCHOOL, {
+        params: {
+          page,
+          limit,
+          ...filters, // -> ?page=1&limit=10&carNumber=340&driverName=Ali
+        },
+      });
+
+      const { data, pagination } = response.data as {
+        data: Van[];
+        pagination: PaginationMeta;
+      };
+
+      return { vans: data, pagination };
+    } catch (error: any) {
+      return rejectWithValue(
+        error?.response?.data?.message || "Failed to fetch vans"
+      );
+    }
+  }
+);
 // Assign van to student
 interface AssignVanPayload {
   kidId: string;

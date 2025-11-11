@@ -1,3 +1,5 @@
+// app/(dashboard)/student/page.tsx
+
 "use client";
 
 import * as React from "react";
@@ -8,50 +10,50 @@ import {
   Divider,
   Stack,
   Typography,
-  Menu,
-  MenuItem,
   IconButton,
-  ListItemIcon,
-  ListItemText,
   Chip,
   CircularProgress,
 } from "@mui/material";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import { paths } from "@/paths";
 import { DataTable, type ColumnDef } from "@/components/core/data-table";
 import { CustomersPagination } from "@/components/dashboard/customer/customers-pagination";
 import {
   CheckCircleIcon,
   MinusIcon,
   ClockIcon,
-  Eye,
-  EditIcon,
-  Trash,
 } from "@/components/icons";
+import { Eye as EyeIcon } from "@phosphor-icons/react/dist/ssr/Eye";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/store";
 import {
   getAllStudents,
-  deleteStudentsAndRefetch,
-  getStudentDetail,               // <-- import
+  getStudentDetail,
 } from "@/store/reducers/student-slice";
-import { Eye as EyeIcon } from '@phosphor-icons/react/dist/ssr/Eye';
-
 import type { StudentRecord } from "@/types/student";
-import { StudentFilter } from "./studentfilter";
+import { StudentFilter, type Filters } from "./studentfilter";
 
 export default function Page(): React.JSX.Element {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
-  const [selectedStudents, setSelectedStudents] = React.useState<StudentRecord[]>([]);
 
   const { loading, students, pagination } = useSelector(
     (state: RootState) => state.student
   );
 
+  const [selectedStudents, setSelectedStudents] = React.useState<StudentRecord[]>([]);
+  const [filters, setFilters] = React.useState<Filters>({});
+  const [page, setPage] = React.useState(1);
+  const [limit, setLimit] = React.useState(10);
+
+  // 🔁 Fetch on mount + whenever pagination/filters change
   React.useEffect(() => {
-    dispatch(getAllStudents({ page: 1, limit: 10 }));
-  }, [dispatch]);
+    dispatch(
+      getAllStudents({
+        page,
+        limit,
+        ...filters, // carNumber, driverName if present
+      })
+    );
+  }, [dispatch, page, limit, filters]);
 
   const columns: ColumnDef<StudentRecord>[] = [
     {
@@ -75,7 +77,7 @@ export default function Page(): React.JSX.Element {
       width: "200px",
       formatter: (row): React.JSX.Element => (
         <Typography color="text.primary" variant="body2">
-          {row.parent.fullname}
+          {row.parent?.fullname}
         </Typography>
       ),
     },
@@ -84,7 +86,7 @@ export default function Page(): React.JSX.Element {
       width: "150px",
       formatter: (row): React.JSX.Element => (
         <Typography color="text.secondary" variant="body2">
-          {row.student.grade}
+          {row.student?.grade}
         </Typography>
       ),
     },
@@ -140,37 +142,35 @@ export default function Page(): React.JSX.Element {
 
         const { label, icon } = mapping[statusKey] ?? mapping.pending;
 
-        return <Chip icon={icon} label={label} size="small" variant="outlined" />;
+        return (
+          <Chip
+            icon={icon}
+            label={label}
+            size="small"
+            variant="outlined"
+          />
+        );
       },
     },
     {
-  name: 'Actions',
-  width: '100px',
-  align: 'right',
-  formatter: (row) => {
-    const handleView = async () => {
-      try {
-        await dispatch(getStudentDetail(row.student.id)).unwrap(); // dispatch detail
-        router.push(`${paths.dashboard.student}/${row.student.id}`); // then navigate
-      } finally {
-        // handleMenuClose();
-      }
-    };
+      name: "Actions",
+      width: "100px",
+      align: "right",
+      formatter: (row) => {
+        const handleView = async () => {
+          await dispatch(getStudentDetail(row.student.id)).unwrap();
+          router.push(`/dashboard/student/${row.student.id}`);
+        };
 
-    return (
-      <Stack direction="row" spacing={0} sx={{ justifyContent: 'flex-end' }}>
-        <IconButton
-          size="small"
-          onClick={handleView}
-        >
-          <EyeIcon />
-        </IconButton>
-      </Stack>
-    );
-  },
-}
-,
-
+        return (
+          <Stack direction="row" spacing={0} sx={{ justifyContent: "flex-end" }}>
+            <IconButton size="small" onClick={handleView}>
+              <EyeIcon />
+            </IconButton>
+          </Stack>
+        );
+      },
+    },
   ];
 
   return (
@@ -188,8 +188,13 @@ export default function Page(): React.JSX.Element {
 
         <Card>
           <StudentFilter
-            filters={null}
-            setFilters={null}
+            filters={filters}
+            setFilters={(updater) => {
+              setPage(1); // reset page on filter change
+              setFilters((prev) =>
+                typeof updater === "function" ? updater(prev) : updater
+              );
+            }}
             selected={selectedStudents}
           />
 
@@ -203,7 +208,9 @@ export default function Page(): React.JSX.Element {
                 columns={columns}
                 rows={students}
                 selectable
-                onSelectionChange={(_, rows) => setSelectedStudents(rows)}
+                onSelectionChange={(_, rows) =>
+                  setSelectedStudents(rows as StudentRecord[])
+                }
               />
             ) : (
               <Box sx={{ p: 3 }}>
@@ -221,18 +228,17 @@ export default function Page(): React.JSX.Element {
           <Divider />
 
           <CustomersPagination
-            count={pagination.total}
-            page={Math.max(0, pagination.page - 1)}
-            rowsPerPage={pagination.limit}
+            count={pagination?.total || 0}
+            page={(page || 1) - 1}
+            rowsPerPage={limit}
             onPaginationChange={(_, newPage) => {
-              dispatch(
-                getAllStudents({ page: newPage + 1, limit: pagination.limit })
-              );
+              setPage(newPage + 1);
               setSelectedStudents([]);
             }}
             onRowsPerPageChange={(event) => {
               const newLimit = parseInt(event.target.value, 10);
-              dispatch(getAllStudents({ page: 1, limit: newLimit }));
+              setLimit(newLimit);
+              setPage(1);
               setSelectedStudents([]);
             }}
           />

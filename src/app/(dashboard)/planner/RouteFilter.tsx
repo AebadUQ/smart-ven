@@ -1,4 +1,4 @@
-// app/(dashboard)/student/studentfilter.tsx
+// app/(dashboard)/planner/RouteFilter.tsx
 
 "use client";
 
@@ -8,39 +8,29 @@ import Divider from "@mui/material/Divider";
 import Stack from "@mui/material/Stack";
 import FormControl from "@mui/material/FormControl";
 import OutlinedInput from "@mui/material/OutlinedInput";
-import { Trash } from "@phosphor-icons/react";
 import {
   FilterButton,
   FilterPopover,
   useFilterContext,
 } from "@/components/core/filter-button";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "@/store";
-import { deleteStudentsAndRefetch } from "@/store/reducers/student-slice";
+import type { RouteFilters } from "@/store/reducers/route-slice";
 
-export interface Filters {
-  carNumber?: string;
-  driverName?: string;
+interface RouteFilterProps {
+  filters: RouteFilters;
+  setFilters: (
+    updater: RouteFilters | ((prev: RouteFilters) => RouteFilters)
+  ) => void;
 }
 
-interface StudentFilterProps {
-  filters: Filters;
-  setFilters: (updater: Filters | ((prev: Filters) => Filters)) => void;
-  selected: any[];
-}
-
-export function StudentFilter({
+export function RouteFilter({
   filters,
   setFilters,
-  selected,
-}: StudentFilterProps): React.JSX.Element {
-  const dispatch = useDispatch<AppDispatch>();
-
+}: RouteFilterProps): React.JSX.Element {
   const handleFilterChange = useCallback(
-    (key: keyof Filters, value?: string) => {
-      setFilters((prev: Filters) => {
+    (key: keyof RouteFilters, value?: string) => {
+      setFilters((prev: RouteFilters) => {
         const next = { ...prev };
-        if (!value) {
+        if (!value || !value.trim()) {
           delete next[key];
         } else {
           next[key] = value;
@@ -57,16 +47,6 @@ export function StudentFilter({
 
   const hasFilters = Object.values(filters || {}).some((val) => !!val);
 
-  const handleBulkDelete = async () => {
-    const ids = selected
-      ?.map((item: any) => item?.student?.id || item?.id)
-      .filter(Boolean);
-
-    if (!ids.length) return;
-
-    await dispatch(deleteStudentsAndRefetch({ ids }));
-  };
-
   return (
     <div>
       <Divider />
@@ -81,19 +61,7 @@ export function StudentFilter({
           spacing={2}
           sx={{ alignItems: "center", flex: "1 1 auto", flexWrap: "wrap" }}
         >
-          {/* 🔍 Car Number */}
-          <FilterButton
-            displayValue={filters?.carNumber || ""}
-            label="Car Number"
-            onFilterApply={(value) =>
-              handleFilterChange("carNumber", value as string)
-            }
-            onFilterDelete={() => handleFilterChange("carNumber", "")}
-            popover={<GenericFilterPopover field="Car Number" />}
-            value={filters?.carNumber || ""}
-          />
-
-          {/* 🔍 Driver Name */}
+          {/* 🧑‍✈️ Driver Name */}
           <FilterButton
             displayValue={filters?.driverName || ""}
             label="Driver Name"
@@ -109,20 +77,12 @@ export function StudentFilter({
             <Button onClick={handleClearFilters}>Clear filters</Button>
           ) : null}
         </Stack>
-
-        <Button
-          variant="contained"
-          color="error"
-          startIcon={<Trash weight="fill" />}
-          onClick={handleBulkDelete}
-        >
-          Delete
-        </Button>
       </Stack>
     </div>
   );
 }
 
+// 🔤 Generic Text Input Popover
 function GenericFilterPopover({ field }: { field: string }) {
   const { anchorEl, onApply, onClose, open, value: initialValue } =
     useFilterContext();

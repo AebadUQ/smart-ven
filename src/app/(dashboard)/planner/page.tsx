@@ -30,38 +30,32 @@ import { AppDispatch, RootState } from "@/store";
 import {
   getAllRoutes,
   getRouteById,
-  // deleteRoute,
+  type TripRecord,
+  type RouteFilters,
 } from "@/store/reducers/route-slice";
+import { RouteFilter } from "./RouteFilter";
 import dayjs from "dayjs";
 import { paths } from "@/paths";
 
-// ─── Types ─────────────────────────────────────────────
-type TripRecord = {
-  _id: string;
-  vanId: string;
-  title: string;
-  startTime: string;
-  tripType: "morning" | "evening";
-  tripDays: Record<string, boolean>;
-  startPoint: { lat: number; long: number };
-  endPoint: { lat: number; long: number };
-  vanDetails?: { carNumber: string };
-  driverDetails?: { fullname: string };
-};
+// ─── Row Actions ─────────────────────────────────────────────
 
-// ─── Route Actions ─────────────────────────────────────
 const RouteActions = ({ row }: { row: TripRecord }) => {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) =>
+    setAnchorEl(event.currentTarget);
   const handleMenuClose = () => setAnchorEl(null);
 
   const handleView = async () => {
     try {
       await dispatch(getRouteById(row._id)).unwrap();
+      router.push(`/planner/${row._id}`);
+    } catch (err) {
+      console.error("Failed to load route details before view", err);
+      // still navigate even if prefetch fails, optional:
       router.push(`/planner/${row._id}`);
     } finally {
       handleMenuClose();
@@ -73,15 +67,7 @@ const RouteActions = ({ row }: { row: TripRecord }) => {
     handleMenuClose();
   };
 
-  const handleDelete = async () => {
-    // try {
-    //   await dispatch(deleteRoute({ routeId: row._id })).unwrap();
-    // } catch (err) {
-    //   console.error("Delete failed", err);
-    // } finally {
-    //   handleMenuClose();
-    // }
-  };
+  // const handleDelete = async () => { ... }
 
   return (
     <Stack direction="row" spacing={0} sx={{ justifyContent: "flex-end" }}>
@@ -120,57 +106,91 @@ const RouteActions = ({ row }: { row: TripRecord }) => {
 };
 
 // ─── Main Page ─────────────────────────────────────────
+
 export default function RoutePlannerPage(): React.JSX.Element {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
-  const { routes, loading, pagination } = useSelector((state: RootState) => state.route);
-  const [selectedTrips, setSelectedTrips] = React.useState<TripRecord[]>([]);
 
+  const { routes, loading, pagination } = useSelector(
+    (state: RootState) => state.route
+  );
+
+  const [selectedTrips, setSelectedTrips] = React.useState<TripRecord[]>([]);
+  const [filters, setFilters] = React.useState<RouteFilters>({});
+  const [page, setPage] = React.useState<number>(1);
+  const [limit, setLimit] = React.useState<number>(10);
+
+  // Fetch when page / limit / filters change
   React.useEffect(() => {
-    dispatch(getAllRoutes({ page: 1, limit: 10 }));
-  }, [dispatch]);
+    dispatch(
+      getAllRoutes({
+        page,
+        limit,
+        ...filters, // currently driverName; easily extendable
+      })
+    );
+  }, [dispatch, page, limit, filters]);
 
   const columns: ColumnDef<TripRecord>[] = [
     {
       name: "Van ID",
       width: "120px",
-      formatter: (row) => <Typography variant="body2">{row.vanId}</Typography>,
+      formatter: (row) => (
+        <Typography variant="body2">{row.vanId}</Typography>
+      ),
     },
     {
       name: "Car Number",
-      width: "120px",
-      formatter: (row) => <Typography variant="body2">{row.vanDetails?.carNumber || "—"}</Typography>,
+      width: "130px",
+      formatter: (row) => (
+        <Typography variant="body2">
+          {row.vanDetails?.carNumber || "—"}
+        </Typography>
+      ),
     },
     {
       name: "Driver",
-      width: "150px",
-      formatter: (row) => <Typography variant="body2">{row.driverDetails?.fullname || "—"}</Typography>,
+      width: "160px",
+      formatter: (row) => (
+        <Typography variant="body2">
+          {row.driverDetails?.fullname || "—"}
+        </Typography>
+      ),
     },
     {
       name: "Title",
       width: "200px",
-      formatter: (row) => <Typography variant="body2">{row.title}</Typography>,
+      formatter: (row) => (
+        <Typography variant="body2">{row.title}</Typography>
+      ),
     },
     {
       name: "Start Time",
       width: "120px",
       formatter: (row) => (
-        <Typography variant="body2">{dayjs(row.startTime).format("hh:mm A")}</Typography>
+        <Typography variant="body2">
+          {dayjs(row.startTime).format("hh:mm A")}
+        </Typography>
       ),
     },
     {
       name: "Trip Type",
       width: "120px",
       formatter: (row) => (
-        <Chip label={row.tripType} size="small" variant="outlined" color="primary" />
+        <Chip
+          label={row.tripType}
+          size="small"
+          variant="outlined"
+          color="primary"
+        />
       ),
     },
     {
       name: "Trip Days",
       width: "200px",
       formatter: (row) => {
-        const days = Object.entries(row.tripDays)
-          .filter(([_, val]) => val)
+        const days = Object.entries(row.tripDays || {})
+          .filter(([, enabled]) => enabled)
           .map(([key]) => key.charAt(0).toUpperCase() + key.slice(1, 3))
           .join(", ");
         return <Typography variant="body2">{days || "—"}</Typography>;
@@ -206,30 +226,56 @@ export default function RoutePlannerPage(): React.JSX.Element {
     <Box sx={{ bgcolor: "var(--mui-palette-background-level1)", p: 3 }}>
       <Stack spacing={3}>
         {/* Header */}
-        <Stack direction="row" justifyContent="space-between" alignItems="center">
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+        >
           <Typography variant="h5">Routes</Typography>
           <Button
             variant="contained"
             color="primary"
-            onClick={() => router.push(`${paths.dashboard.planner}/create`)}
+            onClick={() =>
+              router.push(`${paths.dashboard.planner}/create`)
+            }
           >
             Add Route
           </Button>
         </Stack>
 
-        {/* Table */}
+        {/* Content */}
         <Card>
+          {/* Filters */}
+          <RouteFilter
+            filters={filters}
+            setFilters={(updater) => {
+              setPage(1); // reset page on filter change
+              setFilters((prev) =>
+                typeof updater === "function" ? updater(prev) : updater
+              );
+            }}
+          />
+
+          {/* Table */}
           <Box sx={{ overflowX: "auto" }}>
             {loading ? (
-              <Box sx={{ display: "flex", justifyContent: "center", p: 3 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  p: 3,
+                }}
+              >
                 <CircularProgress />
               </Box>
-            ) : routes.length ? (
-              <DataTable<TripRecord>
+            ) : routes && routes.length ? (
+              <DataTable<any>
                 columns={columns}
                 rows={routes}
                 selectable={false}
-                onSelectionChange={(_, rows) => setSelectedTrips(rows)}
+                onSelectionChange={(_, rows) =>
+                  setSelectedTrips(rows as TripRecord[])
+                }
               />
             ) : (
               <Box sx={{ p: 3 }}>
@@ -248,16 +294,17 @@ export default function RoutePlannerPage(): React.JSX.Element {
 
           {/* Pagination */}
           <CustomersPagination
-            count={pagination?.total}
-            page={Math.max(0, pagination.page - 1)}
-            rowsPerPage={pagination.limit}
+            count={pagination.total}
+            page={page - 1}
+            rowsPerPage={limit}
             onPaginationChange={(_, newPage) => {
-              dispatch(getAllRoutes({ page: newPage + 1, limit: pagination.limit }));
+              setPage(newPage + 1);
               setSelectedTrips([]);
             }}
             onRowsPerPageChange={(event) => {
               const newLimit = parseInt(event.target.value, 10);
-              dispatch(getAllRoutes({ page: 1, limit: newLimit }));
+              setLimit(newLimit);
+              setPage(1);
               setSelectedTrips([]);
             }}
           />
