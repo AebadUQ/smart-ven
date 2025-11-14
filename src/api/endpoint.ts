@@ -70,5 +70,6 @@ export const DASHBOARD ={
 }
 
 export const TRIP ={
-    GET_ALL_TRIP:'/trips/Get-Trips-By-Admin'
+    GET_ALL_TRIP:'/trips/Get-Trips-By-Admin',
+    
 }

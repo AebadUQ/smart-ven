@@ -21,20 +21,57 @@ interface TrackingViewProps {
   vehicles: any[];
 }
 
+const getStatusLabel = (status?: string) => {
+  switch (status) {
+    case 'start':
+      return 'Trip Started';
+    case 'ongoing':
+      return 'On Way to School';
+    case 'end':
+      return 'Trip Completed';
+    default:
+      return 'Unknown';
+  }
+};
+
+const getStatusColor = (status?: string) => {
+  switch (status) {
+    case 'start':
+      return '#2D9CDB'; // blue
+    case 'ongoing':
+      return '#34C759'; // green
+    case 'end':
+      return '#9B9B9B'; // grey
+    default:
+      return '#9B9B9B';
+  }
+};
+
 export function TrackingView({ vehicles }: TrackingViewProps) {
   const [openSidebar, setOpenSidebar] = React.useState(false);
   const [currentVehicleId, setCurrentVehicleId] =
-    React.useState<string | undefined>(vehicles[0]?.id);
+    React.useState<string | undefined>(
+      vehicles[0] ? String(vehicles[0].id || vehicles[0]._id) : undefined
+    );
 
   React.useEffect(() => {
     if (!currentVehicleId && vehicles[0]) {
-      setCurrentVehicleId(vehicles[0].id);
+      setCurrentVehicleId(String(vehicles[0].id || vehicles[0]._id));
     }
   }, [vehicles, currentVehicleId]);
 
   const currentVehicle =
-    vehicles.find((v) => v.id === currentVehicleId) || vehicles[0];
+    vehicles.find((v) => String(v.id || v._id) === currentVehicleId) ||
+    vehicles[0];
 
+  // 👇 yahan se status pick ho raha hai (API me status ya tripStatus dono handle)
+  const rawStatus: string | undefined =
+    currentVehicle?.status ?? currentVehicle?.tripStatus;
+
+  const statusLabel = getStatusLabel(rawStatus);
+  const statusColor = getStatusColor(rawStatus);
+
+  // ─── Route points (visual markers) ─────────────
   const routePoints = [
     { id: 1, type: 'start', distance: 0 },
     { id: 2, type: 'route', distance: 10 },
@@ -45,8 +82,25 @@ export function TrackingView({ vehicles }: TrackingViewProps) {
     { id: 7, type: 'route', distance: 90 },
     { id: 8, type: 'end', distance: 100 },
   ];
-  const vanIndex = routePoints.findIndex((p) => p.type === 'van');
   const totalDistance = routePoints[routePoints.length - 1].distance;
+
+  // 🔥 progress status se drive hoga
+  const progressRatio = React.useMemo(() => {
+    switch (rawStatus) {
+      case 'start':
+        return 0.25; // 25% tak gaya
+      case 'ongoing':
+        return 0.6; // 60% tak
+      case 'end':
+        return 1; // full complete
+      default:
+        return 0; // unknown / not started
+    }
+  }, [rawStatus]);
+
+  const completedWidth = `${progressRatio * 100}%`;
+  const remainingWidth = `${(1 - progressRatio) * 100}%`;
+  const vanLeftPercent = progressRatio * 100;
 
   return (
     <Box sx={{ display: 'flex', height: '100%' }}>
@@ -77,9 +131,12 @@ export function TrackingView({ vehicles }: TrackingViewProps) {
               <Stack direction="row" spacing={2} alignItems="center">
                 <Avatar src={currentVehicle.avatar} sx={{ width: 56, height: 56 }} />
                 <Box>
-                  <Typography fontWeight="bold">{currentVehicle.name}</Typography>
+                  <Typography fontWeight="bold">
+                    {currentVehicle.name || currentVehicle.driverName || 'Driver'}
+                  </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    {currentVehicle.vehicleModel} ({currentVehicle.plate})
+                    {currentVehicle.vehicleModel || currentVehicle.model}{' '}
+                    ({currentVehicle.plate || currentVehicle.carNumber})
                   </Typography>
                 </Box>
               </Stack>
@@ -87,16 +144,11 @@ export function TrackingView({ vehicles }: TrackingViewProps) {
               <Box textAlign="right">
                 <Typography variant="body2">Status</Typography>
                 <Chip
-                  label={
-                    currentVehicle.status === 'end'
-                      ? 'Trip Completed'
-                      : 'On Way to School'
-                  }
+                  label={statusLabel}
                   size="small"
                   sx={{
                     backgroundColor: '#F6F7F9',
-                    color:
-                      currentVehicle.status === 'end' ? '#999' : '#34C759',
+                    color: statusColor,
                     fontWeight: 'bold',
                     fontSize: 12,
                     '& .MuiChip-label': {
@@ -122,7 +174,9 @@ export function TrackingView({ vehicles }: TrackingViewProps) {
                 </Typography>
                 <Typography variant="body2">
                   {currentVehicle.startedAt
-                    ? currentVehicle.startedAt.toLocaleString()
+                    ? new Date(currentVehicle.startedAt).toLocaleString()
+                    : currentVehicle.tripStart?.startTime
+                    ? new Date(currentVehicle.tripStart.startTime).toLocaleString()
                     : 'N/A'}
                 </Typography>
               </Box>
@@ -131,7 +185,9 @@ export function TrackingView({ vehicles }: TrackingViewProps) {
                 <Typography variant="body2" color="#191970">
                   School Route:
                 </Typography>
-                <Typography variant="body2">105</Typography>
+                <Typography variant="body2">
+                  {currentVehicle.routeName || '105'}
+                </Typography>
               </Box>
 
               <Button
@@ -163,40 +219,43 @@ export function TrackingView({ vehicles }: TrackingViewProps) {
           <Typography variant="h6">Trip Details</Typography>
 
           <Box sx={{ position: 'relative', width: '100%', height: 50 }}>
-            {/* solid */}
-            <Box
-              sx={{
-                position: 'absolute',
-                top: '50%',
-                left: 0,
-                width: `${(vanIndex / (routePoints.length - 1)) * 100}%`,
-                height: 2,
-                bgcolor: 'green',
-                transform: 'translateY(-50%)',
-                zIndex: 1,
-              }}
-            />
-            {/* dotted */}
-            <Box
-              sx={{
-                position: 'absolute',
-                top: '50%',
-                left: `${
-                  (vanIndex / (routePoints.length - 1)) * 100
-                }%`,
-                width: `calc(${
-                  ((routePoints.length - 1 - vanIndex) /
-                    (routePoints.length - 1)) *
-                  100
-                }% - 15px)`,
-                borderTop: '2px dotted #8CC63E',
-                transform: 'translateY(-50%)',
-                zIndex: 1,
-              }}
-            />
+            {/* solid (completed part) */}
+            {progressRatio > 0 && (
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: 0,
+                  width: completedWidth,
+                  height: 2,
+                  bgcolor: 'green',
+                  transform: 'translateY(-50%)',
+                  zIndex: 1,
+                }}
+              />
+            )}
+
+            {/* dotted (remaining part) */}
+            {progressRatio < 1 && (
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: completedWidth,
+                  width: `calc(${remainingWidth} - 15px)`,
+                  borderTop: '2px dotted #8CC63E',
+                  transform: 'translateY(-50%)',
+                  zIndex: 1,
+                }}
+              />
+            )}
+
             {/* points */}
             {routePoints.map((point) => {
-              const leftPercent = (point.distance / totalDistance) * 100;
+              const leftPercent =
+                point.type === 'van'
+                  ? vanLeftPercent // van icon status se move karega
+                  : (point.distance / totalDistance) * 100;
 
               if (point.type === 'start') {
                 return (
@@ -297,6 +356,11 @@ export function TrackingView({ vehicles }: TrackingViewProps) {
               return null;
             })}
           </Box>
+
+          {/* optional – status text niche bhi show karna ho */}
+          <Typography variant="body2" color="text.secondary">
+            {statusLabel}
+          </Typography>
 
           <Typography variant="h6">Student Details</Typography>
           <Stack direction="row" justifyContent="space-between">
