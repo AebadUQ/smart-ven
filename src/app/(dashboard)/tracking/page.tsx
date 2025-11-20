@@ -9,12 +9,17 @@ import { TrackingView } from '@/components/tracking';
 
 export default function Page(): React.JSX.Element {
   const dispatch = useDispatch<AppDispatch>();
-  const { trips, loading } = useSelector((state: RootState) => state.trip);
+
+  // ❌ pehle: const { trips, loading } = useSelector((state: RootState) => state?.trip);
+  // ✅ ab: pehle pura slice lo, phir safely fields nikaalo
+  const tripState = useSelector((state: any) => state.trip);
+
+  const trips = tripState?.trips ?? [];
+  const loading = tripState?.loading ?? false;
 
   useEffect(() => {
     dispatch(getAllTrips({ page: 1, limit: 10 }));
   }, [dispatch]);
-
   const vehicles: any[] = useMemo(
     () =>
       (trips || []).map((trip: any) => {
@@ -36,13 +41,17 @@ export default function Page(): React.JSX.Element {
           status: trip.status || 'unknown',
           latitude: lastLocation?.lat || 0,
           longitude: lastLocation?.long || 0,
-          startedAt: trip.tripStart?.startTime
-            ? new Date(trip.tripStart.startTime)
+          tripStart: trip?.startTime
+            ? new Date(trip?.startTime)
             : undefined,
+            driverId:trip?.driverId,
+            tripId:trip?._id,
+            driverName:trip?.driverName
         };
       }),
     [trips]
   );
+console.log("trip",vehicles)
 
   if (loading) {
     return <div>Loading trips...</div>;

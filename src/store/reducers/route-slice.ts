@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import api from "@/api/axios";
-import { ROUTE } from "@/api/endpoint";
+import { ROUTE, TRIP } from "@/api/endpoint"; // 👈 TRIP bhi import
 
 // ─── Types ──────────────────────────────────────────────
 
@@ -46,6 +46,10 @@ type GetAllRoutesParams = {
 } & RouteFilters;
 
 interface RouteState {
+  // 👉 live trips (tracking ke liye)
+  trips: any[];
+
+  // 👉 routes (planned trips)
   routes: TripRecord[];
   routeDetails: TripRecord | any | null;
   loading: boolean;
@@ -58,6 +62,8 @@ interface RouteState {
 // ─── Initial State ──────────────────────────────────────
 
 const initialState: RouteState = {
+  trips: [],
+
   routes: [],
   routeDetails: null,
   loading: false,
@@ -69,7 +75,7 @@ const initialState: RouteState = {
 
 // ─── Thunks ──────────────────────────────────────────────
 
-// Get all routes → /Route/getRoutes?driverName=...&page=...&limit=...
+// ✅ Get all routes → /Route/getRoutes?driverName=...&page=...&limit=...
 export const getAllRoutes = createAsyncThunk<
   { routes: TripRecord[]; pagination: PaginationMeta; filters: RouteFilters },
   GetAllRoutesParams | undefined,
@@ -112,7 +118,7 @@ export const getAllRoutes = createAsyncThunk<
   }
 });
 
-// Get route by ID
+// ✅ Get route by ID
 export const getRouteById = createAsyncThunk<
   any,
   string,
@@ -128,7 +134,32 @@ export const getRouteById = createAsyncThunk<
   }
 });
 
-// Create route
+// ✅ Get All Trips (live trips) → /trip/getAllTrip...
+export const getAllTrips = createAsyncThunk<
+  any, // response type: { message, data, pagination }
+  { page?: number; limit?: number; status?: string } | undefined,
+  { rejectValue: string }
+>(
+  "route/getAllTrips",
+  async (params = {}, { rejectWithValue }) => {
+    try {
+      const { page = 1, limit = 10, status = "" } = params || {};
+
+      const response = await api.get(TRIP.GET_ALL_TRIP, {
+        params: { page, limit, status },
+      });
+
+      // backend se expected: { message, data, pagination }
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch trips"
+      );
+    }
+  }
+);
+
+// ✅ Create route
 export const createRoute = createAsyncThunk<
   TripRecord,
   {
@@ -152,7 +183,7 @@ export const createRoute = createAsyncThunk<
   }
 });
 
-// Update route (API expects POST)
+// ✅ Update route (API expects POST)
 export const updateRoute = createAsyncThunk<
   TripRecord,
   any,
@@ -183,7 +214,7 @@ const routeSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    // Get all routes
+    // ── Get all routes ─────────────────────────────
     builder.addCase(getAllRoutes.pending, (state) => {
       state.loading = true;
       state.error = null;
@@ -212,7 +243,7 @@ const routeSlice = createSlice({
         (action.payload as string) || "Failed to fetch routes";
     });
 
-    // Get route by ID
+    // ── Get route by ID ─────────────────────────────
     builder.addCase(getRouteById.pending, (state) => {
       state.loading = true;
       state.error = null;
@@ -229,7 +260,28 @@ const routeSlice = createSlice({
         (action.payload as string) || "Failed to fetch route details";
     });
 
-    // Create route
+    // ── Get all trips (live trips) ──────────────────
+    builder
+      .addCase(getAllTrips.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getAllTrips.fulfilled, (state, action) => {
+        state.loading = false;
+        // response.data → { message, data, pagination }
+        state.trips = action.payload?.data || [];
+
+        if (action.payload?.pagination) {
+          state.pagination = action.payload.pagination;
+        }
+      })
+      .addCase(getAllTrips.rejected, (state, action) => {
+        state.loading = false;
+        state.error =
+          (action.payload as string) || "Failed to fetch trips";
+      });
+
+    // ── Create route ────────────────────────────────
     builder.addCase(createRoute.pending, (state) => {
       state.loading = true;
       state.error = null;
@@ -249,7 +301,7 @@ const routeSlice = createSlice({
         (action.payload as string) || "Failed to create route";
     });
 
-    // Update route
+    // ── Update route ────────────────────────────────
     builder.addCase(updateRoute.pending, (state) => {
       state.loading = true;
       state.error = null;

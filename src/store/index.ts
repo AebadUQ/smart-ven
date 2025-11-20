@@ -3,7 +3,7 @@ import type { TypedUseSelectorHook } from 'react-redux';
 import { useDispatch as useAppDispatch, useSelector as useAppSelector } from 'react-redux';
 import { FLUSH, PAUSE, PERSIST, persistStore, PURGE, REGISTER, REHYDRATE } from 'redux-persist';
 
-import reducers from './reducers';
+import reducers from './reducers/index';
 
 const store = configureStore({
   reducer: reducers,
