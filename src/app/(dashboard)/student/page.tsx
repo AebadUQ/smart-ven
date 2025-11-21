@@ -159,7 +159,7 @@ export default function Page(): React.JSX.Element {
       formatter: (row) => {
         const handleView = async () => {
           await dispatch(getStudentDetail(row.student.id)).unwrap();
-          router.push(`/dashboard/student/${row.student.id}`);
+          router.push(`/student/${row.student.id}`);
         };
 
         return (
