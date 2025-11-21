@@ -1,210 +1,260 @@
 "use client";
 
 import * as React from "react";
+import {
+  Avatar,
+  Box,
+  Card,
+  CardContent,
+  Grid,
+  Stack,
+  Typography,
+  Divider,
+  Button,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Modal,
+} from "@mui/material";
+
 import { useDispatch, useSelector } from "react-redux";
-import RouterLink from "next/link";
-import { useParams, useRouter } from "next/navigation";
-import Avatar from "@mui/material/Avatar";
-import Box from "@mui/material/Box";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import CardHeader from "@mui/material/CardHeader";
-import Chip from "@mui/material/Chip";
-import Divider from "@mui/material/Divider";
-import Grid from "@mui/material/Grid2";
-import LinearProgress from "@mui/material/LinearProgress";
-import Link from "@mui/material/Link";
-import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
-import Modal from "@mui/material/Modal";
-import MenuItem from "@mui/material/MenuItem";
-import Select from "@mui/material/Select";
-import FormControl from "@mui/material/FormControl";
-import InputLabel from "@mui/material/InputLabel";
+import { RootState, AppDispatch } from "@/store";
+import { useParams } from "next/navigation";
 
 import { ArrowLeft as ArrowLeftIcon } from "@phosphor-icons/react/dist/ssr/ArrowLeft";
-import { CheckCircle as CheckCircleIcon } from "@phosphor-icons/react/dist/ssr/CheckCircle";
-import { House as HouseIcon } from "@phosphor-icons/react/dist/ssr/House";
 import { User as UserIcon } from "@phosphor-icons/react/dist/ssr/User";
+import { House as HouseIcon } from "@phosphor-icons/react/dist/ssr/House";
 
-import { paths } from "@/paths";
-import { PropertyItem } from "@/components/core/property-item";
-import { PropertyList } from "@/components/core/property-list";
-import { RootState, AppDispatch } from "@/store";
 import { getVanDetailById } from "@/store/reducers/van-slice";
-import { getAllDrivers ,assignDriverToVan} from "@/store/reducers/driver-slice";
+import { getAllDrivers, assignDriverToVan } from "@/store/reducers/driver-slice";
+import Link from "next/link";
 
-export default function Page(): React.JSX.Element {
-  const router = useRouter();
+// Reusable Detail Item
+function DetailItem({ label, value }: { label: string; value: any }) {
+  return (
+    <Box sx={{ mb: 2 }}>
+      <Typography variant="body2" color="text.secondary">
+        {label}
+      </Typography>
+      <Typography variant="subtitle1" fontWeight={600}>
+        {value || "—"}
+      </Typography>
+    </Box>
+  );
+}
+
+export default function VanDetailsPage() {
   const params = useParams<{ vanId: string }>();
   const vanId = params?.vanId;
-  const dispatch = useDispatch<AppDispatch>();
 
-  const { selectedVan, selectedVanLoading, selectedVanError } = useSelector(
+  const dispatch = useDispatch<AppDispatch>();
+  const { selectedVan, selectedVanLoading } = useSelector(
     (state: RootState) => state.van
   );
   const { drivers, loading: driversLoading } = useSelector(
     (state: RootState) => state.driver
   );
-console.log("drivers",drivers)
-  // Modal state
-  const [modalOpen, setModalOpen] = React.useState(false);
-  const [selectedDriver, setSelectedDriver] = React.useState<string>("");
 
-  // Fetch van detail
+  const [modalOpen, setModalOpen] = React.useState(false);
+  const [selectedDriver, setSelectedDriver] = React.useState("");
+
   React.useEffect(() => {
     if (vanId) dispatch(getVanDetailById(vanId));
-  }, [dispatch, vanId]);
+  }, [vanId, dispatch]);
 
-  // Fetch drivers list
   React.useEffect(() => {
-    dispatch(getAllDrivers({page:1,limit:1000}));
+    dispatch(getAllDrivers({ page: 1, limit: 1000 }));
   }, [dispatch]);
 
   const handleAssignDriver = async () => {
-  if (!selectedDriver || !vanId) return;
+    if (!selectedDriver || !vanId) return;
 
-  try {
-    // Dispatch the thunk
-    await dispatch(assignDriverToVan({ driverId: selectedDriver, vanId })).unwrap();
+    try {
+      await dispatch(assignDriverToVan({ driverId: selectedDriver, vanId })).unwrap();
+      setModalOpen(false);
+      dispatch(getVanDetailById(vanId)); // refresh
+    } catch (error) {
+      console.error("Assign Driver Error:", error);
+    }
+  };
 
-    // Close modal after success
-    setModalOpen(false);
-
-    // Optionally refresh van detail
-    dispatch(getVanDetailById(vanId));
-  } catch (error) {
-    console.error("Failed to assign driver:", error);
+  if (selectedVanLoading || driversLoading) {
+    return <Typography sx={{ p: 4 }}>Loading...</Typography>;
   }
-};
 
-  const statusLabel = (selectedVan?.status || "").trim().toLowerCase();
-  const isActive = statusLabel === "active";
-  const statusChip = statusLabel ? (
-    <Chip
-      icon={isActive ? <CheckCircleIcon color="var(--mui-palette-success-main)" weight="fill" /> : undefined}
-      label={statusLabel.charAt(0).toUpperCase() + statusLabel.slice(1)}
-      size="small"
-      variant="outlined"
-      color={isActive ? "success" : "default"}
-    />
-  ) : (
-    <Chip label="Unknown" size="small" variant="outlined" />
-  );
-console.log("selectedVan",selectedVan)
+  if (!selectedVan) {
+    return <Typography sx={{ p: 4 }}>Van not found.</Typography>;
+  }
+
   return (
-    <Box sx={{ p: 4, width: "100%", position: "relative" }}>
-      {(selectedVanLoading || driversLoading) && <LinearProgress sx={{ mb: 2 }} />}
-      {/* {driversLoading && <LinearProgress sx={{ mb: 2 }} />} */}
-
-      <Stack spacing={4}>
+    <Card sx={{ p: 3 }}>
+      <CardContent>
+        {/* Back Button */}
         <Link
-          color="text.primary"
-          component={RouterLink}
-          href={paths.dashboard.van}
-          sx={{ alignItems: "center", display: "inline-flex", gap: 1 }}
-          variant="subtitle2"
+          href="/van"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+            textDecoration: "none",
+          }}
         >
-          <ArrowLeftIcon fontSize="var(--icon-fontSize-md)" />
-          Back to Vans
+          <ArrowLeftIcon />
+          <Typography variant="subtitle2" color="text.primary">
+            Back to Vans
+          </Typography>
         </Link>
 
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => setModalOpen(true)}
-          sx={{ alignSelf: "flex-end" }}
-        >
-          Assign Driver
-        </Button>
+        <Divider sx={{ my: 2 }} />
 
-        {selectedVanError && <Typography color="error">{selectedVanError}</Typography>}
+        {/* Header */}
+        <Stack direction="row" spacing={2} alignItems="center" mb={3}>
+          <Avatar sx={{ width: 60, height: 60 }}>
+            <HouseIcon />
+          </Avatar>
 
-        {selectedVan && (
-          <Grid container spacing={3}>
-            <Grid xs={12} md={4}>
-              <Card>
-                <CardHeader avatar={<Avatar><UserIcon /></Avatar>} title="Driver Details" />
-                <CardContent>
-                  <PropertyList divider={<Divider />} orientation="vertical">
-                    <PropertyItem name="Driver ID" value={selectedVan.driverId || "—"} />
-                    <PropertyItem name="Driver Name" value={selectedVan.driverName || "—"} />
-                    <PropertyItem name="Email" value={selectedVan.driverEmail || "—"} />
-                    <PropertyItem name="Phone" value={selectedVan.driverPhone || "—"} />
-                    <PropertyItem name="CNIC" value={selectedVan.cnic || "—"} />
-                    <PropertyItem name="License No" value={selectedVan.licenceImageFront ? "Uploaded" : "—"} />
-                    <PropertyItem name="Status" value={statusChip} />
-                  </PropertyList>
-                </CardContent>
-              </Card>
-            </Grid>
+          <Box>
+            <Typography variant="h5" fontWeight="bold">
+              {selectedVan.vehicleType} — {selectedVan.numberPlate}
+            </Typography>
+            <Typography variant="subtitle2" color="text.secondary">
+              Assigned Route: {selectedVan.route || "—"}
+            </Typography>
+          </Box>
+        </Stack>
 
-            <Grid xs={12} md={8}>
-              <Card>
-                <CardHeader avatar={<Avatar><HouseIcon /></Avatar>} title="Vehicle & Route Info" />
-                <CardContent>
-                  <PropertyList divider={<Divider />} orientation="vertical">
-                    <PropertyItem name="Van ID" value={selectedVan.id} />
-                    <PropertyItem name="Vehicle Type" value={selectedVan.vehicleType} />
-                    <PropertyItem name="Car Number" value={selectedVan.numberPlate} />
-                    <PropertyItem name="Capacity" value={selectedVan.capacity} />
-                    <PropertyItem name="Route Assigned" value={selectedVan.route} />
-                    <PropertyItem name="Condition" value={selectedVan.condition || "N/A"} />
-                  </PropertyList>
-                </CardContent>
-              </Card>
-            </Grid>
+        <Divider sx={{ mb: 3 }} />
+
+        {/* Van Information */}
+        <Typography variant="h6" sx={{ mb: 2 }}>
+          Van Information
+        </Typography>
+
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6}>
+            <DetailItem label="Van ID" value={selectedVan.id} />
           </Grid>
-        )}
-      </Stack>
+          <Grid item xs={12} sm={6}>
+            <DetailItem label="Vehicle Type" value={selectedVan.vehicleType} />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <DetailItem label="Car Number" value={selectedVan.numberPlate} />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <DetailItem label="Capacity" value={selectedVan.capacity} />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <DetailItem label="Condition" value={selectedVan.condition || "N/A"} />
+          </Grid>
+        </Grid>
+
+        <Divider sx={{ my: 3 }} />
+
+        {/* Driver Information */}
+        <Typography variant="h6" sx={{ mb: 2 }}>
+          Driver Information
+        </Typography>
+
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6}>
+            <DetailItem label="Driver Name" value={selectedVan.driverName} />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <DetailItem label="Driver Email" value={selectedVan.driverEmail} />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <DetailItem label="Driver Phone" value={selectedVan.driverPhone} />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <DetailItem label="Driver CNIC" value={selectedVan.cnic} />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <DetailItem
+              label="License Front"
+              value={selectedVan.licenceImageFront ? "Uploaded" : "Not Uploaded"}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <Button
+              variant="contained"
+              sx={{ mt: 2 }}
+              onClick={() => setModalOpen(true)}
+            >
+              Assign / Change Driver
+            </Button>
+          </Grid>
+        </Grid>
+
+        <Divider sx={{ my: 3 }} />
+
+        {/* Route Information */}
+        <Typography variant="h6" sx={{ mb: 2 }}>
+          Route Information
+        </Typography>
+
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6}>
+            <DetailItem label="Assigned Route" value={selectedVan.route} />
+          </Grid>
+        </Grid>
+      </CardContent>
 
       {/* Assign Driver Modal */}
-    <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
-  <Box
-    sx={{
-      position: "absolute",
-      top: "50%",
-      left: "50%",
-      transform: "translate(-50%, -50%)",
-      bgcolor: "background.paper",
-      p: 4,
-      borderRadius: 2,
-      width: 500,
-      maxHeight: "80vh",
-      overflowY: "auto",
-    }}
-  >
-    <Typography variant="h6" mb={2}>Assign Driver</Typography>
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            bgcolor: "background.paper",
+            p: 4,
+            borderRadius: 2,
+            width: 500,
+            maxHeight: "80vh",
+            overflowY: "auto",
+          }}
+        >
+          <Typography variant="h6" mb={2}>
+            Assign Driver
+          </Typography>
 
-    <FormControl fullWidth>
-      <InputLabel id="driver-select-label">Select Driver</InputLabel>
-      <Select
-        labelId="driver-select-label"
-        value={selectedDriver}
-        label="Select Driver"
-        onChange={(e) => setSelectedDriver(e.target.value)}
-        MenuProps={{
-          PaperProps: { style: { maxHeight: 300, width: 300 } },
-        }}
-      >
-        {drivers?.drivers?.map((driver: any) => (
-          <MenuItem key={driver.id} value={driver.id}>
-            {driver.fullname} ({driver.phoneNo || "N/A"})
-          </MenuItem>
-        ))}
-      </Select>
-    </FormControl>
+          <FormControl fullWidth>
+            <InputLabel>Select Driver</InputLabel>
+            <Select
+              value={selectedDriver}
+              label="Select Driver"
+              onChange={(e) => setSelectedDriver(e.target.value)}
+              MenuProps={{
+                PaperProps: {
+                  sx: { maxHeight: 300, overflowY: "auto" },
+                },
+              }}
+            >
+              {drivers?.drivers?.map((driver: any) => (
+                <MenuItem key={driver.id} value={driver.id}>
+                  {driver.fullname} — {driver.phoneNo || "N/A"}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
-    <Stack direction="row" spacing={2} mt={3} justifyContent="flex-end">
-      <Button variant="outlined" onClick={() => setModalOpen(false)}>Cancel</Button>
-      <Button variant="contained" onClick={handleAssignDriver} disabled={!selectedDriver}>
-        Save
-      </Button>
-    </Stack>
-  </Box>
-</Modal>
-
-    </Box>
+          <Stack direction="row" spacing={2} justifyContent="flex-end" mt={3}>
+            <Button variant="outlined" onClick={() => setModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="contained" disabled={!selectedDriver} onClick={handleAssignDriver}>
+              Save
+            </Button>
+          </Stack>
+        </Box>
+      </Modal>
+    </Card>
   );
 }

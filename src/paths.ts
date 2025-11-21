@@ -93,7 +93,7 @@ drivers:'/drivers',
       addUserRole: '/settings/user-roles/add-user',
       viewUserRole: '/settings/user-roles/view',
       editUserRole: '/settings/user-roles/edit',
-      account: '/settingsAccount/account',
+      account: '/settings/account-detail',
     },
     // tracking: { tracking: '/tracking', stats: '/tracking/stats', driver: '/drivers', vehicles: '/vehicles' },
 

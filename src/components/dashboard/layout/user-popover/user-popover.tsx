@@ -12,7 +12,7 @@ import Typography from '@mui/material/Typography';
 import { User as UserIcon } from '@phosphor-icons/react/dist/ssr/User';
 import { paths } from '@/paths';
 import { useAuthContext } from '@/contexts/AuthContext';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from "@/store";
 import { logout } from '@/store/reducers/auth-slice';
 
@@ -25,6 +25,7 @@ export interface UserPopoverProps {
 
 export function UserPopover({ anchorEl, onClose, open,user }: UserPopoverProps): React.JSX.Element {
   const dispatch = useDispatch<AppDispatch>();
+  const userd = useSelector((state:RootState)=>state.auth.user)
   return (
     <Popover
       anchorEl={anchorEl}
@@ -38,17 +39,19 @@ export function UserPopover({ anchorEl, onClose, open,user }: UserPopoverProps):
         <Typography>{ 'Name'}</Typography>
         <Typography color="text.secondary" variant="body2">
           {/* { 'email@email.com'} */}
-          {user?.email}
+          {user?.schoolEmail || user?.email}
         </Typography>
       </Box>
       <Divider />
       <List sx={{ p: 1 }}>
+        {userd?.role !== 'superadmin' && 
         <MenuItem component={RouterLink} href={paths.dashboard.settings.account} onClick={onClose}>
           <ListItemIcon>
             <UserIcon />
           </ListItemIcon>
           Account
         </MenuItem>
+        }
 
       </List>
       <Divider />

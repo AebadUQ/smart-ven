@@ -55,23 +55,62 @@ export default function Page(): React.JSX.Element {
     );
   }, [dispatch, page, limit, filters]);
 
+  console.log("rowrowrow",students)
   const columns: ColumnDef<StudentRecord>[] = [
-    {
-      name: "Student",
-      width: "240px",
-      formatter: (row): React.JSX.Element => (
-        <Stack direction="row" spacing={1} alignItems="center">
+   {
+  name: "Student",
+  width: "240px",
+  formatter: (row): React.JSX.Element => {
+    const name = row?.student?.fullname || "";
+    const image = row?.student?.image;
+
+    // Inline initials generator
+    const initials = name
+      .split(" ")
+      .map((w) => w[0]?.toUpperCase())
+      .join("");
+
+    return (
+      <Stack direction="row" spacing={1} alignItems="center">
+
+        {image ? (
           <img
-            src={"/assets/avatar-1.png"}
-            alt={row?.student?.fullname}
-            style={{ width: 40, height: 40, borderRadius: "50%" }}
+            src={image}
+            alt={name}
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: "50%",
+              objectFit: "cover",
+            }}
           />
-          <Typography color="text.primary" variant="body2">
-            {row?.student?.fullname}
-          </Typography>
-        </Stack>
-      ),
-    },
+        ) : (
+          <div
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: "50%",
+              background: "#1976d2",
+              color: "#fff",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontWeight: 600,
+              fontSize: 14,
+            }}
+          >
+            {initials}
+          </div>
+        )}
+
+        <Typography color="text.primary" variant="body2">
+          {name}
+        </Typography>
+      </Stack>
+    );
+  }
+}
+,
     {
       name: "Parent/Guardian",
       width: "200px",

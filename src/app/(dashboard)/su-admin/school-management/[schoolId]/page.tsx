@@ -1,77 +1,45 @@
 "use client";
 
-import * as React from "react";
+import React from "react";
 import {
   Avatar,
   Box,
   Card,
-  Chip,
-  Divider,
+  CardContent,
+  Grid,
   Stack,
   Typography,
+  Divider,
   Button,
+  Chip,
   CircularProgress,
 } from "@mui/material";
-import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft as ArrowLeftIcon } from "@phosphor-icons/react/dist/ssr/ArrowLeft";
-import { CheckCircle as CheckCircleIcon } from "@phosphor-icons/react/dist/ssr/CheckCircle";
-import RouterLink from "next/link";
 
+import Link from "next/link";
+import { ArrowLeftIcon } from "@mui/x-date-pickers/icons";
+
+import { useParams, useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
-import type { AppDispatch, RootState } from "@/store";
+import { AppDispatch, RootState } from "@/store";
 import { getSchoolById } from "@/store/reducers/suadmin-slice";
 
-/** Small reusable row like the screenshot */
-function DetailRow(props: { label: string; value: React.ReactNode; noBorder?: boolean }) {
-  const { label, value, noBorder } = props;
+function DetailItem({ label, value }: { label: any; value: any }) {
   return (
-    <Stack
-      direction={{ xs: "column", sm: "row" }}
-      sx={{
-        width: "100%",
-        borderBottom: noBorder ? "none" : "1px solid",
-        borderColor: "divider",
-        p: 1.5,
-      }}
-      spacing={1}
-    >
-      <Box
-        sx={{
-          minWidth: { sm: 200 },
-          maxWidth: { sm: 200 },
-          flexShrink: 0,
-          color: "text.secondary",
-          fontSize: "0.75rem",
-          lineHeight: 1.4,
-          fontWeight: 500,
-        }}
-      >
+    <Box sx={{ mb: 2 }}>
+      <Typography variant="body2" color="text.secondary">
         {label}
-      </Box>
-
-      <Box
-        sx={{
-          flexGrow: 1,
-          fontSize: "0.8rem",
-          lineHeight: 1.5,
-          color: "text.primary",
-          display: "flex",
-          alignItems: "center",
-          flexWrap: "wrap",
-          gap: 0.5,
-        }}
-      >
-        {value ?? "—"}
-      </Box>
-    </Stack>
+      </Typography>
+      <Typography variant="subtitle1" fontWeight={600}>
+        {value || "—"}
+      </Typography>
+    </Box>
   );
 }
 
-export default function Page(): React.JSX.Element {
+export default function SchoolDetailsPage() {
   const params = useParams();
+  const schoolId = String(params?.schoolId);
   const router = useRouter();
-  const schoolId = String(params?.schoolId ?? "");
 
   const dispatch = useDispatch<AppDispatch>();
   const { school, loading, error } = useSelector((s: RootState) => s.suadmin);
@@ -80,230 +48,236 @@ export default function Page(): React.JSX.Element {
     if (schoolId) dispatch(getSchoolById(schoolId));
   }, [dispatch, schoolId]);
 
-  // Helpers
-  const fmt = (v: any, fallback: string = "—") =>
-    v === null || v === undefined || v === "" ? fallback : v;
-
-  // Map backend -> UI (using your sample shape)
-  const schoolName = fmt(school?.schoolName);
-  const status = (String(school?.status ?? "active")[0]?.toUpperCase() ?? "") + String(school?.status ?? "active").slice(1); // "Active"/"Inactive"
-  const fullName = fmt(school?.admin?.name);
-  const schoolCode = fmt(school?._id);
-  const gender = "—"; // not in school schema
-  const dob = "—"; // not in school schema
-  const grade = "—"; // not in school schema
-  const parentName = fmt(school?.admin?.email); // closest "link to parent" analogy
-
-  const selectedVan = fmt(school?.contactPerson) + ", Van"; // you can bind to actual van when available
-  const selectedRoute = `${fmt(school?.lat, "")} ${fmt(school?.long, "")}`.trim() || "—";
-  const exceptions: string[] = [
-    school?.autoRenew ? "Auto Renew ✓" : "Auto Renew ✕",
-    school?.bufferTime ? `Buffer ${school.bufferTime}m` : "Buffer ✕",
-  ].filter(Boolean);
-
-  // Loading / error states
-  if (loading && !school) {
+  if (loading && !school)
     return (
-      <Box sx={{ p: 3, display: "flex", justifyContent: "center" }}>
+      <Box p={3} textAlign="center">
         <CircularProgress />
       </Box>
     );
-  }
 
-  if (error && !school) {
+  if (error)
     return (
-      <Box sx={{ p: 3 }}>
-        <Link
-          color="text.primary"
-          component={RouterLink}
-          href={"/su-admin/school-management"}
-          style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
-        >
-          <ArrowLeftIcon fontSize="var(--icon-fontSize-md)" />
-        </Link>
-        <Typography color="error" sx={{ mt: 2 }}>
-          {String(error)}
-        </Typography>
+      <Box p={3}>
+        <Typography color="error">{String(error)}</Typography>
       </Box>
     );
-  }
+
+  if (!school) return <Typography>Loading...</Typography>;
+
+  const initials =
+    school?.schoolName
+      ?.split(" ")
+      .map((x) => x[0]?.toUpperCase())
+      .join("") || "SC";
 
   return (
-    <Box sx={{ p: 3, width: "100%", position: "relative" }}>
-      {/* Back link */}
-      <Stack spacing={2} sx={{ mb: 2 }}>
+    <Card sx={{ p: 3 }}>
+      <CardContent>
+        {/* HEADER */}
         <Link
-          color="text.primary"
-          component={RouterLink}
-          href={"/su-admin/school-management"}
-          style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
-        >
-          <ArrowLeftIcon fontSize="var(--icon-fontSize-md)" />
-        </Link>
-
-        <Card
-          variant="outlined"
-          sx={{
-            borderRadius: 2,
-            borderColor: "divider",
-            pb: 4,
+          href="/su-admin/school-management"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+            textDecoration: "none",
           }}
         >
-          {/* Header row */}
-          <Box
+          <ArrowLeftIcon />
+          <Typography variant="subtitle2" color="text.primary">
+            Back to Schools
+          </Typography>
+        </Link>
+
+        <Divider sx={{ my: 2 }} />
+
+        {/* Top Profile */}
+        <Stack direction="row" spacing={2} alignItems="center" mb={3}>
+          <Avatar
+            src={school.logo || undefined}
             sx={{
-              display: "flex",
-              alignItems: { xs: "flex-start", sm: "center" },
-              justifyContent: "space-between",
-              flexWrap: "wrap",
-              p: 2,
-              borderBottom: "1px solid",
-              borderColor: "divider",
-              gap: 2,
+              width: 60,
+              height: 60,
+              bgcolor: !school.logo ? "#1976d2" : "transparent",
+              color: "#fff",
+              fontSize: 22,
+              fontWeight: "bold",
             }}
           >
-            {/* left: logo + school name */}
-            <Stack direction="row" spacing={2} alignItems="center">
-              <Avatar
-                src="/assets/school-placeholder.png"
-                sx={{ width: 48, height: 48 }}
-                variant="circular"
-              />
-              <Typography
-                sx={{
-                  fontSize: "0.9rem",
-                  fontWeight: 500,
-                  lineHeight: 1.4,
-                }}
-              >
-                {schoolName}
-              </Typography>
-            </Stack>
+            {!school.logo ? initials : null}
+          </Avatar>
 
-            {/* right: status chip */}
+          <Box>
+            <Typography variant="h5" fontWeight="bold">
+              {school.schoolName}
+            </Typography>
             <Chip
-              icon={
-                <CheckCircleIcon
-                  color="var(--mui-palette-success-main)"
-                  weight="fill"
-                />
-              }
-              label={status}
+              label={school.status?.toUpperCase()}
               size="small"
-              variant="outlined"
-              color={String(school?.status ?? "active").toLowerCase() === "active" ? "success" : "default"}
-              sx={{
-                height: 28,
-                borderRadius: "6px",
-                fontSize: "0.75rem",
-                fontWeight: 500,
-              }}
+              color={school.status === "active" ? "success" : "default"}
             />
           </Box>
+        </Stack>
 
-          {/* ================= School Detail section ================= */}
-          <Box
-            sx={{
-              p: 2,
-              borderBottom: "1px solid",
-              borderColor: "divider",
-            }}
+        <Divider sx={{ mb: 3 }} />
+
+        {/* =========================
+             SCHOOL INFORMATION
+        ========================== */}
+        <Typography variant="h6" sx={{ mb: 2 }}>
+          School Information
+        </Typography>
+
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6}>
+            <DetailItem label="School Name" value={school.schoolName} />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <DetailItem label="School ID" value={school._id} />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <DetailItem label="Email" value={school.schoolEmail} />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <DetailItem label="Contact Number" value={school.contactNumber} />
+          </Grid>
+
+          <Grid item xs={12} sm={12}>
+            <DetailItem label="Address" value={school.address} />
+          </Grid>
+        </Grid>
+
+        <Divider sx={{ my: 3 }} />
+
+        {/* =========================
+             ADMIN INFORMATION
+        ========================== */}
+        <Typography variant="h6" sx={{ mb: 2 }}>
+          Admin Information
+        </Typography>
+
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6}>
+            <DetailItem label="Admin Name" value={school.admin?.name} />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <DetailItem label="Admin Email" value={school.admin?.email} />
+          </Grid>
+        </Grid>
+
+        <Divider sx={{ my: 3 }} />
+
+        {/* =========================
+             ROUTE & GEO LOCATION
+        ========================== */}
+        <Typography variant="h6" sx={{ mb: 2 }}>
+          Route & Geo Location
+        </Typography>
+
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6}>
+            <DetailItem label="Latitude" value={school.lat} />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <DetailItem label="Longitude" value={school.long} />
+          </Grid>
+        </Grid>
+
+        <Divider sx={{ my: 3 }} />
+
+        {/* =========================
+             TIMINGS & LIMITS
+        ========================== */}
+        <Typography variant="h6" sx={{ mb: 2 }}>
+          School Timing & Limits
+        </Typography>
+
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6}>
+            <DetailItem label="Start Time" value={school.startTime} />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <DetailItem label="End Time" value={school.endTime} />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <DetailItem
+              label="Max Trip Duration"
+              value={school.maxTripDuration + " mins"}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <DetailItem
+              label="Buffer Time"
+              value={school.bufferTime + " mins"}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <DetailItem label="Allowed Vans" value={school.allowedVans} />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <DetailItem label="Allowed Students" value={school.allowedStudents} />
+          </Grid>
+        </Grid>
+
+        <Divider sx={{ my: 3 }} />
+
+        {/* =========================
+             BILLING & PLAN
+        ========================== */}
+        <Typography variant="h6" sx={{ mb: 2 }}>
+          Plan & Billing
+        </Typography>
+
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6}>
+            <DetailItem label="Current Plan" value={school.currentPlan} />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <DetailItem label="Billing Cycle" value={school.billingCycle} />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <DetailItem label="Payment Method" value={school.paymentMethod} />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <DetailItem
+              label="Auto Renew"
+              value={school.autoRenew ? "Enabled" : "Disabled"}
+            />
+          </Grid>
+        </Grid>
+
+        <Divider sx={{ my: 3 }} />
+
+        {/* =========================
+             FOOTER ACTIONS
+        ========================== */}
+        <Stack direction="row" justifyContent="flex-end" spacing={2}>
+          <Button variant="outlined" onClick={() => router.back()}>
+            Back
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() =>
+              router.push(`/su-admin/school-management/edit/${schoolId}`)
+            }
           >
-            <Typography variant="h6">School Detail</Typography>
-
-            <Box
-              sx={{
-                border: "1px solid",
-                borderColor: "divider",
-                borderRadius: 1,
-                overflow: "hidden",
-                mt: 4,
-              }}
-            >
-              <DetailRow label="School Name" value={schoolName} />
-              <DetailRow label="School ID" value={schoolCode} />
-              <DetailRow label="Contact Person" value={fmt(school?.contactPerson)} />
-              <DetailRow label="Contact Number" value={fmt(school?.contactNumber)} />
-              <DetailRow label="Email" value={fmt(school?.schoolEmail)} />
-              <DetailRow label="Address" value={fmt(school?.address)} />
-              <DetailRow
-                label="Admin (Name / Email)"
-                noBorder
-                value={
-                  <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
-                    <Chip
-                      label={fmt(fullName)}
-                      size="small"
-                      sx={{ borderRadius: "4px", fontSize: "0.7rem", height: 24 }}
-                    />
-                    <Chip
-                      label={fmt(school?.admin?.email)}
-                      size="small"
-                      sx={{ borderRadius: "4px", fontSize: "0.7rem", height: 24 }}
-                    />
-                  </Stack>
-                }
-              />
-            </Box>
-          </Box>
-
-          {/* ================= Route / Timing & Limits ================= */}
-          <Box sx={{ p: 2 }}>
-            <Typography variant="h6">Route & Timing / Limits</Typography>
-
-            <Box
-              sx={{
-                border: "1px solid",
-                borderColor: "divider",
-                borderRadius: 1,
-                overflow: "hidden",
-                mt: 4,
-              }}
-            >
-              <DetailRow label="Start Time" value={fmt(school?.startTime)} />
-              <DetailRow label="End Time" value={fmt(school?.endTime)} />
-              <DetailRow label="Max Trip Duration" value={fmt(school?.maxTripDuration ? `${school.maxTripDuration} mins` : "—")} />
-              <DetailRow label="Buffer Time" value={fmt(school?.bufferTime ? `${school.bufferTime} mins` : "—")} />
-              <DetailRow label="Plan" value={fmt(school?.currentPlan)} />
-              <DetailRow label="Billing Cycle" value={fmt(school?.billingCycle)} />
-              <DetailRow label="Payment Method" value={fmt(school?.paymentMethod)} />
-              <DetailRow label="Allowed Vans" value={fmt(school?.allowedVans)} />
-              <DetailRow label="Allowed Routes" value={fmt(school?.allowedRoutes)} />
-              <DetailRow label="Allowed Students" value={fmt(school?.allowedStudents)} />
-              <DetailRow
-                label="Geo Location"
-                value={`${fmt(school?.lat, "")} ${fmt(school?.long, "")}`.trim() || "—"}
-              />
-              <DetailRow
-                label="Flags"
-                noBorder
-                value={
-                  <Stack direction="row" spacing={1} flexWrap="wrap">
-                    <Chip
-                      label={school?.autoRenew ? "Auto Renew ✓" : "Auto Renew ✕"}
-                      size="small"
-                      sx={{ fontSize: "0.7rem", height: 24, borderRadius: "4px" }}
-                    />
-                  </Stack>
-                }
-              />
-            </Box>
-          </Box>
-
-          <Divider />
-
-          {/* footer actions */}
-          <Stack direction="row" spacing={2} mt={3} justifyContent="flex-end" sx={{ paddingInline: 2 }}>
-            <Button variant="outlined" onClick={() => router.back()}>Back</Button>
-            <Button
-              variant="contained"
-              onClick={() => router.push(`/su-admin/school-management/edit/${schoolId}`)}
-            >
-              Edit
-            </Button>
-          </Stack>
-        </Card>
-      </Stack>
-    </Box>
+            Edit
+          </Button>
+        </Stack>
+      </CardContent>
+    </Card>
   );
 }

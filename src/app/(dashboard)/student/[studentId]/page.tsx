@@ -1,221 +1,269 @@
 "use client";
 
-import * as React from "react";
-import { useDispatch, useSelector } from "react-redux";
-import RouterLink from "next/link";
-import { useParams } from "next/navigation";
-import Avatar from "@mui/material/Avatar";
-import Box from "@mui/material/Box";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import CardHeader from "@mui/material/CardHeader";
-import Chip from "@mui/material/Chip";
-import Divider from "@mui/material/Divider";
-import Grid from "@mui/material/Grid2";
-import LinearProgress from "@mui/material/LinearProgress";
-import Link from "@mui/material/Link";
-import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
-import Modal from "@mui/material/Modal";
-import MenuItem from "@mui/material/MenuItem";
-import Select from "@mui/material/Select";
-import FormControl from "@mui/material/FormControl";
-import InputLabel from "@mui/material/InputLabel";
-import { ArrowLeft as ArrowLeftIcon } from "@phosphor-icons/react/dist/ssr/ArrowLeft";
-import { CheckCircle as CheckCircleIcon } from "@phosphor-icons/react/dist/ssr/CheckCircle";
-import { House as HouseIcon } from "@phosphor-icons/react/dist/ssr/House";
-import { User as UserIcon } from "@phosphor-icons/react/dist/ssr/User";
+import React from "react";
+import {
+  Avatar,
+  Box,
+  Card,
+  CardContent,
+  Grid,
+  Stack,
+  Typography,
+  Divider,
+  Button,
+} from "@mui/material";
 
-import { paths } from "@/paths";
-import { PropertyItem } from "@/components/core/property-item";
-import { PropertyList } from "@/components/core/property-list";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "@/store";
+import { useParams } from "next/navigation";
 import { getStudentDetail } from "@/store/reducers/student-slice";
 import { assignVanToStudent, getAllSchoolVans } from "@/store/reducers/van-slice";
 
-export default function Page(): React.JSX.Element {
+import Modal from "@mui/material/Modal";
+import FormControl from "@mui/material/FormControl";
+import MenuItem from "@mui/material/MenuItem";
+import Select from "@mui/material/Select";
+import InputLabel from "@mui/material/InputLabel";
+import { ArrowLeftIcon } from "@mui/x-date-pickers/icons";
+import Link from "next/link";
+
+// -------------------------
+// Reusable Detail Item
+// -------------------------
+function DetailItem({ label, value }: { label: any; value: any }) {
+  return (
+    <Box sx={{ mb: 2 }}>
+      <Typography variant="body2" color="text.secondary">
+        {label}
+      </Typography>
+      <Typography variant="subtitle1" fontWeight={600}>
+        {value || "—"}
+      </Typography>
+    </Box>
+  );
+}
+
+export default function StudentDetailsPage() {
   const params = useParams<{ id: string }>();
   const id = params?.studentId;
+
   const dispatch = useDispatch<AppDispatch>();
   const { studentDetail, detailLoading } = useSelector((s: RootState) => s.student);
-  const { vans, loading, error } = useSelector((state: RootState) => state.van);
+  const { vans } = useSelector((s: RootState) => s.van);
 
-  // Modal state
   const [modalOpen, setModalOpen] = React.useState(false);
-  const [selectedVan, setSelectedVan] = React.useState<string>("");
+  const [selectedVan, setSelectedVan] = React.useState("");
 
-  // Fetch student detail
   React.useEffect(() => {
-    const fetchStudent = async () => {
-      if (id && (!studentDetail || studentDetail.id !== id)) {
-        try {
-          await dispatch(getStudentDetail(id)).unwrap();
-        } catch (err) {
-          console.error("Failed to fetch student detail:", err);
-        }
-      }
-    };
-    fetchStudent();
-  }, [dispatch, id, studentDetail]);
+    if (id) dispatch(getStudentDetail(id));
+  }, [id, dispatch]);
 
-  // Fetch school vans
   React.useEffect(() => {
-    const fetchVans = async () => {
-      try {
-        await dispatch(getAllSchoolVans({page:1,limit:1000})).unwrap();
-      } catch (err) {
-        console.error("Failed to fetch school vans:", err);
-      }
-    };
-    fetchVans();
+    dispatch(getAllSchoolVans({ page: 1, limit: 1000 }));
   }, [dispatch]);
 
-  // Optional retry logic
-  const retriedRef = React.useRef(false);
-  React.useEffect(() => {
-    const retryFetch = async () => {
-      if (
-        id &&
-        !detailLoading &&
-        (!studentDetail || studentDetail.id !== id) &&
-        !retriedRef.current
-      ) {
-        retriedRef.current = true;
-        try {
-          await dispatch(getStudentDetail(id)).unwrap();
-        } catch (err) {
-          console.error("Retry fetch student failed:", err);
-        }
-      }
-    };
-    retryFetch();
-  }, [dispatch, id, detailLoading, studentDetail]);
+  const handleAssign = async () => {
+    if (!selectedVan || !id) return;
 
-  const statusLabel = (studentDetail?.status || "").trim().toLowerCase();
-  const isActive = statusLabel === "active";
-  const statusChip = statusLabel ? (
-    <Chip
-      icon={isActive ? <CheckCircleIcon color="var(--mui-palette-success-main)" weight="fill" /> : undefined}
-      label={statusLabel.charAt(0).toUpperCase() + statusLabel.slice(1)}
-      size="small"
-      variant="outlined"
-      color={isActive ? "success" : "default"}
-    />
-  ) : (
-    <Chip label="Pending" size="small" variant="outlined" />
-  );
+    try {
+      await dispatch(assignVanToStudent({ kidId: id, vanId: selectedVan })).unwrap();
+      setModalOpen(false);
+      dispatch(getStudentDetail(id));
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-const handleAssign = async () => {
-  if (!selectedVan || !id) return;
-
-  try {
-    await dispatch(assignVanToStudent({ kidId: id, vanId: selectedVan })).unwrap();
-    setModalOpen(false);
-    // Optionally refetch student detail to reflect the new van assignment
-    await dispatch(getStudentDetail(id)).unwrap();
-  } catch (err) {
-    console.error("Failed to assign van:", err);
+  if (!studentDetail) {
+    return <Typography>Loading...</Typography>;
   }
-};
-console.log("studentDetail",studentDetail)
+
+  // Inline initials
+  const initials = studentDetail.fullname
+    ?.split(" ")
+    ?.map((w) => w[0]?.toUpperCase())
+    ?.join("");
+
   return (
-    <Box sx={{ p: 4, width: "100%", position: "relative" }}>
-      {detailLoading && <LinearProgress sx={{ mb: 2 }} />}
+    <Card sx={{ p: 3 }}>
+      <CardContent>
+        {/* =========================
+            HEADER
+        ========================== */}
+        <Link
+  href="/students"
+  style={{
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 8,
+    textDecoration: "none",
+  }}
+>
+  <ArrowLeftIcon />
+  <Typography variant="subtitle2" color="text.primary">
+    Back to Students
+  </Typography>
+</Link>
 
-      {/* Top-right Assign Van Button */}
-      <Box sx={{ position: "absolute", top: 16, right: 16 }}>
-        <Button variant="contained" onClick={() => setModalOpen(true)}>
-          Assign Van
-        </Button>
-      </Box>
-
-      <Stack spacing={4}>
-        <Stack spacing={2}>
-          <Link
-            color="text.primary"
-            component={RouterLink}
-            href={paths.dashboard.student}
-            sx={{ alignItems: "center", display: "inline-flex", gap: 1 }}
-            variant="subtitle2"
+<Divider sx={{ my: 2 }} />
+        <Stack direction="row" spacing={2} alignItems="center" mb={3}>
+          <Avatar
+            src={studentDetail.image || undefined}
+            sx={{
+              width: 60,
+              height: 60,
+              bgcolor: !studentDetail.image ? "#1976d2" : "transparent",
+              color: "#fff",
+              fontSize: 22,
+              fontWeight: "bold",
+            }}
           >
-            <ArrowLeftIcon fontSize="var(--icon-fontSize-md)" />
-            Students
-          </Link>
+            {!studentDetail.image ? initials : null}
+          </Avatar>
 
-          <Stack direction={{ xs: "column", sm: "row" }} spacing={3} sx={{ alignItems: "flex-start" }}>
-            <Stack direction="row" spacing={2} sx={{ alignItems: "center", flex: "1 1 auto" }}>
-              <Avatar src={studentDetail?.image || "/assets/avatar-1.png"} sx={{ width: 64, height: 64 }}>
-                {studentDetail?.fullname?.slice(0, 2)?.toUpperCase() || "ST"}
-              </Avatar>
-
-              <div>
-                <Stack direction="row" spacing={1} sx={{ alignItems: "center", flexWrap: "wrap" }}>
-                  <Typography variant="h4">{studentDetail?.fullname || "—"}</Typography>
-                  {statusChip}
-                </Stack>
-
-                <Typography color="text.secondary" variant="body1">
-                  {studentDetail?.parentEmail || "No parent email"}
-                </Typography>
-              </div>
-            </Stack>
-          </Stack>
+          <Box>
+            <Typography variant="h5" fontWeight="bold">
+              {studentDetail.fullname}
+            </Typography>
+            <Typography variant="subtitle2" color="text.secondary">
+              {studentDetail.parentName}
+            </Typography>
+          </Box>
         </Stack>
 
-        <Grid container spacing={3} sx={{ width: "100%" }}>
-          <Grid xs={12}>
-            <Card sx={{ width: "100%" }}>
-              <CardHeader
-                avatar={<Avatar><UserIcon /></Avatar>}
-                title="Student Details"
-              />
-              <CardContent sx={{ width: "100%", overflowX: "auto" }}>
-                <PropertyList divider={<Divider />} orientation="vertical">
-                  <PropertyItem
-                    name="Student ID"
-                    value={<Chip label={studentDetail?.id || "—"} size="small" variant="soft" />}
-                  />
-                  <PropertyItem name="Name" value={studentDetail?.fullname || "—"} />
-                  <PropertyItem name="Email (Parent)" value={studentDetail?.parentEmail || "—"} />
-                  <PropertyItem name="Age" value={studentDetail?.age ?? "—"} />
-                  <PropertyItem name="Grade" value={studentDetail?.grade || "—"} />
-                  <PropertyItem name="Status" value={statusChip} />
-                </PropertyList>
-              </CardContent>
-            </Card>
+        <Divider sx={{ mb: 3 }} />
+
+        {/* =========================
+            STUDENT INFO
+        ========================== */}
+        <Typography variant="h6" sx={{ mb: 2 }}>
+          Student Information
+        </Typography>
+
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6}>
+            <DetailItem label="Student ID" value={studentDetail.id} />
           </Grid>
 
-          <Grid xs={12}>
-            <Card sx={{ width: "100%" }}>
-              <CardHeader
-                avatar={<Avatar><HouseIcon /></Avatar>}
-                title="School & Route Info"
-              />
-              <CardContent sx={{ width: "100%", overflowX: "auto" }}>
-                <PropertyList divider={<Divider />} orientation="vertical">
-                  <PropertyItem name="School Name" value={studentDetail?.schoolName || "—"} />
-                  <PropertyItem name="Parent Name" value={studentDetail?.parentName || "—"} />
-                                    <PropertyItem name="Parent Email" value={studentDetail?.parentEmail || "—"} />
+          <Grid item xs={12} sm={6}>
+            <DetailItem label="Full Name" value={studentDetail.fullname} />
+          </Grid>
 
-                  <PropertyItem name="Van Type" value={studentDetail?.vehicleType || "—"} />
-                                    <PropertyItem name="Route " value={studentDetail?.route || "—"} />
+          <Grid item xs={12} sm={6}>
+            <DetailItem label="Age" value={studentDetail.age} />
+          </Grid>
 
-                  <PropertyItem name="Class/Grade" value={studentDetail?.grade || "—"} />
-                </PropertyList>
-              </CardContent>
-            </Card>
+          <Grid item xs={12} sm={6}>
+            <DetailItem label="Grade" value={studentDetail.grade} />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <DetailItem label="Gender" value={studentDetail.gender} />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <DetailItem label="Date of Birth" value={studentDetail.dob?.slice(0, 10)} />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <DetailItem label="Status" value={studentDetail.status} />
           </Grid>
         </Grid>
 
-        {!detailLoading && !studentDetail && (
-          <Typography color="text.secondary" variant="body2">
-            Student detail not available for ID: {id}
-          </Typography>
-        )}
-      </Stack>
+        <Divider sx={{ my: 3 }} />
 
-      {/* Modal */}
+        {/* =========================
+            PARENT INFO
+        ========================== */}
+        <Typography variant="h6" sx={{ mb: 2 }}>
+          Parent Information
+        </Typography>
+
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6}>
+            <DetailItem label="Parent Name" value={studentDetail.parentName} />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <DetailItem label="Parent Email" value={studentDetail.parentEmail} />
+          </Grid>
+        </Grid>
+
+        <Divider sx={{ my: 3 }} />
+
+        {/* =========================
+            SCHOOL & ROUTE
+        ========================== */}
+        <Typography variant="h6" sx={{ mb: 2 }}>
+          School & Route Details
+        </Typography>
+
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6}>
+            <DetailItem label="School Name" value={studentDetail.schoolName} />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <DetailItem label="Route" value={studentDetail.route} />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <DetailItem label="Van Type" value={studentDetail.vehicleType} />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <DetailItem label="Car Number" value={studentDetail.carNumber} />
+          </Grid>
+        </Grid>
+
+        <Divider sx={{ my: 3 }} />
+
+        {/* =========================
+            ASSIGNED VAN
+        ========================== */}
+        <Typography variant="h6" sx={{ mb: 2 }}>
+          Assigned Van
+        </Typography>
+
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6}>
+            <DetailItem label="Van ID" value={studentDetail.VanId} />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <Button
+              variant="contained"
+              sx={{ mt: 3 }}
+              onClick={() => setModalOpen(true)}
+            >
+              Assign / Change Van
+            </Button>
+          </Grid>
+        </Grid>
+
+        <Divider sx={{ my: 3 }} />
+
+        {/* =========================
+            LOCATION
+        ========================== */}
+        <Typography variant="h6" sx={{ mb: 2 }}>
+          Location
+        </Typography>
+
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6}>
+            <DetailItem label="Latitude" value={studentDetail.lat} />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <DetailItem label="Longitude" value={studentDetail.long} />
+          </Grid>
+        </Grid>
+      </CardContent>
+
+      {/* ============================
+          ASSIGN VAN MODAL
+      ============================ */}
       <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
         <Box
           sx={{
@@ -225,41 +273,49 @@ console.log("studentDetail",studentDetail)
             transform: "translate(-50%, -50%)",
             bgcolor: "background.paper",
             p: 4,
+            width: 500,
             borderRadius: 2,
-            width: 600,
-            maxHeight: "80vh",
-            overflowY: "auto",
           }}
         >
-          <Typography variant="h6" mb={2}>Assign Van</Typography>
-          <FormControl fullWidth>
-            <InputLabel id="van-select-label">Select Van</InputLabel>
-          <Select
-  labelId="van-select-label"
-  value={selectedVan}
-  label="Select Van"
-  onChange={(e) => setSelectedVan(e.target.value)}
-  MenuProps={{
-    PaperProps: {
-      style: { maxHeight: 300, width: 300 },
-    },
-  }}
->
-  {vans.map((item) => (
-    <MenuItem key={item.van.id} value={item.van.id}>
-      {item.van.vehicleType} - {item.van.carNumber} {item.driver?.fullname ? `(Driver: ${item.driver.fullname})` : ""}
-    </MenuItem>
-  ))}
-</Select>
+          <Typography variant="h6" mb={2}>
+            Assign Van
+          </Typography>
 
+          <FormControl fullWidth>
+            <InputLabel>Select Van</InputLabel>
+
+            <Select
+              value={selectedVan}
+              label="Select Van"
+              onChange={(e) => setSelectedVan(e.target.value)}
+              MenuProps={{
+                PaperProps: {
+                  sx: {
+                    maxHeight: 250,
+                    overflowY: "auto",
+                  },
+                },
+              }}
+            >
+              {vans.map((item) => (
+                <MenuItem key={item.van.id} value={item.van.id}>
+                  {item.van.vehicleType} — {item.van.carNumber}
+                </MenuItem>
+              ))}
+            </Select>
           </FormControl>
 
-          <Stack direction="row" spacing={2} mt={3} justifyContent="flex-end">
-            <Button variant="outlined" onClick={() => setModalOpen(false)}>Cancel</Button>
-            <Button variant="contained" onClick={handleAssign} disabled={!selectedVan}>Save</Button>
+          <Stack direction="row" spacing={2} justifyContent="flex-end" mt={3}>
+            <Button variant="outlined" onClick={() => setModalOpen(false)}>
+              Cancel
+            </Button>
+
+            <Button variant="contained" disabled={!selectedVan} onClick={handleAssign}>
+              Save
+            </Button>
           </Stack>
         </Box>
       </Modal>
-    </Box>
+    </Card>
   );
 }

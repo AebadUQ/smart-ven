@@ -45,7 +45,7 @@ export interface TripCardProps {
 export function TripCard({
   trips = [],
   loading = false,
-  trackingPath = paths.dashboard.tracking,
+  trackingPath = '/tracking',
   status,
   onStatusChange,
   selectedTrip,

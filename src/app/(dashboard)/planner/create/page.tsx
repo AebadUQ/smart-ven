@@ -18,13 +18,21 @@ import {
   Select,
   MenuItem,
   FormHelperText,
+  Dialog,
+  DialogTitle,
+  DialogContent,
 } from "@mui/material";
+
+
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/store";
+
 import { createRoute, clearRouteStatus } from "@/store/reducers/route-slice";
 import { getAllSchoolVans } from "@/store/reducers/van-slice";
+
 import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
+import GoogleMapPicker from "./GoogleMapPicker";
 
 type FormValues = {
   vanId: string;
@@ -78,6 +86,8 @@ export default function AddRouteForm(): React.JSX.Element {
 
   const tripDays = watch("tripDays");
 
+  const [openPicker, setOpenPicker] = React.useState<null | "start" | "end">(null);
+
   React.useEffect(() => {
     dispatch(getAllSchoolVans({ page: 1, limit: 50 })).unwrap().catch(console.error);
   }, [dispatch]);
@@ -97,11 +107,11 @@ export default function AddRouteForm(): React.JSX.Element {
       dispatch(clearRouteStatus());
       router.push("/planner");
     }
-  }, [success, dispatch, router, reset]);
+  }, [success]);
 
   React.useEffect(() => {
     if (error) dispatch(clearRouteStatus());
-  }, [error, dispatch]);
+  }, [error]);
 
   const handleDayChange = (day: string) => {
     setValue(`tripDays.${day}`, !tripDays[day]);
@@ -185,15 +195,13 @@ export default function AddRouteForm(): React.JSX.Element {
                 <Controller
                   name="tripType"
                   control={control}
-                  rules={{ required: "Trip Type is required" }}
                   render={({ field }) => (
-                    <FormControl fullWidth error={!!errors.tripType}>
-                      <InputLabel id="trip-type-label">Trip Type</InputLabel>
-                      <Select labelId="trip-type-label" {...field} label="Trip Type">
+                    <FormControl fullWidth>
+                      <InputLabel>Trip Type</InputLabel>
+                      <Select {...field} label="Trip Type">
                         <MenuItem value="morning">Morning</MenuItem>
                         <MenuItem value="evening">Evening</MenuItem>
                       </Select>
-                      {errors.tripType && <FormHelperText>{errors.tripType.message}</FormHelperText>}
                     </FormControl>
                   )}
                 />
@@ -217,31 +225,59 @@ export default function AddRouteForm(): React.JSX.Element {
                 </FormGroup>
               </Grid>
 
-              {/* Start & End Point */}
-              {["startLat", "startLong", "endLat", "endLong"].map((fieldName, idx) => (
-                <Grid key={fieldName} item xs={6} sm={3}>
-                  <Controller
-                    name={fieldName as keyof FormValues}
-                    control={control}
-                    rules={{
-                      required: `${fieldName} is required`,
-                      pattern: {
-                        value: /^-?\d+(\.\d+)?$/,
-                        message: "Must be a valid number",
-                      },
-                    }}
-                    render={({ field }) => (
-                      <TextField
-                        label={fieldName.replace(/([A-Z])/g, " $1")}
-                        fullWidth
-                        {...field}
-                        error={!!errors[fieldName as keyof FormValues]}
-                        helperText={errors[fieldName as keyof FormValues]?.message}
-                      />
-                    )}
-                  />
-                </Grid>
-              ))}
+              {/* Start Location */}
+              <Grid item xs={12}>
+                <Button variant="outlined" onClick={() => setOpenPicker("start")}>
+                  Pick Start Location on Map
+                </Button>
+              </Grid>
+
+              <Grid item xs={6} sm={3}>
+                <Controller
+                  name="startLat"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField label="Start Latitude" fullWidth {...field} />
+                  )}
+                />
+              </Grid>
+
+              <Grid item xs={6} sm={3}>
+                <Controller
+                  name="startLong"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField label="Start Longitude" fullWidth {...field} />
+                  )}
+                />
+              </Grid>
+
+              {/* End Location */}
+              <Grid item xs={12}>
+                <Button variant="outlined" onClick={() => setOpenPicker("end")}>
+                  Pick End Location on Map
+                </Button>
+              </Grid>
+
+              <Grid item xs={6} sm={3}>
+                <Controller
+                  name="endLat"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField label="End Latitude" fullWidth {...field} />
+                  )}
+                />
+              </Grid>
+
+              <Grid item xs={6} sm={3}>
+                <Controller
+                  name="endLong"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField label="End Longitude" fullWidth {...field} />
+                  )}
+                />
+              </Grid>
 
               {/* Submit */}
               <Grid item xs={12} sx={{ display: "flex", justifyContent: "flex-end" }}>
@@ -259,6 +295,25 @@ export default function AddRouteForm(): React.JSX.Element {
           </form>
         </Stack>
       </Card>
+
+      {/* Map Picker Dialog */}
+      <Dialog fullWidth maxWidth="md" open={!!openPicker} onClose={() => setOpenPicker(null)}>
+        <DialogTitle>Select Location</DialogTitle>
+        <DialogContent>
+          <GoogleMapPicker
+            onSelect={(lat, lng) => {
+              if (openPicker === "start") {
+                setValue("startLat", lat.toString());
+                setValue("startLong", lng.toString());
+              } else {
+                setValue("endLat", lat.toString());
+                setValue("endLong", lng.toString());
+              }
+              setOpenPicker(null);
+            }}
+          />
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 }

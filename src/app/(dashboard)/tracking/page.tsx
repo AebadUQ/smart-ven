@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getAllTrips } from '@/store/reducers/trip-slice';
 import { RootState, AppDispatch } from '@/store';
@@ -10,52 +10,49 @@ import { TrackingView } from '@/components/tracking';
 export default function Page(): React.JSX.Element {
   const dispatch = useDispatch<AppDispatch>();
 
-  // ❌ pehle: const { trips, loading } = useSelector((state: RootState) => state?.trip);
-  // ✅ ab: pehle pura slice lo, phir safely fields nikaalo
-  const tripState = useSelector((state: any) => state.trip);
+  const [status, setStatus] = useState("");
 
+  const tripState = useSelector((state: RootState) => state.trip);
   const trips = tripState?.trips ?? [];
   const loading = tripState?.loading ?? false;
 
   useEffect(() => {
-    dispatch(getAllTrips({ page: 1, limit: 10 }));
-  }, [dispatch]);
-  const vehicles: any[] = useMemo(
-    () =>
-      (trips || []).map((trip: any) => {
-        // latest van point: locations[last] -> tripEnd -> tripStart
-        const lastLocation = trip.locations?.length
-          ? trip.locations[trip.locations.length - 1]
-          : trip.tripEnd
-          ? { lat: trip.tripEnd.lat, long: trip.tripEnd.long }
-          : trip.tripStart
-          ? { lat: trip.tripStart.lat, long: trip.tripStart.long }
-          : null;
+    dispatch(getAllTrips({ page: 1, limit: 10, status }));
+  }, [dispatch, status]);
 
-        return {
-          id: String(trip._id),
-          name: trip.driverName || 'Unknown Driver',
-          avatar: '/assets/avatar-placeholder.png',
-          vehicleModel: trip.carNumber || '',
-          plate: trip.carNumber || '',
-          status: trip.status || 'unknown',
-          latitude: lastLocation?.lat || 0,
-          longitude: lastLocation?.long || 0,
-          tripStart: trip?.startTime
-            ? new Date(trip?.startTime)
-            : undefined,
-            driverId:trip?.driverId,
-            tripId:trip?._id,
-            driverName:trip?.driverName
-        };
-      }),
-    [trips]
+  const vehicles = useMemo(() => {
+    return (trips || []).map((trip: any) => {
+      const lastLocation = trip.locations?.length
+        ? trip.locations[trip.locations.length - 1]
+        : trip.tripEnd
+        ? { lat: trip.tripEnd.lat, long: trip.tripEnd.long }
+        : trip.tripStart
+        ? { lat: trip.tripStart.lat, long: trip.tripStart.long }
+        : null;
+
+      return {
+        id: String(trip._id),
+        name: trip.driverName || 'Unknown Driver',
+        avatar: '/assets/avatar-placeholder.png',
+        vehicleModel: trip.carNumber || '',
+        plate: trip.carNumber || '',
+        status: trip.status || 'unknown',
+        latitude: lastLocation?.lat || 0,
+        longitude: lastLocation?.long || 0,
+        tripStart: trip?.startTime ? new Date(trip.startTime) : undefined,
+        driverId: trip?.driverId,
+        tripId: trip?._id,
+        driverName: trip?.driverName,
+      };
+    });
+  }, [trips]);
+
+  return (
+    <TrackingView
+      vehicles={vehicles}
+      status={status}
+      onStatusChange={setStatus}
+      loading={loading}
+    />
   );
-console.log("trip",vehicles)
-
-  if (loading) {
-    return <div>Loading trips...</div>;
-  }
-
-  return <TrackingView vehicles={vehicles} />;
 }

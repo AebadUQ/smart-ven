@@ -95,7 +95,7 @@ export const Alert: React.FC = () => {
             color="secondary"
             size="small"
             sx={{ mt: 1 }}
-            onClick={() => router.push('/dashboard/path/tracking')}
+            onClick={() => router.push('/parents')}
           >
             View All
           </Button>

@@ -16,6 +16,7 @@ interface AuthState {
   resetToken: string | null;      // reset/OTP token
   loading: boolean;
   error: string | null;
+  userProfile?:any
 }
 
 const initialState: AuthState = {
@@ -24,6 +25,7 @@ const initialState: AuthState = {
   resetToken: null,
   loading: false,
   error: null,
+  userProfile:null
 };
 
 // ─── Thunks ────────────────────────────────────────────────────
@@ -155,7 +157,7 @@ const authSlice = createSlice({
 })
 .addCase(getProfile.fulfilled, (state, action: PayloadAction<any>) => {
   state.loading = false;
-  state.user = action.payload.user;
+  state.userProfile = action.payload;
 })
 .addCase(getProfile.rejected, (state, action) => {
   state.loading = false;

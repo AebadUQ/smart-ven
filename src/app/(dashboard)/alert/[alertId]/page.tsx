@@ -1,105 +1,174 @@
 "use client";
 
 import * as React from "react";
+import {
+  Avatar,
+  Box,
+  Card,
+  CardContent,
+  Grid,
+  Stack,
+  Typography,
+  Divider,
+  LinearProgress,
+  Chip,
+  Link,
+} from "@mui/material";
+
 import { useDispatch, useSelector } from "react-redux";
-import RouterLink from "next/link";
+import { RootState, AppDispatch } from "@/store";
 import { useParams } from "next/navigation";
-import Box from "@mui/material/Box";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import CardHeader from "@mui/material/CardHeader";
-import Chip from "@mui/material/Chip";
-import Divider from "@mui/material/Divider";
-import Grid from "@mui/material/Grid2";
-import LinearProgress from "@mui/material/LinearProgress";
-import Link from "@mui/material/Link";
-import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
+
 import { ArrowLeft as ArrowLeftIcon } from "@phosphor-icons/react/dist/ssr/ArrowLeft";
-import { CheckCircle as CheckCircleIcon } from "@phosphor-icons/react/dist/ssr/CheckCircle";
+import { User as UserIcon } from "@phosphor-icons/react/dist/ssr/User";
 
 import { paths } from "@/paths";
-import { PropertyItem } from "@/components/core/property-item";
-import { PropertyList } from "@/components/core/property-list";
-import { RootState, AppDispatch } from "@/store";
 import { getAlertById } from "@/store/reducers/alert-slice";
 import { formatLabel } from "@/utils/data";
 
+// 🔹 Reusable Detail Item
+function DetailItem({ label, value }: { label: string; value: any }) {
+  return (
+    <Box sx={{ mb: 2 }}>
+      <Typography variant="body2" color="text.secondary">
+        {label}
+      </Typography>
+      <Typography variant="subtitle1" fontWeight={600}>
+        {value || "—"}
+      </Typography>
+    </Box>
+  );
+}
+
 export default function AlertDetailPage(): React.JSX.Element {
-  const params = useParams<{ alertId: string }>(); // <- updated
-  const alertId = params?.alertId; // <- updated
+  const params = useParams<{ alertId: string }>();
+  const alertId = params?.alertId;
+
   const dispatch = useDispatch<AppDispatch>();
   const { alertDetail, detailLoading } = useSelector((s: RootState) => s.alert);
 
-  // Fetch alert detail
   React.useEffect(() => {
-    if (alertId) {
-      dispatch(getAlertById(alertId));
-    }
-  }, [dispatch, alertId]);
+    if (alertId) dispatch(getAlertById(alertId));
+  }, [alertId, dispatch]);
 
   const statusLabel = (alertDetail?.status || "").trim().toLowerCase();
   const isSent = statusLabel === "sent";
-  const statusChip = statusLabel ? (
+
+  const statusChip = (
     <Chip
-      icon={isSent ? <CheckCircleIcon color="var(--mui-palette-success-main)" weight="fill" /> : undefined}
-      label={statusLabel.charAt(0).toUpperCase() + statusLabel.slice(1)}
+      label={
+        statusLabel
+          ? statusLabel.charAt(0).toUpperCase() + statusLabel.slice(1)
+          : "Pending"
+      }
       size="small"
       variant="outlined"
       color={isSent ? "success" : "default"}
     />
-  ) : (
-    <Chip label="Pending" size="small" variant="outlined" />
   );
 
-  return (
-    <Box sx={{ p: 4, width: "100%" }}>
-      {detailLoading && <LinearProgress sx={{ mb: 2 }} />}
+  if (detailLoading)
+    return <LinearProgress sx={{ p: 4 }} />;
 
-      <Stack spacing={4}>
-        {/* Back Link */}
+  if (!alertDetail)
+    return (
+      <Typography sx={{ p: 4 }}>
+        No alert details found for ID: {alertId}
+      </Typography>
+    );
+
+  return (
+    <Card sx={{ p: 3 }}>
+      <CardContent>
+        {/* Back Button */}
         <Link
-          color="text.primary"
-          component={RouterLink}
-          href={paths.dashboard.alert} // your alerts list path
-          sx={{ alignItems: "center", display: "inline-flex", gap: 1 }}
-          variant="subtitle2"
+          href={paths.dashboard.alert}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+            textDecoration: "none",
+          }}
         >
-          <ArrowLeftIcon fontSize="var(--icon-fontSize-md)" />
-          Alerts
+          <ArrowLeftIcon />
+          <Typography variant="subtitle2" color="text.primary">
+            Back to Alerts
+          </Typography>
         </Link>
 
-        <Grid container spacing={3} sx={{ width: "100%" }}>
-          <Grid xs={12}>
-            <Card sx={{ width: "100%" }}>
-              <CardHeader title="Alert Details" />
-              <CardContent sx={{ width: "100%", overflowX: "auto" }}>
-                <PropertyList divider={<Divider />} orientation="vertical">
-                  <PropertyItem
-                    name="Alert ID"
-                    value={<Chip label={alertDetail?._id || "—"} size="small" variant="soft" />}
-                  />
-                  <PropertyItem name="Alert Type" value={alertDetail?.alertType || "—"} />
-                  <PropertyItem name="Message" value={alertDetail?.message || "—"} />
-                  <PropertyItem name="Recipient Type" value={formatLabel(alertDetail?.recipientType) || "—"} />
-                  <PropertyItem name="School ID" value={alertDetail?.schoolId || "—"} />
-                  <PropertyItem name="Status" value={statusChip} />
-                  <PropertyItem
-                    name="Date"
-                    value={alertDetail?.date ? new Date(alertDetail.date).toLocaleString() : "—"}
-                  />
-                </PropertyList>
-              </CardContent>
-            </Card>
+        <Divider sx={{ my: 2 }} />
+
+        {/* HEADER */}
+        <Stack direction="row" spacing={2} alignItems="center" mb={3}>
+          <Avatar sx={{ width: 60, height: 60 }}>
+            <UserIcon />
+          </Avatar>
+
+          <Box>
+            <Typography variant="h5" fontWeight="bold">
+              {alertDetail.alertType}
+            </Typography>
+
+            <Typography variant="subtitle2" color="text.secondary">
+              Alert ID: {alertDetail._id}
+            </Typography>
+          </Box>
+        </Stack>
+
+        <Divider sx={{ mb: 3 }} />
+
+        {/* ==========================
+            ALERT INFORMATION
+        =========================== */}
+        <Typography variant="h6" sx={{ mb: 2 }}>
+          Alert Information
+        </Typography>
+
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6}>
+            <DetailItem label="Alert ID" value={alertDetail._id} />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <DetailItem label="Alert Type" value={alertDetail.alertType} />
+          </Grid>
+
+          <Grid item xs={12}>
+            <DetailItem label="Message" value={alertDetail.message} />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <DetailItem
+              label="Recipient Type"
+              value={formatLabel(alertDetail.recipientType)}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <DetailItem label="School ID" value={alertDetail.schoolId} />
+          </Grid>
+
+          {/* 🔥 Added School Name Here */}
+          <Grid item xs={12} sm={6}>
+            <DetailItem label="School Name" value={alertDetail.schoolName} />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <DetailItem label="Status" value={statusChip} />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <DetailItem
+              label="Date"
+              value={
+                alertDetail.date
+                  ? new Date(alertDetail.date).toLocaleString()
+                  : "—"
+              }
+            />
           </Grid>
         </Grid>
-
-        {!detailLoading && !alertDetail && (
-          <Typography color="text.secondary" variant="body2">
-            Alert detail not available for ID: {alertId}
-          </Typography>
-        )}
-      </Stack>
-    </Box>
+      </CardContent>
+    </Card>
   );
 }

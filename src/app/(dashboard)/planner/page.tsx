@@ -169,7 +169,8 @@ export default function RoutePlannerPage(): React.JSX.Element {
       width: "120px",
       formatter: (row) => (
         <Typography variant="body2">
-          {dayjs(row.startTime).format("hh:mm A")}
+          {/* {dayjs(row.startTime).format("hh:mm A")} */}
+          {row.startTime}
         </Typography>
       ),
     },
@@ -185,17 +186,21 @@ export default function RoutePlannerPage(): React.JSX.Element {
         />
       ),
     },
-    {
-      name: "Trip Days",
-      width: "200px",
-      formatter: (row) => {
-        const days = Object.entries(row.tripDays || {})
-          .filter(([, enabled]) => enabled)
-          .map(([key]) => key.charAt(0).toUpperCase() + key.slice(1, 3))
-          .join(", ");
-        return <Typography variant="body2">{days || "—"}</Typography>;
-      },
-    },
+  {
+  name: "Trip Days",
+  width: "200px",
+  formatter: (row) => {
+    const days = Object.entries(row.tripDays || {})
+      .filter(([_, enabled]) => enabled === true) // only true values
+      .map(([key]) =>
+        key.charAt(0).toUpperCase() + key.slice(1, 3) // Mon, Tue, Wed
+      )
+      .join(", ");
+
+    return <Typography variant="body2">{days || "—"}</Typography>;
+  },
+}
+,
     {
       name: "Start Point",
       width: "150px",
