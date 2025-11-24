@@ -30,6 +30,7 @@ type UiSchoolRow = {
   routesLimit: number;    // allowedRoutes
   students: number;       // allowedStudents
   status: "active" | "inactive";
+  schoolLogo?:any
 };
 
 export default function Page(): React.JSX.Element {
@@ -52,6 +53,7 @@ export default function Page(): React.JSX.Element {
     return (schools ?? []).map((s: any) => ({
       _id: s?._id,
       name: s?.schoolName ?? s?.name ?? "—",
+      schoolLogo:s?.schoolImage,
       contact: s?.contactPerson ?? s?.admin?.name ?? "—",
       vansLimit: Number(s?.allowedVans ?? 0),
       routesLimit: Number(s?.allowedRoutes ?? 0),
@@ -64,33 +66,47 @@ export default function Page(): React.JSX.Element {
   }, [schools]);
 
   const columns: ColumnDef<UiSchoolRow>[] = [
-    {
-      name: "School",
-      width: "260px",
-      formatter: (row) => (
-        <Stack direction="row" spacing={1} alignItems="center">
-          <Box
-            sx={{
-              width: 40,
-              height: 40,
-              borderRadius: "50%",
-              bgcolor: "#F6F7F9",
-              border: "1px solid #E0E2E7",
-              fontSize: 12,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "text.secondary",
+   {
+  name: "School",
+  width: "260px",
+  formatter: (row) => (
+    <Stack direction="row" spacing={1} alignItems="center">
+      <Box
+        sx={{
+          width: 40,
+          height: 40,
+          borderRadius: "50%",
+          overflow: "hidden",
+          bgcolor: "#F6F7F9",
+          border: "1px solid #E0E2E7",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 12,
+          color: "text.secondary",
+        }}
+      >
+        {row.schoolLogo ? (
+          <img
+            src={row.schoolLogo}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
             }}
-          >
-            {row.name?.[0] ?? "?"}
-          </Box>
-          <Typography color="text.primary" variant="body2">
-            {row.name}
-          </Typography>
-        </Stack>
-      ),
-    },
+          />
+        ) : (
+          row.name?.[0] ?? "?"
+        )}
+      </Box>
+
+      <Typography color="text.primary" variant="body2">
+        {row.name}
+      </Typography>
+    </Stack>
+  ),
+},
+
     {
       name: "Contact",
       width: "180px",

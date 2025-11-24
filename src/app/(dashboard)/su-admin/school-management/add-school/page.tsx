@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import {
   Box,
   Card,
@@ -39,6 +39,7 @@ import dayjs from "dayjs";
 import { registerSchool } from "@/store/reducers/suadmin-slice";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/store";
+import { uploadImage } from "@/utils/uploadImage"; // ⬅️ ADDED
 
 /* ===================== TABS ===================== */
 
@@ -61,9 +62,11 @@ const tabsList: { key: TabKey; label: string; order: number }[] = [
   { key: "subscription", label: "Subscription & Billing", order: 3 },
 ];
 
-/* ===================== ZOD SCHEMA (GLOBAL) ===================== */
+/* ===================== ZOD SCHEMA (UPDATED) ===================== */
 
 const schema = z.object({
+  schoolImage: z.string().optional(), // ⬅️ ADDED
+
   // Profile
   adminName: z.string().min(1, "Admin name is required"),
   schoolName: z.string().min(1, "School name is required"),
@@ -110,6 +113,7 @@ type FormValues = z.infer<typeof schema>;
 
 const fieldsByTab: Record<TabKey, (keyof FormValues)[]> = {
   profile: [
+    "schoolImage", // ⬅️ ADDED
     "adminName",
     "schoolName",
     "address",
@@ -178,7 +182,11 @@ function RHFTextField({
         error={!!err}
         helperText={err}
         InputProps={{ sx: { borderRadius: 1, py: 1 } }}
-        inputProps={type === "number" ? { inputMode: "decimal", step: "any" } : undefined}
+        inputProps={
+          type === "number"
+            ? { inputMode: "decimal", step: "any" }
+            : undefined
+        }
         {...register(name)}
       >
         {children}
@@ -257,17 +265,20 @@ function RHFSwitch({
   );
 }
 
-/* ===================== PAGE (STEPPER LOGIC) ===================== */
+/* ===================== PAGE ===================== */
 
 export default function Page() {
-  const router = useRouter()
-  const dispatch = useDispatch<AppDispatch>()
+  const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
   const [activeTab, setActiveTab] = useState<TabKey>("profile");
-  const activeTabOrder = tabsList.find((t) => t.key === activeTab)?.order ?? 0;
+  const activeTabOrder =
+    tabsList.find((t) => t.key === activeTab)?.order ?? 0;
 
   const methods = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: {}, // all empty
+    defaultValues: {
+      schoolImage: "", // ⬅️ ADDED
+    },
     mode: "onTouched",
   });
 
@@ -277,7 +288,7 @@ export default function Page() {
     formState: { errors },
   } = methods;
 
-  // For red error dot on tabs
+  /* Tab Error Logic */
   const tabHasErrors = useMemo(() => {
     const eKeys = Object.keys(errors) as (keyof FormValues)[];
     const map: Partial<Record<TabKey, boolean>> = {};
@@ -292,79 +303,80 @@ export default function Page() {
     []
   );
 
+  /* Step navigation */
   const goNext = async () => {
     const current = orderedTabs.find((t) => t.key === activeTab);
     if (!current) return;
+
     const next = orderedTabs.find((t) => t.order === current.order + 1);
-    const valid = await trigger(fieldsByTab[activeTab]); // validate ONLY current tab
-    if (!valid) return; // stay on current tab, show errors here
+
+    const valid = await trigger(fieldsByTab[activeTab]);
+    if (!valid) return;
+
     if (next) setActiveTab(next.key);
   };
 
   const goPrev = () => {
     const current = orderedTabs.find((t) => t.key === activeTab);
     if (!current) return;
+
     const prev = orderedTabs.find((t) => t.order === current.order - 1);
     if (prev) setActiveTab(prev.key);
   };
 
- const onSubmit = async(data: FormValues) => {
-  const formattedData = {
-    adminInfo: {
-      name: data.adminName,
-      email: data.adminEmail,
-      role: "admin",
-    },
-    schoolInfo: {
-      schoolName: data.schoolName,
-      schoolEmail: data.schoolEmail,
-      contactPerson: data.adminName,
-      address: data.address,
-      branchName: "Main Campus",
+  /* Submit handler */
+  const onSubmit = async (data: FormValues) => {
+    const formattedData = {
+      adminInfo: {
+        name: data.adminName,
+        email: data.adminEmail,
+        role: "admin",
+      },
+      schoolInfo: {
+        schoolImage: data.schoolImage, // ⬅️ SEND LOGO
+        schoolName: data.schoolName,
+        schoolEmail: data.schoolEmail,
+        contactPerson: data.adminName,
+        address: data.address,
+        branchName: "Main Campus",
 
-      startTime: data.pickupStartTime
-        ? dayjs(data.pickupStartTime).format("hh:mm A")
-        : "08:00 AM",
-      endTime: data.dropoffStartTime
-        ? dayjs(data.dropoffStartTime).format("hh:mm A")
-        : "02:00 PM",
-      maxTripDuration: Number(data.maxTripDuration),
-      bufferTime: Number(data.bufferTime),
+        startTime: data.pickupStartTime
+          ? dayjs(data.pickupStartTime).format("hh:mm A")
+          : "08:00 AM",
+        endTime: data.dropoffStartTime
+          ? dayjs(data.dropoffStartTime).format("hh:mm A")
+          : "02:00 PM",
+        maxTripDuration: Number(data.maxTripDuration),
+        bufferTime: Number(data.bufferTime),
 
-      allowedVans: Number(data.allowedVans),
-      allowedStudents: Number(data.allowedStudents),
-      allowedRoutes: Number(data.allowedRoutes),
+        allowedVans: Number(data.allowedVans),
+        allowedStudents: Number(data.allowedStudents),
+        allowedRoutes: Number(data.allowedRoutes),
 
-      currentPlan:
-        data.plan === "premium" ? "Premium" : "Standard",
-      billingCycle:
-        data.billingCycle.charAt(0).toUpperCase() +
-        data.billingCycle.slice(1),
-      paymentMethod:
-        data.paymentMethod === "bank"
-          ? "Bank Transfer"
-          : "Cash",
+        currentPlan:
+          data.plan === "premium" ? "Premium" : "Standard",
+        billingCycle:
+          data.billingCycle.charAt(0).toUpperCase() +
+          data.billingCycle.slice(1),
+        paymentMethod:
+          data.paymentMethod === "bank"
+            ? "Bank Transfer"
+            : "Cash",
 
-      lat: data.routeLatitude,
-      long: data.routeLongitude,
-      autoRenew: !!data.pickDropExceptionsActive,
-      contactNumber: data.contactNumber,
-      // status: "active",
-    },
+        lat: data.routeLatitude,
+        long: data.routeLongitude,
+        autoRenew: !!data.pickDropExceptionsActive,
+        contactNumber: data.contactNumber,
+      },
+    };
+
+    try {
+      await dispatch(registerSchool(formattedData)).unwrap();
+      router.push("/su-admin/school-management");
+    } catch (err) {
+      console.error("❌ Register failed:", err);
+    }
   };
-  try {
-    const res = await dispatch(registerSchool(formattedData)).unwrap();
-    console.log("✅ Registered:", res);
-    // e.g. navigate or show toast here
-    router.push('/su-admin/school-management');
-  } catch (err) {
-    console.error("❌ Register failed:", err);
-    // show error toast if needed
-  }
-
-  console.log("📦 Final Upload Data:", formattedData);
-};
-
 
   const isLastStep = activeTab === "subscription";
 
@@ -376,168 +388,103 @@ export default function Page() {
           display: "flex",
           flexDirection: "column",
           p: 3,
-          bgcolor: "background.default",
         }}
       >
-        {/* Top row */}
-        <Stack
-          direction="row"
-          alignItems="flex-start"
-          justifyContent="space-between"
-          sx={{ mb: 2 }}
-        >
-          <Stack spacing={1} sx={{ flex: 1, minWidth: 0 }}>
-            <Stack direction="row" spacing={1} alignItems="center">
-              <Link
-                color="text.primary"
-                component={RouterLink}
-                href={"/su-admin/school-management"}
-                sx={{ alignItems: "center", display: "inline-flex", gap: 1 }}
-                variant="subtitle2"
-              >
-                <ArrowLeftIcon fontSize="var(--icon-fontSize-md)" />
-              </Link>
+        {/* TOP AREA */}
+        <Stack direction="row" justifyContent="space-between">
+          <Stack>
+            <Link
+              color="text.primary"
+              component={RouterLink}
+              href={"/su-admin/school-management"}
+              sx={{ alignItems: "center", display: "inline-flex", gap: 1 }}
+            >
+              <ArrowLeftIcon fontSize="var(--icon-fontSize-md)" />
+            </Link>
 
-              <Box
-                sx={{
-                  ml: "auto",
-                  border: "1px solid #4CAF50",
-                  borderRadius: "4px",
-                  px: 1,
-                  py: 0.5,
-                  fontSize: "12px",
-                  lineHeight: 1.2,
-                  color: "#2e7d32",
-                  bgcolor: "rgba(76,175,80,0.08)",
-                  fontWeight: 500,
-                }}
-              >
-                Active
-              </Box>
-            </Stack>
+            <Typography variant="h6" sx={{ mt: 1 }}>
+              School Details
+            </Typography>
 
-            <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1 }}>
-              <Typography variant="h6" fontWeight={600}>
-                School Details
-              </Typography>
-            </Stack>
+            {/* TABS */}
+            <Stack direction="row" spacing={1} flexWrap="wrap">
+              {orderedTabs.map((tab) => {
+                const isActive = tab.key === activeTab;
+                const isCompleted = tab.order < activeTabOrder;
 
-            {/* Chips */}
-            <Stack direction="column" alignItems="start" spacing={1} sx={{ mt: 2 }}>
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                sx={{ fontWeight: 500 }}
-              >
-                FILL THE DETAILS
-              </Typography>
-
-              <Stack direction="row" flexWrap="wrap" sx={{ rowGap: 1 }} useFlexGap>
-                {orderedTabs.map((tab) => {
-                  const isActive = tab.key === activeTab;
-                  const isCompleted = tab.order < activeTabOrder;
-                  const isUpcoming = tab.order > activeTabOrder;
-
-                  let bg = "#F6F7F9";
-                  let textColor = "#000";
-                  let dotColor = tabHasErrors[tab.key] ? "#E53935" : "#787878";
-                  let borderColor = "#E0E2E7";
-
-                  if (isActive) {
-                    bg = "#1560BD";
-                    textColor = "#fff";
-                    dotColor = tabHasErrors[tab.key] ? "#FFCDD2" : "#FFB800";
-                    borderColor = "transparent";
-                  } else if (isCompleted) {
-                    bg = "#000";
-                    textColor = "#fff";
-                    dotColor = tabHasErrors[tab.key] ? "#FF8A80" : "#FFB800";
-                    borderColor = "transparent";
-                  }
-
-                  return (
+                return (
+                  <Box
+                    key={tab.key}
+                    onClick={async () => {
+                      const current = orderedTabs.find(
+                        (t) => t.key === activeTab
+                      );
+                      if (
+                        current &&
+                        tab.order > current.order &&
+                        !(await trigger(fieldsByTab[activeTab]))
+                      ) {
+                        return;
+                      }
+                      setActiveTab(tab.key);
+                    }}
+                    sx={{
+                      px: 1.5,
+                      py: 0.5,
+                      borderRadius: 1,
+                      cursor: "pointer",
+                      background: isActive
+                        ? "#1560BD"
+                        : isCompleted
+                        ? "#000"
+                        : "#F6F7F9",
+                      color: isActive || isCompleted ? "#fff" : "#000",
+                      fontSize: "12px",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
+                    }}
+                  >
                     <Box
-                      key={tab.key}
-                      onClick={async () => {
-                        // guard: only allow jumping forward if current tab valid
-                        const current = orderedTabs.find((t) => t.key === activeTab);
-                        if (current && tab.order > current.order) {
-                          const ok = await trigger(fieldsByTab[activeTab]);
-                          if (!ok) return; // keep user here if invalid
-                        }
-                        setActiveTab(tab.key);
-                      }}
                       sx={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        mr: 1,
-                        mb: 1,
-                        px: 1.5,
-                        py: 0.5,
-                        borderRadius: "4px",
-                        fontSize: "12px",
-                        lineHeight: 1.4,
-                        fontWeight: 500,
-                        cursor: "pointer",
-                        backgroundColor: bg,
-                        color: textColor,
-                        border: "1px solid",
-                        borderColor: isUpcoming ? borderColor : "transparent",
-                        userSelect: "none",
-                        minHeight: "26px",
-                        whiteSpace: "nowrap",
+                        width: 8,
+                        height: 8,
+                        borderRadius: "999px",
+                        background: tabHasErrors[tab.key]
+                          ? "#E53935"
+                          : "#FFB800",
                       }}
-                    >
-                      <Box
-                        sx={{
-                          width: 8,
-                          height: 8,
-                          borderRadius: "999px",
-                          backgroundColor: dotColor,
-                          mr: 1,
-                          flexShrink: 0,
-                        }}
-                      />
-                      {tab.label}
-                    </Box>
-                  );
-                })}
-              </Stack>
+                    />
+                    {tab.label}
+                  </Box>
+                );
+              })}
             </Stack>
           </Stack>
-
-          <Stack direction="row" spacing={1} alignItems="flex-start" sx={{ ml: 2 }} />
         </Stack>
 
-        {/* Card + FORM wrapper */}
-        <Card
-          variant="outlined"
-          sx={{
-            borderRadius: 1.5,
-            boxShadow: "0px 1px 3px rgba(0,0,0,0.06)",
-          }}
-        >
-          <CardContent sx={{ p: 2.5 }}>
-            <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
-              {activeTab === "profile" && <ProfileSection />}
-              {activeTab === "route_rules" && <RouteRulesSection />}
-              {activeTab === "limits" && <LimitsSection />}
-              {activeTab === "subscription" && <SubscriptionBillingSection />}
-
-              <button type="submit" style={{ display: "none" }} />
-            </Box>
+        {/* CARD */}
+        <Card sx={{ mt: 3 }}>
+          <CardContent>
+            {activeTab === "profile" && <ProfileSection />}
+            {activeTab === "route_rules" && <RouteRulesSection />}
+            {activeTab === "limits" && <LimitsSection />}
+            {activeTab === "subscription" && (
+              <SubscriptionBillingSection />
+            )}
           </CardContent>
 
           <Divider />
 
-          {/* Stepper footer: Prev / Next / Submit */}
-          <Stack direction="row" justifyContent="space-between" sx={{ p: 2 }}>
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            sx={{ p: 2 }}
+          >
             <Button
               variant="outlined"
-              size="small"
               onClick={goPrev}
               disabled={activeTab === "profile"}
-              sx={{ textTransform: "none" }}
             >
               Previous
             </Button>
@@ -545,35 +492,15 @@ export default function Page() {
             {isLastStep ? (
               <Button
                 variant="contained"
-                size="small"
-                sx={{
-                  textTransform: "none",
-                  bgcolor: "#FFB800",
-                  color: "#000",
-                  fontWeight: 500,
-                  "&:hover": { bgcolor: "#e5a700" },
-                }}
                 onClick={async () => {
-                  const ok = await trigger(fieldsByTab[activeTab]);
-                  if (!ok) return;
+                  if (!(await trigger(fieldsByTab[activeTab]))) return;
                   handleSubmit(onSubmit)();
                 }}
               >
                 Submit
               </Button>
             ) : (
-              <Button
-                variant="contained"
-                size="small"
-                sx={{
-                  textTransform: "none",
-                  bgcolor: "#1560BD",
-                  color: "#fff",
-                  fontWeight: 500,
-                  "&:hover": { bgcolor: "#0f4a94" },
-                }}
-                onClick={goNext}
-              >
+              <Button variant="contained" onClick={goNext}>
                 Next
               </Button>
             )}
@@ -584,97 +511,157 @@ export default function Page() {
   );
 }
 
-/* ===================== TAB SECTIONS ===================== */
+/* ===================== PROFILE SECTION (UPDATED WITH UPLOAD) ===================== */
 
 function ProfileSection() {
+  const { watch, setValue } = useFormContext<FormValues>();
+  const schoolImage = watch("schoolImage");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleSelectImage = () => inputRef.current?.click();
+
+  const handleImageChange = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const url = await uploadImage(file); // ⬅️ EXACT SAME AS STUDENT FORM
+      setValue("schoolImage", url, { shouldValidate: true });
+    } catch (err) {
+      console.error("UPLOAD ERROR:", err);
+    }
+  };
+
   return (
     <Stack spacing={2}>
-      {/* Logo row (placeholder) */}
-      <Stack direction="row" spacing={2} alignItems="flex-start">
+      {/* LOGO UPLOAD */}
+      <Stack direction="row" spacing={2} alignItems="center">
         <Box
           sx={{
             width: 72,
             height: 72,
             borderRadius: 1,
-            bgcolor: "grey.100",
-            border: "1px dashed",
-            borderColor: "grey.400",
+            overflow: "hidden",
+            border: "1px dashed #aaa",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontSize: 12,
-            textAlign: "center",
+            bgcolor: "#f8f8f8",
           }}
         >
-          Logo
+          {schoolImage ? (
+            <img
+              src={schoolImage}
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
+          ) : (
+            "Logo"
+          )}
         </Box>
 
         <Stack spacing={0.5}>
-          <Typography variant="subtitle2" fontWeight={600}>
-            School Logo
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
+          <Typography variant="subtitle2">School Logo</Typography>
+          <Typography variant="caption">
             Min 400×400px, PNG or JPG
           </Typography>
-          <Button size="small" variant="outlined" sx={{ borderRadius: 1, textTransform: "none" }}>
+
+          <Button variant="outlined" onClick={handleSelectImage}>
             Select
           </Button>
+          <input
+            hidden
+            ref={inputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+          />
         </Stack>
       </Stack>
 
-      {/* Fields */}
+      {/* INPUT FIELDS */}
       <Box
         sx={{
           display: "grid",
-          gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)" },
-          columnGap: 2,
-          rowGap: 2,
+          gridTemplateColumns: { xs: "1fr", sm: "repeat(2,1fr)" },
+          gap: 2,
         }}
       >
-        <RHFTextField name="adminName" label="Admin Name *" placeholder="Enter Admin name" />
-        <RHFTextField name="schoolName" label="School Name *" placeholder="School name" />
-        <RHFTextField name="address" label="Address *" placeholder="Address" />
-        <RHFTextField name="adminEmail" label="Admin Email *" placeholder="Enter Admin Email" />
-        <RHFTextField name="schoolEmail" label="School Email *" placeholder="Enter School Email" />
-        <RHFTextField name="contactNumber" label="Contact Number *" placeholder="+92-300-1234567" />
+        <RHFTextField
+          name="adminName"
+          label="Admin Name *"
+          placeholder="Enter admin name"
+        />
+        <RHFTextField
+          name="schoolName"
+          label="School Name *"
+          placeholder="Enter school name"
+        />
+        <RHFTextField
+          name="address"
+          label="Address *"
+          placeholder="Enter address"
+        />
+        <RHFTextField
+          name="adminEmail"
+          label="Admin Email *"
+          placeholder="Enter admin email"
+        />
+        <RHFTextField
+          name="schoolEmail"
+          label="School Email *"
+          placeholder="Enter school email"
+        />
+        <RHFTextField
+          name="contactNumber"
+          label="Contact Number *"
+          placeholder="+92-300-0000000"
+        />
       </Box>
     </Stack>
   );
 }
 
+/* ===================== OTHER SECTIONS (UNCHANGED) ===================== */
+
 function RouteRulesSection() {
   return (
     <Stack spacing={2}>
-      <Typography variant="subtitle2" fontWeight={600}>
-        Route Rules
-      </Typography>
+      <Typography variant="subtitle2">Route Rules</Typography>
 
       <Box
         sx={{
           display: "grid",
-          gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)" },
-          columnGap: 2,
-          rowGap: 2,
+          gridTemplateColumns: { xs: "1fr", sm: "repeat(2,1fr)" },
+          gap: 2,
         }}
       >
         <RHFTimePicker name="pickupStartTime" label="Pickup Start Time" />
         <RHFTimePicker name="dropoffStartTime" label="Dropoff Start Time" />
 
-        <RHFTextField name="maxTripDuration" label="Max Trip Duration *" placeholder="45 mins" />
-        <RHFTextField name="bufferTime" label="Buffer Time *" placeholder="10 mins" />
+        <RHFTextField
+          name="maxTripDuration"
+          label="Max Trip Duration"
+          placeholder="45 mins"
+        />
+        <RHFTextField
+          name="bufferTime"
+          label="Buffer Time"
+          placeholder="10 mins"
+        />
 
-        {/* Lat/Lng */}
         <RHFTextField
           name="routeLatitude"
-          label="Latitude *"
-          placeholder="e.g., 24.8607"
+          label="Latitude"
           type="number"
+          placeholder="24.8607"
         />
         <RHFTextField
           name="routeLongitude"
-          label="Longitude *"
-          placeholder="e.g., 67.0011"
+          label="Longitude"
           type="number"
+          placeholder="67.0011"
         />
       </Box>
     </Stack>
@@ -684,25 +671,32 @@ function RouteRulesSection() {
 function LimitsSection() {
   return (
     <Stack spacing={2}>
-      <Typography variant="subtitle2" fontWeight={600}>
-        Limits
-      </Typography>
+      <Typography variant="subtitle2">Limits</Typography>
 
       <Box
         sx={{
           display: "grid",
-          gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)" },
-          columnGap: 2,
-          rowGap: 2,
+          gridTemplateColumns: { xs: "1fr", sm: "repeat(2,1fr)" },
+          gap: 2,
         }}
       >
-        <RHFTextField name="allowedVans" label="Allowed Vans *" placeholder="50" type="number" />
-        <RHFTextField name="allowedRoutes" label="Allowed Routes *" placeholder="20" type="number" />
+        <RHFTextField
+          name="allowedVans"
+          label="Allowed Vans"
+          type="number"
+          placeholder="50"
+        />
+        <RHFTextField
+          name="allowedRoutes"
+          label="Allowed Routes"
+          type="number"
+          placeholder="20"
+        />
         <RHFTextField
           name="allowedStudents"
-          label="Allowed Students *"
-          placeholder="1000"
+          label="Allowed Students"
           type="number"
+          placeholder="1000"
         />
       </Box>
     </Stack>
@@ -712,158 +706,43 @@ function LimitsSection() {
 function SubscriptionBillingSection() {
   return (
     <Stack spacing={2}>
-      <Typography variant="subtitle2" fontWeight={600}>
-        Subscription &amp; Billing
-      </Typography>
+      <Typography variant="subtitle2">Subscription & Billing</Typography>
 
       <Box
         sx={{
           display: "grid",
-          gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)" },
-          columnGap: 2,
-          rowGap: 2,
+          gridTemplateColumns: { xs: "1fr", sm: "repeat(2,1fr)" },
+          gap: 2,
         }}
       >
-        <RHFTextField name="plan" label="Current Plan *" select>
+        <RHFTextField name="plan" label="Current Plan" select>
           <MenuItem value="premium">Premium</MenuItem>
           <MenuItem value="standard">Standard</MenuItem>
         </RHFTextField>
 
-        <RHFTextField name="billingCycle" label="Billing Cycle *" select>
+        <RHFTextField name="billingCycle" label="Billing Cycle" select>
           <MenuItem value="weekly">Weekly</MenuItem>
           <MenuItem value="monthly">Monthly</MenuItem>
           <MenuItem value="quarterly">Quarterly</MenuItem>
         </RHFTextField>
 
-        <RHFTextField name="nextInvoice" label="Next Invoice" type="date" />
+        <RHFTextField name="nextInvoice" type="date" label="Next Invoice" />
 
-        <RHFTextField name="paymentMethod" label="Payment Method *" select>
+        <RHFTextField name="paymentMethod" label="Payment Method" select>
           <MenuItem value="cash">Cash</MenuItem>
           <MenuItem value="bank">Bank</MenuItem>
         </RHFTextField>
 
-        <Box sx={{ gridColumn: { xs: "auto", sm: "1 / -1" } }}>
-          <RHFSwitch name="pickDropExceptionsActive" label="Auto Renew" />
+        <Box sx={{ gridColumn: "1 / -1" }}>
+          <RHFSwitch
+            name="pickDropExceptionsActive"
+            label="Auto Renew"
+          />
         </Box>
       </Box>
     </Stack>
   );
 }
-
-/* ===================== NON-FORM SECTIONS (unchanged demo tables) ===================== */
-
-function AdminsSection() {
-  return (
-    <Stack spacing={2}>
-      <Typography variant="subtitle2" fontWeight={600}>
-        School Admins
-      </Typography>
-
-      <Box
-        sx={{
-          border: "1px solid",
-          borderColor: "divider",
-          borderRadius: 1,
-          overflow: "hidden",
-        }}
-      >
-        <Table
-          size="small"
-          sx={{
-            "& th": {
-              backgroundColor: "rgba(0,0,0,0.02)",
-              fontWeight: 500,
-              fontSize: "13px",
-              color: "text.secondary",
-            },
-            "& td": { fontSize: "13px" },
-          }}
-        >
-          <TableHead>
-            <TableRow>
-              <TableCell sx={{ py: 2 }}>Name</TableCell>
-              <TableCell>Role Name</TableCell>
-              <TableCell>Description</TableCell>
-              <TableCell>Users</TableCell>
-              <TableCell align="right">Actions</TableCell>
-            </TableRow>
-          </TableHead>
-
-          <TableBody>
-            <AdminsRow
-              name="Ahmed Khan"
-              role="Full Access"
-              desc="Can manage all modules"
-              users="2 Users"
-            />
-            <AdminsRow
-              name="Sara Malik"
-              role="Manager"
-              desc="Manage routes & students"
-              users="5 Users"
-            />
-            <AdminsRow
-              name="Muhammad Aqib"
-              role="Read-Only"
-              desc="View-only access"
-              users="3 Users"
-            />
-          </TableBody>
-        </Table>
-      </Box>
-    </Stack>
-  );
-}
-
-function AccessSection() {
-  return (
-    <Stack spacing={2}>
-      <Typography variant="subtitle2" fontWeight={600}>
-        Access
-      </Typography>
-
-      <Box
-        sx={{
-          border: "1px solid",
-          borderColor: "divider",
-          borderRadius: 1,
-          p: 2,
-          fontSize: "13px",
-        }}
-      >
-        <Typography
-          variant="body2"
-          sx={{ mb: 1, fontWeight: 500, fontSize: "13px", color: "text.secondary" }}
-        >
-          Students (Uploads)
-        </Typography>
-
-        <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-          <StatusPill
-            text="Active"
-            bg="rgba(76,175,80,0.08)"
-            color="#2e7d32"
-            borderColor="#4CAF50"
-          />
-          <StatusPill
-            text="Suspended"
-            bg="rgba(255,193,7,0.12)"
-            color="#ff9800"
-            borderColor="#ffb74d"
-          />
-          <StatusPill
-            text="Restricted"
-            bg="rgba(244,67,54,0.08)"
-            color="#d32f2f"
-            borderColor="#ef5350"
-          />
-        </Stack>
-      </Box>
-    </Stack>
-  );
-}
-
-/* ===================== SMALL BUILDING BLOCKS ===================== */
 
 function StatusPill({
   text,
@@ -879,17 +758,13 @@ function StatusPill({
   return (
     <Box
       sx={{
-        display: "inline-flex",
-        alignItems: "center",
-        fontSize: "12px",
-        lineHeight: 1.4,
-        borderRadius: "4px",
-        border: `1px solid ${borderColor}`,
-        bgcolor: bg,
-        color: color,
-        fontWeight: 500,
         px: 1,
         py: "2px",
+        borderRadius: "4px",
+        fontSize: "12px",
+        border: `1px solid ${borderColor}`,
+        bgcolor: bg,
+        color,
       }}
     >
       {text}
@@ -909,12 +784,12 @@ function AdminsRow({
   users: string;
 }) {
   return (
-    <TableRow sx={{ "& td": { verticalAlign: "top", fontSize: "13px" } }}>
-      <TableCell sx={{ fontWeight: 500, whiteSpace: "nowrap" }}>{name}</TableCell>
-      <TableCell sx={{ whiteSpace: "nowrap" }}>{role}</TableCell>
-      <TableCell sx={{ minWidth: 180 }}>{desc}</TableCell>
-      <TableCell sx={{ whiteSpace: "nowrap" }}>{users}</TableCell>
-      <TableCell align="right" sx={{ width: 40 }}>
+    <TableRow>
+      <TableCell>{name}</TableCell>
+      <TableCell>{role}</TableCell>
+      <TableCell>{desc}</TableCell>
+      <TableCell>{users}</TableCell>
+      <TableCell align="right">
         <IconButton size="small">
           <MoreVertIcon fontSize="small" />
         </IconButton>
