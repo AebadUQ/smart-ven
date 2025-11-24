@@ -113,9 +113,8 @@ export function ForgetPassword(): React.JSX.Element {
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const result = emailSchema.safeParse({ email });
-    if (!result.success) return;
-
+    // const result = emailSchema.safeParse({ email });
+    // if (!result.success) return;
     try {
       setIsPending(true);
       await dispatch(forgotPassword({ email })).unwrap();
@@ -149,9 +148,11 @@ export function ForgetPassword(): React.JSX.Element {
   const handleResetSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const ok = passwordSchema.safeParse({ password, confirm });
-    if (!ok.success) return;
+    // const ok = passwordSchema.safeParse({ password, confirm });
+    // console.log("Sss")
 
+    // if (!ok.success) return;
+console.log("Sss")
     try {
       setIsPending(true);
       await dispatch(
