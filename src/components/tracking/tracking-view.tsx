@@ -176,7 +176,7 @@ console.log("selec",selectedLocations)
                         {currentVehicle.driverName}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        {currentVehicle.vehicleModel} ({currentVehicle.plate})
+                        {currentVehicle.carName} ({currentVehicle.plate})
                       </Typography>
                     </Box>
                   </Stack>
@@ -240,7 +240,7 @@ console.log("selec",selectedLocations)
             }}
           >
             <Typography variant="h6">Trip Details</Typography>
-
+              
             {!currentVehicle && (
               <Typography sx={{ opacity: 0.6 }}>No trip data available</Typography>
             )}
@@ -303,7 +303,16 @@ console.log("selec",selectedLocations)
                     );
                   })}
                 </Box>
-
+                <Box sx={{display:'flex',gap:20}}>
+                     <Typography variant="body2" color="text.secondary">
+                 <span style={{fontWeight:'bold'}}> Route Name: </span> {currentVehicle?.routeTitle}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                   <span style={{fontWeight:'bold'}}> Route Trip Type: </span> 
+                    {currentVehicle?.routeTripType}
+                </Typography>
+                  
+                </Box>
                 <Typography variant="body2" color="text.secondary">
                   {statusLabel}
                 </Typography>

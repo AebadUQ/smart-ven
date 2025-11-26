@@ -33,7 +33,7 @@ console.log("trips",trips)
       return {
         id: String(trip._id),
         name: trip.driverName || 'Unknown Driver',
-        avatar: '/assets/avatar-placeholder.png',
+        avatar: trip?.driverImage ||'/assets/avatar-placeholder.png',
         vehicleModel: trip.carNumber || '',
         plate: trip.carNumber || '',
         status: trip.status || 'unknown',
@@ -43,7 +43,10 @@ console.log("trips",trips)
         driverId: trip?.driverId,
         tripId: trip?._id,
         driverName: trip?.driverName,
-        locations:trip?.locations || []
+        locations:trip?.locations || [],
+        carName:trip?.carName || '',
+        routeTitle:trip?.routeTitle || '',
+        routeTripType:trip?.routeTripType || ''
       };
     });
   }, [trips]);
