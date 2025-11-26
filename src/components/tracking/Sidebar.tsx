@@ -28,8 +28,9 @@ export function Sidebar({
   onVehicleDeselect,
   onVehicleSelect,
   open,
-  vehicles
-}: SidebarProps) {
+  vehicles,
+  setSelectedLocations
+}: any) {
   const mdUp = useMediaQuery('up', 'md');
 
   const content = (
@@ -39,6 +40,7 @@ export function Sidebar({
       onVehicleDeselect={onVehicleDeselect}
       onVehicleSelect={onVehicleSelect}
       vehicles={vehicles}
+      setSelectedLocations={setSelectedLocations}
     />
   );
 
@@ -120,8 +122,9 @@ function SidebarContent({
     vehicles,
   currentVehicleId,
   onVehicleDeselect,
-  onVehicleSelect
-}: SidebarContentProps) {
+  onVehicleSelect,
+  setSelectedLocations
+}: any) {
   const [selectedId, setSelectedId] = useState<string | null>(vehicles[0]?.id);
 
 
@@ -161,6 +164,7 @@ function SidebarContent({
               onClick={() => {
                 setSelectedId(vehicle.id);
                 onVehicleSelect?.(vehicle.id);
+                setSelectedLocations(vehicle?.locations)
               }}
             />
           ))}

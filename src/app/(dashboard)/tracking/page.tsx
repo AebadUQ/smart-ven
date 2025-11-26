@@ -15,7 +15,7 @@ export default function Page(): React.JSX.Element {
   const tripState = useSelector((state: RootState) => state.trip);
   const trips = tripState?.trips ?? [];
   const loading = tripState?.loading ?? false;
-
+console.log("trips",trips)
   useEffect(() => {
     dispatch(getAllTrips({ page: 1, limit: 10, status }));
   }, [dispatch, status]);
@@ -43,6 +43,7 @@ export default function Page(): React.JSX.Element {
         driverId: trip?.driverId,
         tripId: trip?._id,
         driverName: trip?.driverName,
+        locations:trip?.locations || []
       };
     });
   }, [trips]);

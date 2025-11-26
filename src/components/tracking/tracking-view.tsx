@@ -34,7 +34,7 @@ export function TrackingView({ vehicles, status, onStatusChange, loading }: any)
   const dispatch = useDispatch();
 
   const [kidsModalOpen, setKidsModalOpen] = React.useState(false);
-
+  const [selectedLocations,setSelectedLocations]=React.useState([])
   const { tripKids, tripKidsLoading } = useSelector((state) => state.trip);
   const kidsArray = tripKids?.kids ?? [];
 
@@ -43,7 +43,7 @@ export function TrackingView({ vehicles, status, onStatusChange, loading }: any)
   const [currentVehicleId, setCurrentVehicleId] = React.useState<string | undefined>(
     vehicles[0] ? String(vehicles[0].id) : undefined
   );
-
+console.log("vehicles",vehicles)
   // ⭐ Always auto-select first vehicle when list updates
   React.useEffect(() => {
     if (vehicles.length === 0) {
@@ -114,7 +114,7 @@ export function TrackingView({ vehicles, status, onStatusChange, loading }: any)
       })
     );
   };
-
+console.log("selec",selectedLocations)
   return (
     <>
       <Box sx={{ display: 'flex', height: '100%' }}>
@@ -127,6 +127,7 @@ export function TrackingView({ vehicles, status, onStatusChange, loading }: any)
           onVehicleSelect={(id) => setCurrentVehicleId(id)}
           open={openSidebar}
           vehicles={vehicles}
+          setSelectedLocations={setSelectedLocations}
         />
 
         <Box sx={{ flex: 1, p: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -342,9 +343,11 @@ export function TrackingView({ vehicles, status, onStatusChange, loading }: any)
           {/* MAP ALWAYS SHOW */}
           <Box sx={{ flex: 1, borderRadius: 2, overflow: 'hidden' }}>
             <Map
+            currentVehicle={currentVehicle}
               currentVehicleId={currentVehicleId}
               vehicles={vehicles}
               onVehicleSelect={(id) => setCurrentVehicleId(id)}
+              selectedLocations={selectedLocations}
             />
           </Box>
         </Box>
