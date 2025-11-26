@@ -1,4 +1,6 @@
-import React, { useMemo } from "react";
+"use client";
+
+import React, { useEffect, useState, useRef } from "react";
 import {
   GoogleMap,
   MarkerF,
@@ -6,28 +8,76 @@ import {
   useJsApiLoader,
 } from "@react-google-maps/api";
 import { Box } from "@mui/material";
+import { connectSocket } from "@/socket/socket";
 
 const containerStyle = {
   width: "100%",
   height: "100%",
 };
 
-export function Map({ selectedLocations = [],currentVehicle }: any) {
+export function Map({ selectedLocations = [], currentVehicle, status }: any) {
+  const tripId = currentVehicle?.tripId;
+
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "",
   });
 
-  // Convert list → polyline points
-  const path = selectedLocations.map((loc: any) => ({
+  const [livePath, setLivePath] = useState(selectedLocations);
+  const socketRef = useRef<any>(null);
+
+  useEffect(() => {
+    setLivePath(selectedLocations);
+  }, [selectedLocations]);
+
+  // SOCKET LISTENING
+  useEffect(() => {
+    if (status !== "ongoing") {
+      console.log("⛔ Trip not ongoing — skipping socket");
+      return;
+    }
+
+    if (!tripId) return;
+
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    socketRef.current = connectSocket(token);
+
+    socketRef.current.emit("joinTrip", { tripId });
+
+    socketRef.current.on("joinedTrip", (data) => {
+      console.log("🎉 Joined trip:", data);
+    });
+
+    socketRef.current.on("locationUpdated", (loc) => {
+      console.log("📍 Live update received:", loc);
+
+      setLivePath((prev) => [
+        ...prev,
+        {
+          lat: loc.location.lat,  // ⭐ correct mapping
+          long: loc.location.long,
+          userId: loc.userId,
+          at: loc.at,
+        },
+      ]);
+    });
+
+    // return () => {
+    //   socketRef.current?.disconnect();
+    // };
+  }, [tripId, status]);
+console.log("lllllllll",livePath)
+  // Convert for Google Maps
+  const path = livePath.map((loc: any) => ({
     lat: loc.lat,
     lng: loc.long,
   }));
 
-  // Center = first location
   const center = path[0] || { lat: 24.8607, lng: 67.0011 };
 
   if (!isLoaded) return <div style={{ height: "100%" }}>Loading…</div>;
-console.log("currentVehicle",currentVehicle)
+
   return (
     <Box sx={{ width: "100%", height: "100%" }}>
       <GoogleMap
@@ -40,7 +90,7 @@ console.log("currentVehicle",currentVehicle)
           fullscreenControl: false,
         }}
       >
-        {/* 🟦 Polyline connecting all points */}
+        {/* Route line */}
         {path.length > 1 && (
           <PolylineF
             path={path}
@@ -52,7 +102,7 @@ console.log("currentVehicle",currentVehicle)
           />
         )}
 
-        {/* 🟢 First point marker */}
+        {/* Start marker */}
         {path[0] && (
           <MarkerF
             position={path[0]}
@@ -63,7 +113,7 @@ console.log("currentVehicle",currentVehicle)
           />
         )}
 
-        {/* 🟡 All other points */}
+        {/* Middle points */}
         {path.map((p: any, idx: number) =>
           idx === 0 ? null : (
             <MarkerF
@@ -76,7 +126,7 @@ console.log("currentVehicle",currentVehicle)
           )
         )}
 
-        {/* 🚐 Last point: VAN icon */}
+        {/* Vehicle marker */}
         {path[path.length - 1] && (
           <MarkerF
             position={path[path.length - 1]}

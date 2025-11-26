@@ -352,6 +352,7 @@ console.log("selec",selectedLocations)
           {/* MAP ALWAYS SHOW */}
           <Box sx={{ flex: 1, borderRadius: 2, overflow: 'hidden' }}>
             <Map
+            status={status}
             currentVehicle={currentVehicle}
               currentVehicleId={currentVehicleId}
               vehicles={vehicles}
