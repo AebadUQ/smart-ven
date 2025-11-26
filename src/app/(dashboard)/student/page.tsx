@@ -162,14 +162,28 @@ export default function Page(): React.JSX.Element {
             ),
           },
           inactive: {
-            label: "Inactive",
-            icon: <MinusIcon color="var(--mui-palette-error-main)" />,
+              label: "Active",
+            icon: (
+              <CheckCircleIcon
+                color="var(--mui-palette-success-main)"
+                weight="fill"
+              />
+            ),
+            // label: "Inactive",
+            // icon: <MinusIcon color="var(--mui-palette-error-main)" />,
           },
           pending: {
-            label: "Pending",
+            // label: "Pending",
+            // icon: (
+            //   <ClockIcon
+            //     color="var(--mui-palette-warning-main)"
+            //     weight="fill"
+            //   />
+            // ),
+              label: "Active",
             icon: (
-              <ClockIcon
-                color="var(--mui-palette-warning-main)"
+              <CheckCircleIcon
+                color="var(--mui-palette-success-main)"
                 weight="fill"
               />
             ),

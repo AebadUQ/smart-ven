@@ -13,6 +13,7 @@ import {
   Chip,
   CircularProgress,
   Button,
+  IconButton,
 } from "@mui/material";
 import { Plus as PlusIcon } from "@phosphor-icons/react";
 import { DataTable, type ColumnDef } from "@/components/core/data-table";
@@ -21,6 +22,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/store";
 import { getAllSchoolVans } from "@/store/reducers/van-slice";
 import { VanFilter, type VanFilters } from "./driverfilter";
+import { Eye as EyeIcon } from "@phosphor-icons/react/dist/ssr/Eye";
 
 export default function Page(): React.JSX.Element {
   const dispatch = useDispatch<AppDispatch>();
@@ -47,27 +49,68 @@ export default function Page(): React.JSX.Element {
   }, [dispatch, page, limit, filters]);
 
   const columns: ColumnDef<any>[] = [
-    {
-      name: "Van",
-      width: "250px",
-      formatter: (row) => (
-        <Stack direction="row" spacing={1} alignItems="center">
+   {
+  name: "Van",
+  width: "250px",
+  formatter: (row) => {
+    const vehicleType = row?.van?.vehicleType || "";
+    const carNumber = row?.van?.carNumber || "";
+    const capacity = row?.van?.venCapacity || "-";
+    const image = row?.van?.venImage;
+
+    // initials generator based on vehicleType (e.g. "School Van" → "SV")
+    const initials = vehicleType
+      ?.split(" ")
+      .map((w) => w[0]?.toUpperCase())
+      .join("");
+
+    return (
+      <Stack direction="row" spacing={1} alignItems="center">
+        {/* IMAGE or INITIALS fallback */}
+        {image ? (
           <img
-            src={row?.van?.venImage || "/assets/van-placeholder.png"}
-            alt={row?.van?.vehicleType || "Van"}
-            style={{ width: 40, height: 40, borderRadius: "4px" }}
+            src={image}
+            alt={vehicleType}
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: "50%",
+              objectFit: "cover",
+            }}
           />
-          <Stack>
-            <Typography color="text.primary" variant="body2">
-              {row?.van?.vehicleType} - {row?.van?.carNumber}
-            </Typography>
-            <Typography color="text.secondary" variant="caption">
-              Capacity: {row?.van?.venCapacity}
-            </Typography>
-          </Stack>
+        ) : (
+          <div
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: "50%",
+              background: "#1976d2",
+              color: "#fff",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontWeight: 600,
+              fontSize: 14,
+            }}
+          >
+            {initials}
+          </div>
+        )}
+
+        <Stack>
+          <Typography color="text.primary" variant="body2">
+            {vehicleType} - {carNumber}
+          </Typography>
+
+          <Typography color="text.secondary" variant="caption">
+            Capacity: {capacity}
+          </Typography>
         </Stack>
-      ),
-    },
+      </Stack>
+    );
+  },
+}
+,
     {
       name: "Route",
       width: "220px",
@@ -103,13 +146,16 @@ export default function Page(): React.JSX.Element {
       align: "right",
       formatter: (row) => (
         <Stack direction="row" spacing={1} justifyContent="flex-end">
-          <Button
+           <IconButton size="small"             onClick={() => router.push(`/van/${row?.van?.id}`)}
+>
+                        <EyeIcon />
+                      </IconButton>
+          {/* <Button
             size="small"
             variant="outlined"
-            onClick={() => router.push(`/van/${row?.van?.id}`)}
           >
             View
-          </Button>
+          </Button> */}
         </Stack>
       ),
     },

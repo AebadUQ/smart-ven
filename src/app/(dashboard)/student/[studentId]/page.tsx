@@ -91,7 +91,7 @@ export default function StudentDetailsPage() {
             HEADER
         ========================== */}
         <Link
-  href="/students"
+  href="/student"
   style={{
     display: "inline-flex",
     alignItems: "center",

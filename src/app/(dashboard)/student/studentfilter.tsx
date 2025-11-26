@@ -21,7 +21,8 @@ import { deleteStudentsAndRefetch } from "@/store/reducers/student-slice";
 export interface Filters {
   carNumber?: string;
   driverName?: string;
-  studentName?:string
+  kidsName?:string;
+  parentName?:string
 }
 
 interface StudentFilterProps {
@@ -109,9 +110,19 @@ export function StudentFilter({
             displayValue={filters?.driverName || ""}
             label="Student Name"
             onFilterApply={(value) =>
-              handleFilterChange("studentName", value as string)
+              handleFilterChange("kidsName", value as string)
             }
-            onFilterDelete={() => handleFilterChange("studentName", "")}
+            onFilterDelete={() => handleFilterChange("kidsName", "")}
+            popover={<GenericFilterPopover field="Student Name" />}
+            value={filters?.driverName || ""}
+          />
+           <FilterButton
+            displayValue={filters?.driverName || ""}
+            label="Parent Name"
+            onFilterApply={(value) =>
+              handleFilterChange("parentName", value as string)
+            }
+            onFilterDelete={() => handleFilterChange("parentName", "")}
             popover={<GenericFilterPopover field="Student Name" />}
             value={filters?.driverName || ""}
           />

@@ -39,7 +39,7 @@ console.log("trips",trips)
         status: trip.status || 'unknown',
         latitude: lastLocation?.lat || 0,
         longitude: lastLocation?.long || 0,
-        tripStart: trip?.startTime ? new Date(trip.startTime) : undefined,
+        tripStart: trip?.tripStart?.startTime ? new Date(trip?.tripStart?.startTime) : undefined,
         driverId: trip?.driverId,
         tripId: trip?._id,
         driverName: trip?.driverName,
