@@ -311,14 +311,14 @@ export function TrackingView({ vehicles, status, onStatusChange, loading }: any)
                 <Typography variant="h6">Student Details</Typography>
 
                 <Stack direction="row" justifyContent="space-between">
-                  <Stack direction="row" alignItems="center" gap={1}>
+                  {/* <Stack direction="row" alignItems="center" gap={1}>
                     <Typography variant="body2" color="#008000">Students Picked</Typography>
                     <AvatarGroup max={3}>
                       {[1, 2].map((i) => (
                         <Avatar key={i} src={`/assets/avatar-${i}.png`} />
                       ))}
                     </AvatarGroup>
-                  </Stack>
+                  </Stack> */}
 
                   <Stack
                     direction="row"
@@ -328,11 +328,11 @@ export function TrackingView({ vehicles, status, onStatusChange, loading }: any)
                     onClick={handleGetTripKids}
                   >
                     <Typography variant="body2" color="#008000">Students to be Picked</Typography>
-                    <AvatarGroup max={3}>
+                    {/* <AvatarGroup max={3}>
                       {[3, 4, 5].map((i) => (
                         <Avatar key={i} src={`/assets/avatar-${i}.png`} />
                       ))}
-                    </AvatarGroup>
+                    </AvatarGroup> */}
                   </Stack>
                 </Stack>
               </>
