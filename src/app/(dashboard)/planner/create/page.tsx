@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import * as React from "react";
 import {
@@ -30,7 +30,7 @@ import { getAllSchoolVans } from "@/store/reducers/van-slice";
 
 import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
-import GoogleMapPicker from "./GoogleMapPicker";
+import MapComponent from "@/components/MapSelection";
 
 type FormValues = {
   vanId: string;
@@ -87,7 +87,11 @@ export default function AddRouteForm(): React.JSX.Element {
   const [openPicker, setOpenPicker] = React.useState<null | "start" | "end">(null);
 
   React.useEffect(() => {
-    dispatch(getAllSchoolVans({ page: 1, limit: 50 })).unwrap().catch(console.error);
+    // Fetch the vans and log them to check if the data is being fetched correctly
+    dispatch(getAllSchoolVans({ page: 1, limit: 50 }))
+      .unwrap()
+      .then((data) => console.log("Fetched vans: ", data)) // Log data to debug
+      .catch(console.error);
   }, [dispatch]);
 
   const onSubmit = async (data: FormValues) => {
@@ -138,11 +142,15 @@ export default function AddRouteForm(): React.JSX.Element {
                         label="Select Van"
                         MenuProps={{ PaperProps: { style: { maxHeight: 300 } } }}
                       >
-                        {vans?.map((v) => (
-                          <MenuItem key={v.van?.id} value={v.van?.id}>
-                            {v.van.vehicleType} - {v.van.carNumber} ({v.driver.fullname || "No driver"})
-                          </MenuItem>
-                        ))}
+                        {vans?.length > 0 ? (
+                          vans.map((v) => (
+                            <MenuItem key={v.van?.id} value={v.van?.id}>
+                              {v.van.vehicleType} - {v.van.carNumber} ({v.driver.fullname || "No driver"})
+                            </MenuItem>
+                          ))
+                        ) : (
+                          <MenuItem disabled>No vans available</MenuItem>
+                        )}
                       </Select>
                       {errors.vanId && <FormHelperText>{errors.vanId.message}</FormHelperText>}
                     </FormControl>
@@ -295,11 +303,11 @@ export default function AddRouteForm(): React.JSX.Element {
       </Card>
 
       {/* Map Picker Dialog */}
-      <Dialog fullWidth maxWidth="md" open={!!openPicker} onClose={() => setOpenPicker(null)}>
+      <Dialog fullWidth maxWidth="md" open={!!openPicker} onClose={() => setOpenPicker(null)} style={{zIndex:60}}>
         <DialogTitle>Select Location</DialogTitle>
         <DialogContent>
-          <GoogleMapPicker
-            onSelect={(lat, lng) => {
+          <MapComponent
+            onPositionChange={(lat, lng) => {
               if (openPicker === "start") {
                 setValue("startLat", lat.toString());
                 setValue("startLong", lng.toString());
@@ -307,7 +315,7 @@ export default function AddRouteForm(): React.JSX.Element {
                 setValue("endLat", lat.toString());
                 setValue("endLong", lng.toString());
               }
-              setOpenPicker(null);
+              // setOpenPicker(null);
             }}
           />
         </DialogContent>
