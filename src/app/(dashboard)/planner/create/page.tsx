@@ -23,10 +23,8 @@ import {
   DialogContent,
 } from "@mui/material";
 
-
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/store";
-
 import { createRoute, clearRouteStatus } from "@/store/reducers/route-slice";
 import { getAllSchoolVans } from "@/store/reducers/van-slice";
 
