@@ -12,7 +12,7 @@ export default function GoogleMapsProvider({ children }:any) {
     libraries,
   });
 
-  if (!isLoaded) return <p>Loading map...</p>;
+  if (!isLoaded) return <p></p>;
 
   return children;
 }

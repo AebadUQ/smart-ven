@@ -14,6 +14,7 @@ import { LocalizationProvider } from '@/components/core/localization-provider';
 import { SettingsButton } from '@/components/core/settings/settings-button';
 import { ThemeProvider } from '@/components/core/theme-provider/theme-provider';
 import { Toaster } from '@/components/core/toaster';
+import GoogleMapsProvider from '@/components/GoogleMapsProvider';
 
 export const metadata = { title: config.site.name } satisfies Metadata;
 export const viewport = {
@@ -34,6 +35,8 @@ export default async function Layout({ children }: LayoutProps): Promise<React.J
           <LocalizationProvider>
             <ReduxProvider>
               <AuthProvider>
+                <GoogleMapsProvider>
+                  
                   <SettingsProvider settings={settings}>
                       <I18nProvider lng={settings.language}>
                         <ThemeProvider>
@@ -43,6 +46,8 @@ export default async function Layout({ children }: LayoutProps): Promise<React.J
                         </ThemeProvider>
                       </I18nProvider>
                   </SettingsProvider>
+                  
+                </GoogleMapsProvider>
               </AuthProvider>
             </ReduxProvider>
           </LocalizationProvider>

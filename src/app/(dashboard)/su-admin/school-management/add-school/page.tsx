@@ -41,7 +41,7 @@ import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/store";
 import { uploadImage } from "@/utils/uploadImage"; // ⬅️ ADDED
 import MapComponent from "@/components/MapSelection";
-import GoogleMapsProvider from "@/components/GoogleMapsProvider";
+// import GoogleMapsProvider from "@/components/GoogleMapsProvider";
 
 /* ===================== TABS ===================== */
 
@@ -693,9 +693,9 @@ function RouteRulesSection() {
         <Typography variant="subtitle2" sx={{ mb: 1 }}>
           Pick location on map
         </Typography>
-        <GoogleMapsProvider>
+        {/* <GoogleMapsProvider> */}
   <MapComponent onPositionChange={handlePositionChange} />
-</GoogleMapsProvider>
+{/* </GoogleMapsProvider> */}
 
         {/* <MapComponent onPositionChange={handlePositionChange} /> */}
       </Box>
