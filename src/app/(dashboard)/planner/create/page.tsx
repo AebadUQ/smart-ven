@@ -31,6 +31,7 @@ import { getAllSchoolVans } from "@/store/reducers/van-slice";
 import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import MapComponent from "@/components/MapSelection";
+import GoogleMapsProvider from "@/components/GoogleMapsProvider";
 
 type FormValues = {
   vanId: string;
@@ -305,7 +306,9 @@ export default function AddRouteForm(): React.JSX.Element {
       {/* Map Picker Dialog */}
       <Dialog fullWidth maxWidth="md" open={!!openPicker} onClose={() => setOpenPicker(null)} style={{zIndex:60}}>
         <DialogTitle>Select Location</DialogTitle>
+        
         <DialogContent>
+                <GoogleMapsProvider>
           <MapComponent
             onPositionChange={(lat, lng) => {
               if (openPicker === "start") {
@@ -318,6 +321,7 @@ export default function AddRouteForm(): React.JSX.Element {
               // setOpenPicker(null);
             }}
           />
+      </GoogleMapsProvider>
         </DialogContent>
       </Dialog>
     </Box>
