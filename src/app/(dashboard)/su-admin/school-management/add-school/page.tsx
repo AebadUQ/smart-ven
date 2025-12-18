@@ -40,6 +40,7 @@ import { registerSchool } from "@/store/reducers/suadmin-slice";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/store";
 import { uploadImage } from "@/utils/uploadImage"; // ⬅️ ADDED
+import MapComponent from "@/components/MapSelection";
 
 /* ===================== TABS ===================== */
 
@@ -626,6 +627,22 @@ function ProfileSection() {
 /* ===================== OTHER SECTIONS (UNCHANGED) ===================== */
 
 function RouteRulesSection() {
+  const { setValue, trigger, watch } = useFormContext<FormValues>();
+
+  const lat = watch("routeLatitude");
+  const lng = watch("routeLongitude");
+
+  const googleMapsLink =
+    Number.isFinite(Number(lat)) && Number.isFinite(Number(lng))
+      ? `https://www.google.com/maps?q=${Number(lat)},${Number(lng)}`
+      : "";
+
+  const handlePositionChange = async (newLat: number, newLng: number) => {
+    setValue("routeLatitude", newLat as any, { shouldDirty: true, shouldValidate: true });
+    setValue("routeLongitude", newLng as any, { shouldDirty: true, shouldValidate: true });
+    await trigger(["routeLatitude", "routeLongitude"]);
+  };
+
   return (
     <Stack spacing={2}>
       <Typography variant="subtitle2">Route Rules</Typography>
@@ -640,33 +657,47 @@ function RouteRulesSection() {
         <RHFTimePicker name="pickupStartTime" label="Pickup Start Time" />
         <RHFTimePicker name="dropoffStartTime" label="Dropoff Start Time" />
 
-        <RHFTextField
-          name="maxTripDuration"
-          label="Max Trip Duration"
-          placeholder="45 mins"
-        />
-        <RHFTextField
-          name="bufferTime"
-          label="Buffer Time"
-          placeholder="10 mins"
-        />
+        <RHFTextField name="maxTripDuration" label="Max Trip Duration" placeholder="45 mins" />
+        <RHFTextField name="bufferTime" label="Buffer Time" placeholder="10 mins" />
 
-        <RHFTextField
-          name="routeLatitude"
-          label="Latitude"
-          type="number"
-          placeholder="24.8607"
-        />
-        <RHFTextField
-          name="routeLongitude"
-          label="Longitude"
-          type="number"
-          placeholder="67.0011"
-        />
+        <RHFTextField name="routeLatitude" label="Latitude" type="number" placeholder="24.8607" />
+        <RHFTextField name="routeLongitude" label="Longitude" type="number" placeholder="67.0011" />
+      </Box>
+
+      {/* ✅ Open in Google Maps link */}
+      <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+        <Typography variant="caption" color="text.secondary">
+          Open this location in Google Maps:
+        </Typography>
+
+        <Button
+          variant="outlined"
+          size="small"
+          disabled={!googleMapsLink}
+          onClick={() => window.open(googleMapsLink, "_blank")}
+        >
+          Open in Google Maps
+        </Button>
+
+        {/* optional: show link text */}
+        {googleMapsLink ? (
+          <Typography variant="caption" sx={{ wordBreak: "break-all" }}>
+            {googleMapsLink}
+          </Typography>
+        ) : null}
+      </Box>
+
+      {/* ✅ MapSelection component (unchanged) */}
+      <Box sx={{ mt: 1 }}>
+        <Typography variant="subtitle2" sx={{ mb: 1 }}>
+          Pick location on map
+        </Typography>
+        <MapComponent onPositionChange={handlePositionChange} />
       </Box>
     </Stack>
   );
 }
+
 
 function LimitsSection() {
   return (

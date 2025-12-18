@@ -1,0 +1,114 @@
+'use client';
+
+import React, { createContext, useContext, useRef, useState, useEffect } from 'react';
+import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
+
+// Google Maps Context to load the API once and share across components
+const GoogleMapsContext = createContext(null);
+
+export const GoogleMapsProvider = ({ children }) => {
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  const { isLoaded: googleMapsLoaded } = useJsApiLoader({
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY, // Use your API key here
+    libraries: ['places'], // Make sure the libraries are the same across the app
+  });
+
+  useEffect(() => {
+    if (googleMapsLoaded) {
+      setIsLoaded(true);
+    }
+  }, [googleMapsLoaded]);
+
+  return (
+    <GoogleMapsContext.Provider value={isLoaded}>
+      {children}
+    </GoogleMapsContext.Provider>
+  );
+};
+
+export const useGoogleMaps = () => {
+  const context = useContext(GoogleMapsContext);
+  if (!context) {
+    throw new Error('useGoogleMaps must be used within a GoogleMapsProvider');
+  }
+  return context;
+};
+
+// MapComponent
+const MapComponent = ({ onPositionChange }) => {
+  const inputRef = useRef(null);
+  const [markerPosition, setMarkerPosition] = useState({
+    lat: 28.0289837,
+    lng: 1.6666663,
+  });
+
+  const [zoom, setZoom] = useState(10);  // State for controlling zoom level
+
+  const isLoaded = useGoogleMaps(); // Using the custom hook to get map load status
+
+  useEffect(() => {
+    if (isLoaded && inputRef.current) {
+      const autocomplete = new window.google.maps.places.Autocomplete(inputRef.current);
+
+      autocomplete.addListener('place_changed', () => {
+        const place = autocomplete.getPlace();
+        if (place.geometry && place.geometry.location) {
+          const lat = place.geometry.location.lat();
+          const lng = place.geometry.location.lng();
+          setMarkerPosition({ lat, lng });
+          setZoom(15); // Zoom in when a location is selected
+          onPositionChange(lat, lng); // Update the parent with the new position
+        }
+      });
+    }
+  }, [isLoaded, onPositionChange]);
+
+  // Marker drag-end handler
+  const handleMarkerDragEnd = (e) => {
+    const lat = e.latLng.lat();
+    const lng = e.latLng.lng();
+    setMarkerPosition({ lat, lng });
+    setZoom(15); // Zoom in after the marker is dragged
+    onPositionChange(lat, lng); // Update the parent with the new position
+  };
+
+  return (
+    <div style={{ zIndex: 20 }}>
+      <div>
+        <input
+          ref={inputRef}
+          placeholder="Enter location"
+          style={{
+            padding: '10px',
+            width: '300px',
+            borderRadius: '5px',
+            marginBottom: '20px',
+            border: '1px solid #ccc',
+          }}
+        />
+      </div>
+
+      {isLoaded ? (
+        <GoogleMap
+          mapContainerStyle={{
+            height: '400px',
+            width: '100%',
+          }}
+          center={markerPosition}
+          zoom={zoom}  // Dynamically update zoom
+        >
+          <Marker
+            position={markerPosition}
+            draggable={true}
+            onDragEnd={handleMarkerDragEnd} // Handle drag end to update the position
+          />
+        </GoogleMap>
+      ) : (
+        <p>Loading map...</p> // Show a loading message while the map is loading
+      )}
+    </div>
+  );
+};
+
+export default MapComponent;
