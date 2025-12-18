@@ -661,8 +661,8 @@ function RouteRulesSection() {
         <RHFTextField name="maxTripDuration" label="Max Trip Duration" placeholder="45 mins" />
         <RHFTextField name="bufferTime" label="Buffer Time" placeholder="10 mins" />
 
-        <RHFTextField name="routeLatitude" label="Latitude" type="number" placeholder="24.8607" />
-        <RHFTextField name="routeLongitude" label="Longitude" type="number" placeholder="67.0011" />
+        {/* <RHFTextField name="routeLatitude" label="Latitude" type="number" placeholder="24.8607" />
+        <RHFTextField name="routeLongitude" label="Longitude" type="number" placeholder="67.0011" /> */}
       </Box>
 
       {/* ✅ Open in Google Maps link */}
