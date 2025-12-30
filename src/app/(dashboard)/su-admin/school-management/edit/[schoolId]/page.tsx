@@ -40,6 +40,7 @@ import dayjs from "dayjs";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store";
 import { getSchoolById, editSchool } from "@/store/reducers/suadmin-slice";
+import MapComponent from "@/components/MapSelection";
 
 /* ===================== TABS ===================== */
 
@@ -615,6 +616,22 @@ function ProfileSection({ disabled }: { disabled?: boolean }) {
 }
 
 function RouteRulesSection({ disabled }: { disabled?: boolean }) {
+  const { setValue, trigger, watch } = useFormContext<FormValues>();
+
+  const lat = watch("routeLatitude");
+  const lng = watch("routeLongitude");
+
+  const googleMapsLink =
+    Number.isFinite(Number(lat)) && Number.isFinite(Number(lng))
+      ? `https://www.google.com/maps?q=${Number(lat)},${Number(lng)}`
+      : "";
+
+  const handlePositionChange = async (newLat: number, newLng: number) => {
+    setValue("routeLatitude", newLat as any, { shouldDirty: true, shouldValidate: true });
+    setValue("routeLongitude", newLng as any, { shouldDirty: true, shouldValidate: true });
+    await trigger(["routeLatitude", "routeLongitude"]);
+  };
+
   return (
     <Stack spacing={2}>
       <Typography variant="subtitle2" fontWeight={600}>
@@ -651,6 +668,43 @@ function RouteRulesSection({ disabled }: { disabled?: boolean }) {
         <RHFTextField name="routeLatitude" label="Latitude *" placeholder="e.g., 24.8607" type="number" disabled={disabled} />
         <RHFTextField name="routeLongitude" label="Longitude *" placeholder="e.g., 67.0011" type="number" disabled={disabled} />
       </Box>
+
+      {/* ✅ Open in Google Maps link */}
+      <Box sx={{ display: "flex", gap: 1, alignItems: "center", flexWrap: "wrap" }}>
+        <Typography variant="caption" color="text.secondary">
+          Open this location in Google Maps:
+        </Typography>
+
+        <Button
+          variant="outlined"
+          size="small"
+          disabled={!googleMapsLink || disabled}
+          onClick={() => window.open(googleMapsLink, "_blank")}
+        >
+          Open in Google Maps
+        </Button>
+
+        {/* optional: show link text */}
+        {googleMapsLink ? (
+          <Typography variant="caption" sx={{ wordBreak: "break-all" }}>
+            {googleMapsLink}
+          </Typography>
+        ) : null}
+      </Box>
+
+      {/* ✅ MapSelection component */}
+      {!disabled && (
+        <Box sx={{ mt: 1 }}>
+          <Typography variant="subtitle2" sx={{ mb: 1 }}>
+            Pick location on map
+          </Typography>
+          <MapComponent 
+            onPositionChange={handlePositionChange}
+            initialLat={lat}
+            initialLng={lng}
+          />
+        </Box>
+      )}
     </Stack>
   );
 }

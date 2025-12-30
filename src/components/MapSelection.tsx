@@ -9,15 +9,26 @@ const mapStyle = {
   width: '100%',
 };
 
-const MapComponent = ({ onPositionChange }) => {
+const MapComponent = ({ onPositionChange, initialLat, initialLng }) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const [markerPosition, setMarkerPosition] = useState({
-    lat: 28.0289837,
-    lng: 1.6666663,
+    lat: initialLat && Number.isFinite(Number(initialLat)) ? Number(initialLat) : 28.0289837,
+    lng: initialLng && Number.isFinite(Number(initialLng)) ? Number(initialLng) : 1.6666663,
   });
 
-  const [zoom, setZoom] = useState(10);
+  const [zoom, setZoom] = useState(initialLat && initialLng ? 15 : 10);
+
+  // Update marker position when initial values change
+  useEffect(() => {
+    if (initialLat && initialLng && Number.isFinite(Number(initialLat)) && Number.isFinite(Number(initialLng))) {
+      setMarkerPosition({
+        lat: Number(initialLat),
+        lng: Number(initialLng),
+      });
+      setZoom(15);
+    }
+  }, [initialLat, initialLng]);
 
   // Autocomplete logic (NO loader here)
   useEffect(() => {
