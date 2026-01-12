@@ -62,7 +62,14 @@ export const SUADMIN={
 
     // billing
     CREATE_BILLING:'/Invoice/createInvoice',
-    GET_ALL_INVOICE:'/Invoice/getAllInvoicesBySuperAdmin'
+    GET_ALL_INVOICE:'/Invoice/getAllInvoicesBySuperAdmin',
+
+    // banner
+    CREATE_BANNER:'/promotion-banner',
+    GET_ALL_BANNERS:'/promotion-banner',
+    GET_BANNER_BY_ID:'/promotion-banner',
+    UPDATE_BANNER:'/promotion-banner',
+    DELETE_BANNER:'/promotion-banner'
 }
 
 export const DASHBOARD ={

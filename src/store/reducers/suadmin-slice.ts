@@ -189,6 +189,124 @@ export const getAllInvoices = createAsyncThunk<
   }
 });
 
+// ✅ Create Banner
+export const createBanner = createAsyncThunk<
+  any,
+  {
+    banners: Array<{
+      title: string;
+      imageUrl: string;
+      redirectUrl?: string;
+      deepLink?: string;
+      priority?: number;
+      isActive?: boolean;
+      startDate?: string;
+      endDate?: string;
+    }>;
+  },
+  { rejectValue: string }
+>("superAdmin/createBanner", async (payload, { rejectWithValue }) => {
+  try {
+    const { data } = await api.post(SUADMIN.CREATE_BANNER, payload);
+    return data?.data ?? data;
+  } catch (err: any) {
+    const msg =
+      err?.response?.data?.message ||
+      err?.response?.data?.error ||
+      err?.message ||
+      "Request failed";
+    return rejectWithValue(msg);
+  }
+});
+
+// ✅ Get All Banners
+export const getAllBanners = createAsyncThunk<
+  any[],
+  void,
+  { rejectValue: string }
+>("superAdmin/getAllBanners", async (_, { rejectWithValue }) => {
+  try {
+    const { data } = await api.get(SUADMIN.GET_ALL_BANNERS);
+    return Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : [];
+  } catch (err: any) {
+    const msg =
+      err?.response?.data?.message ||
+      err?.response?.data?.error ||
+      err?.message ||
+      "Request failed";
+    return rejectWithValue(msg);
+  }
+});
+
+// ✅ Get Banner by ID
+export const getBannerById = createAsyncThunk<
+  any,
+  string,
+  { rejectValue: string }
+>("superAdmin/getBannerById", async (id, { rejectWithValue }) => {
+  try {
+    const { data } = await api.get(`${SUADMIN.GET_BANNER_BY_ID}/${id}`);
+    return data?.data ?? data;
+  } catch (err: any) {
+    const msg =
+      err?.response?.data?.message ||
+      err?.response?.data?.error ||
+      err?.message ||
+      "Request failed";
+    return rejectWithValue(msg);
+  }
+});
+
+// ✅ Update Banner
+export const updateBanner = createAsyncThunk<
+  any,
+  {
+    id: string;
+    banner: {
+      title?: string;
+      imageUrl?: string;
+      redirectUrl?: string;
+      deepLink?: string;
+      priority?: number;
+      isActive?: boolean;
+      startDate?: string;
+      endDate?: string;
+    };
+  },
+  { rejectValue: string }
+>("superAdmin/updateBanner", async (payload, { rejectWithValue }) => {
+  try {
+    const { data } = await api.patch(`${SUADMIN.UPDATE_BANNER}/${payload.id}`, payload.banner);
+    return data?.data ?? data;
+  } catch (err: any) {
+    const msg =
+      err?.response?.data?.message ||
+      err?.response?.data?.error ||
+      err?.message ||
+      "Request failed";
+    return rejectWithValue(msg);
+  }
+});
+
+// ✅ Delete Banner
+export const deleteBanner = createAsyncThunk<
+  any,
+  string,
+  { rejectValue: string }
+>("superAdmin/deleteBanner", async (id, { rejectWithValue }) => {
+  try {
+    const { data } = await api.delete(`${SUADMIN.DELETE_BANNER}/${id}`);
+    return data?.data ?? data;
+  } catch (err: any) {
+    const msg =
+      err?.response?.data?.message ||
+      err?.response?.data?.error ||
+      err?.message ||
+      "Request failed";
+    return rejectWithValue(msg);
+  }
+});
+
 /* ── Slice ──────────────────────────────────────────────────── */
 
 type SuperAdminState = {
@@ -218,6 +336,11 @@ type SuperAdminState = {
   invoicePagination: { total: number; page: number; limit: number };
   invoicesLoading: boolean;
   invoicesError: string | null;
+
+  // Banner create
+  bannerCreateLoading: boolean;
+  bannerCreateSuccess: boolean;
+  bannerCreateError: string | null;
 };
 
 const initialState: SuperAdminState = {
@@ -244,6 +367,31 @@ const initialState: SuperAdminState = {
   invoicePagination: { total: 0, page: 1, limit: 10 },
   invoicesLoading: false,
   invoicesError: null,
+
+  // Banner create
+  bannerCreateLoading: false,
+  bannerCreateSuccess: false,
+  bannerCreateError: null,
+
+  // Banners list
+  banners: [],
+  bannersLoading: false,
+  bannersError: null,
+
+  // Single banner
+  banner: null,
+  bannerLoading: false,
+  bannerError: null,
+
+  // Banner update
+  bannerUpdateLoading: false,
+  bannerUpdateSuccess: false,
+  bannerUpdateError: null,
+
+  // Banner delete
+  bannerDeleteLoading: false,
+  bannerDeleteSuccess: false,
+  bannerDeleteError: null,
 };
 
 const superAdminSlice = createSlice({
@@ -358,6 +506,85 @@ const superAdminSlice = createSlice({
       .addCase(getAllInvoices.rejected, (state, action) => {
         state.invoicesLoading = false;
         state.invoicesError = (action.payload as string) ?? "Failed to fetch invoices";
+      })
+
+      // Create Banner
+      .addCase(createBanner.pending, (state) => {
+        state.bannerCreateLoading = true;
+        state.bannerCreateError = null;
+        state.bannerCreateSuccess = false;
+      })
+      .addCase(createBanner.fulfilled, (state) => {
+        state.bannerCreateLoading = false;
+        state.bannerCreateSuccess = true;
+      })
+      .addCase(createBanner.rejected, (state, action) => {
+        state.bannerCreateLoading = false;
+        state.bannerCreateSuccess = false;
+        state.bannerCreateError = (action.payload as string) ?? "Request failed";
+      })
+
+      // Get All Banners
+      .addCase(getAllBanners.pending, (state) => {
+        state.bannersLoading = true;
+        state.bannersError = null;
+      })
+      .addCase(getAllBanners.fulfilled, (state, action) => {
+        state.bannersLoading = false;
+        state.banners = action.payload;
+      })
+      .addCase(getAllBanners.rejected, (state, action) => {
+        state.bannersLoading = false;
+        state.bannersError = (action.payload as string) ?? "Request failed";
+      })
+
+      // Get Banner by ID
+      .addCase(getBannerById.pending, (state) => {
+        state.bannerLoading = true;
+        state.bannerError = null;
+      })
+      .addCase(getBannerById.fulfilled, (state, action) => {
+        state.bannerLoading = false;
+        state.banner = action.payload;
+      })
+      .addCase(getBannerById.rejected, (state, action) => {
+        state.bannerLoading = false;
+        state.bannerError = (action.payload as string) ?? "Request failed";
+      })
+
+      // Update Banner
+      .addCase(updateBanner.pending, (state) => {
+        state.bannerUpdateLoading = true;
+        state.bannerUpdateError = null;
+        state.bannerUpdateSuccess = false;
+      })
+      .addCase(updateBanner.fulfilled, (state, action) => {
+        state.bannerUpdateLoading = false;
+        state.bannerUpdateSuccess = true;
+        state.banner = action.payload;
+      })
+      .addCase(updateBanner.rejected, (state, action) => {
+        state.bannerUpdateLoading = false;
+        state.bannerUpdateSuccess = false;
+        state.bannerUpdateError = (action.payload as string) ?? "Request failed";
+      })
+
+      // Delete Banner
+      .addCase(deleteBanner.pending, (state) => {
+        state.bannerDeleteLoading = true;
+        state.bannerDeleteError = null;
+        state.bannerDeleteSuccess = false;
+      })
+      .addCase(deleteBanner.fulfilled, (state, action) => {
+        state.bannerDeleteLoading = false;
+        state.bannerDeleteSuccess = true;
+        // Remove deleted banner from list
+        state.banners = state.banners.filter((b: any) => (b._id ?? b.id) !== action.meta.arg);
+      })
+      .addCase(deleteBanner.rejected, (state, action) => {
+        state.bannerDeleteLoading = false;
+        state.bannerDeleteSuccess = false;
+        state.bannerDeleteError = (action.payload as string) ?? "Request failed";
       });
   },
 });

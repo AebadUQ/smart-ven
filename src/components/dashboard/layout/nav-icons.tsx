@@ -38,6 +38,7 @@ import { Path } from '@phosphor-icons/react/dist/ssr';
 import { Warning } from '@phosphor-icons/react';
 import { Building } from '@phosphor-icons/react';
 import { Invoice } from '@phosphor-icons/react';
+import { Image as ImageIcon } from '@phosphor-icons/react/dist/ssr/Image';
 export const icons = {
   'address-book': AddressBookIcon,
   'PhoneCall': PhoneCallIcon,
@@ -77,6 +78,7 @@ export const icons = {
   path:Path,
   warning:Warning,
   building:Building,
-  invoice:Invoice
+  invoice:Invoice,
+  image:ImageIcon
 
 } as Record<string, Icon>;

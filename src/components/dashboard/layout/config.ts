@@ -32,6 +32,12 @@ export const layoutConfig = {
             { key: "billing", title: "Billing & Subscription", href: paths.dashboard.superadmin.billing, icon: "invoice" },
           ],
         },
+         {
+          key: "banner",
+          items: [
+            { key: "banner", title: "Banner Management", href: "/su-admin/banner/list", icon: "image" },
+          ],
+        },
           {
         key: "tracking",
         items: [
